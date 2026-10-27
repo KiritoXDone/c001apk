@@ -14,6 +14,7 @@ import com.example.c001apk.compose.ui.carousel.CarouselScreen
 import com.example.c001apk.compose.ui.chat.ChatScreen
 import com.example.c001apk.compose.ui.collection.CollectionScreen
 import com.example.c001apk.compose.ui.component.WindowWidthSizeClass
+import com.example.c001apk.compose.ui.component.TopBarScrollPage
 import com.example.c001apk.compose.ui.coolpic.CoolPicScreen
 import com.example.c001apk.compose.ui.dyh.DyhScreen
 import com.example.c001apk.compose.ui.event.EventScreen
@@ -209,13 +210,15 @@ internal fun AppDestinationContent(
             val title = route.title
             val pageType = route.pageType
             val pageParam = route.pageParam
-            SearchScreen(
-                onBackClick = navigator::popBackStack,
-                title = title,
-                onSearch = { keyword ->
-                    navigator.navigateToSearchResult(keyword, title, pageType, pageParam)
-                },
-            )
+            TopBarScrollPage(active = false) {
+                SearchScreen(
+                    onBackClick = navigator::popBackStack,
+                    title = title,
+                    onSearch = { keyword ->
+                        navigator.navigateToSearchResult(keyword, title, pageType, pageParam)
+                    },
+                )
+            }
         }
 
         is AppDestination.SearchResult -> {
@@ -224,22 +227,24 @@ internal fun AppDestinationContent(
             val title = route.title
             val pageType = route.pageType
             val pageParam = route.pageParam
-            SearchResultScreen(
-                onBackClick = navigator::popBackStack,
-                keyword = keyword,
-                title = title,
-                pageType = pageType,
-                pageParam = pageParam,
-                onViewUser = navigator::navigateToUser,
-                onViewFeed = onViewFeed,
-                onOpenLink = onOpenLink,
-                onCopyText = navigator::navigateToCopyText,
-                initialPage = initialPage,
-                updateInitPage = { index ->
-                    initialPage = index
-                },
-                onReport = onReport,
-            )
+            TopBarScrollPage(active = false) {
+                SearchResultScreen(
+                    onBackClick = navigator::popBackStack,
+                    keyword = keyword,
+                    title = title,
+                    pageType = pageType,
+                    pageParam = pageParam,
+                    onViewUser = navigator::navigateToUser,
+                    onViewFeed = onViewFeed,
+                    onOpenLink = onOpenLink,
+                    onCopyText = navigator::navigateToCopyText,
+                    initialPage = initialPage,
+                    updateInitPage = { index ->
+                        initialPage = index
+                    },
+                    onReport = onReport,
+                )
+            }
         }
 
         is AppDestination.CopyText -> {

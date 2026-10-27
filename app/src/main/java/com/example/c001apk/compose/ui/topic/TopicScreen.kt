@@ -50,6 +50,7 @@ import com.example.c001apk.compose.ui.component.MiuixTabRow
 import com.example.c001apk.compose.ui.component.MoreMenuButton
 import com.example.c001apk.compose.ui.component.cards.LoadingCard
 import com.example.c001apk.compose.ui.component.rememberHapticClick
+import com.example.c001apk.compose.ui.component.TopBarScrollPage
 import com.example.c001apk.compose.ui.feed.reply.ReplyActivity
 import com.example.c001apk.compose.util.CookieUtil.isLogin
 import com.example.c001apk.compose.util.ReportType
@@ -287,25 +288,27 @@ fun TopicScreen(
                 is LoadingState.Success -> {
                     if (pagerState != null) {
                         HorizontalPager(state = pagerState) { index ->
-                            TopicContentScreen(
-                                refreshState = refreshState,
-                                resetRefreshState = { refreshState = false },
-                                paddingValues = paddingValues,
-                                entityType = viewModel.entityType,
-                                id = viewModel.id,
-                                url = tabList[index].url.orEmpty(),
-                                title = tabList[index].title.orEmpty(),
-                                productTitle = viewModel.title,
-                                productLogo = viewModel.productLogo,
-                                productConfigRows = viewModel.productConfigRows,
-                                productSheetTopPadding = with(density) { titleBarHeight.toDp() },
-                                onViewUser = onViewUser,
-                                onViewFeed = onViewFeed,
-                                onOpenLink = onOpenLink,
-                                onCopyText = onCopyText,
-                                onReport = onReport,
-                                isScrollingUp = { isScrollingUp = it },
-                            )
+                            TopBarScrollPage(pagerState.currentPage == index) {
+                                TopicContentScreen(
+                                    refreshState = refreshState,
+                                    resetRefreshState = { refreshState = false },
+                                    paddingValues = paddingValues,
+                                    entityType = viewModel.entityType,
+                                    id = viewModel.id,
+                                    url = tabList[index].url.orEmpty(),
+                                    title = tabList[index].title.orEmpty(),
+                                    productTitle = viewModel.title,
+                                    productLogo = viewModel.productLogo,
+                                    productConfigRows = viewModel.productConfigRows,
+                                    productSheetTopPadding = with(density) { titleBarHeight.toDp() },
+                                    onViewUser = onViewUser,
+                                    onViewFeed = onViewFeed,
+                                    onOpenLink = onOpenLink,
+                                    onCopyText = onCopyText,
+                                    onReport = onReport,
+                                    isScrollingUp = { isScrollingUp = it },
+                                )
+                            }
                         }
                     }
                 }

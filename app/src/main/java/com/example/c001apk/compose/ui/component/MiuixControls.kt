@@ -7,6 +7,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
@@ -54,25 +55,44 @@ fun MiuixHeader(
     actions: @Composable RowScope.() -> Unit = {},
     windowInsets: WindowInsets = WindowInsets.statusBars.union(WindowInsets.displayCutout),
     color: Color = LocalBarColor.current,
+    centerTitle: Boolean = false,
 ) = CompactBar {
     top.yukonga.miuix.kmp.basic.Surface(color = color) {
-        Row(
-            modifier
+        Layout(
+            modifier = modifier
                 .windowInsetsPadding(windowInsets)
                 .fillMaxWidth()
                 .heightIn(min = 56.dp)
                 .padding(horizontal = 12.dp, vertical = 4.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            navigationIcon()
-            Box(Modifier.weight(1f).padding(horizontal = 8.dp)) {
-                MiuixTheme(
-                    textStyles = MiuixTheme.textStyles.copy(main = MiuixTheme.textStyles.title3),
-                ) {
-                    title()
+            content = {
+                Row { navigationIcon() }
+                Box(Modifier.padding(horizontal = 8.dp)) {
+                    MiuixTheme(
+                        textStyles = MiuixTheme.textStyles.copy(main = MiuixTheme.textStyles.title3),
+                    ) {
+                        title()
+                    }
                 }
+                Row(content = actions)
+            },
+        ) { measurables, constraints ->
+            val loose = constraints.copy(minWidth = 0, minHeight = 0)
+            val navigation = measurables[0].measure(loose)
+            val action = measurables[2].measure(loose.copy(maxWidth = loose.maxWidth - navigation.width))
+            val titleWidth =
+                (constraints.maxWidth -
+                    if (centerTitle) 2 * maxOf(navigation.width, action.width)
+                    else navigation.width + action.width).coerceAtLeast(0)
+            val title = measurables[1].measure(loose.copy(minWidth = titleWidth, maxWidth = titleWidth))
+            val height = maxOf(constraints.minHeight, navigation.height, title.height, action.height)
+            layout(constraints.maxWidth, height) {
+                navigation.placeRelative(0, (height - navigation.height) / 2)
+                title.placeRelative(
+                    if (centerTitle) (constraints.maxWidth - title.width) / 2 else navigation.width,
+                    (height - title.height) / 2,
+                )
+                action.placeRelative(constraints.maxWidth - action.width, (height - action.height) / 2)
             }
-            actions()
         }
     }
 }

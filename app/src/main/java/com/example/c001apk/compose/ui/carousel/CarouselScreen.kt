@@ -31,6 +31,7 @@ import com.example.c001apk.compose.ui.component.MiuixHeader as TopAppBar
 import com.example.c001apk.compose.ui.component.MiuixScaffold as Scaffold
 import com.example.c001apk.compose.ui.component.MiuixTabRow
 import com.example.c001apk.compose.ui.component.cards.LoadingCard
+import com.example.c001apk.compose.ui.component.TopBarScrollPage
 import com.example.c001apk.compose.util.ReportType
 import com.example.c001apk.compose.util.makeToast
 import kotlinx.coroutines.launch
@@ -138,18 +139,20 @@ fun CarouselScreen(
                 } else {
                     HorizontalPager(state = pagerState, modifier = Modifier.fillMaxSize()) { index
                         ->
-                        CarouselContentScreen(
-                            url = tabList[index].url,
-                            title = tabList[index].title,
-                            paddingValues = paddingValues,
-                            refreshState = refreshState,
-                            resetRefreshState = { refreshState = false },
-                            onViewUser = onViewUser,
-                            onViewFeed = onViewFeed,
-                            onOpenLink = onOpenLink,
-                            onCopyText = onCopyText,
-                            onReport = onReport,
-                        )
+                        TopBarScrollPage(pagerState.currentPage == index) {
+                            CarouselContentScreen(
+                                url = tabList[index].url,
+                                title = tabList[index].title,
+                                paddingValues = paddingValues,
+                                refreshState = refreshState,
+                                resetRefreshState = { refreshState = false },
+                                onViewUser = onViewUser,
+                                onViewFeed = onViewFeed,
+                                onOpenLink = onOpenLink,
+                                onCopyText = onCopyText,
+                                onReport = onReport,
+                            )
+                        }
                     }
                 }
             }

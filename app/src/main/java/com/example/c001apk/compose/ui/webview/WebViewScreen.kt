@@ -38,6 +38,7 @@ import com.example.c001apk.compose.ui.component.MiuixMenu as DropdownMenu
 import com.example.c001apk.compose.ui.component.MiuixMenuItem as DropdownMenuItem
 import com.example.c001apk.compose.ui.component.MiuixScaffold as Scaffold
 import com.example.c001apk.compose.ui.component.MoreMenuButton
+import com.example.c001apk.compose.ui.component.TopBarScrollEffect
 import com.example.c001apk.compose.ui.component.WebView
 import com.example.c001apk.compose.util.makeToast
 import com.example.c001apk.compose.util.openInBrowser
@@ -54,6 +55,7 @@ enum class ActionType {
     COPY,
     OPEN,
     CLEAN,
+    SCROLL_TO_TOP,
     NONE,
 }
 
@@ -139,6 +141,7 @@ fun WebViewScreen(
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { paddingValues ->
+        TopBarScrollEffect { actionType = ActionType.SCROLL_TO_TOP }
         Box(
             modifier =
                 Modifier.fillMaxSize()

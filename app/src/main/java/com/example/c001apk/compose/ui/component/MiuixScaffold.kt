@@ -11,6 +11,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import com.example.c001apk.compose.logic.providable.LocalUserPreferences
+import kotlinx.coroutines.flow.MutableSharedFlow
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
@@ -26,6 +27,7 @@ fun MiuixScaffold(
     floatingBottomBar: Boolean = false,
     containerColor: Color = MiuixTheme.colorScheme.surface,
     contentWindowInsets: WindowInsets = WindowInsets.systemBars.union(WindowInsets.displayCutout),
+    topBarScrollRequests: MutableSharedFlow<Unit>? = null,
     content: @Composable (PaddingValues) -> Unit,
 ) {
     // WebView's hardware compositor must draw once, outside the backdrop recording pass.
@@ -36,7 +38,12 @@ fun MiuixScaffold(
         remember(collapseTabs, tabScrollThreshold) {
             if (collapseTabs) CollapsingTabsState(tabScrollThreshold) else null
         }
-    CompositionLocalProvider(LocalCollapsingTabs provides tabState) {
+    val scrollRequests = topBarScrollRequests ?: remember { MutableSharedFlow<Unit>(extraBufferCapacity = 1) }
+    CompositionLocalProvider(
+        LocalCollapsingTabs provides tabState,
+        LocalTopBarScroll provides scrollRequests,
+    ) {
+        TopBarScrollEffect { tabState?.expand() }
         Scaffold(
             modifier =
                 modifier
@@ -48,22 +55,24 @@ fun MiuixScaffold(
                     ),
             topBar = {
                 if (topBar != null) {
-                    if (backdrop != null)
-                        BlurredBar(backdrop) {
-                            CompositionLocalProvider(
-                                LocalBarColor provides Color.Transparent,
-                                LocalBarBackdrop provides backdrop,
-                            ) {
-                                CompactBar { topBar() }
+                    Box(Modifier.topBarTap()) {
+                        if (backdrop != null)
+                            BlurredBar(backdrop) {
+                                CompositionLocalProvider(
+                                    LocalBarColor provides Color.Transparent,
+                                    LocalBarBackdrop provides backdrop,
+                                ) {
+                                    CompactBar { topBar() }
+                                }
                             }
-                        }
-                    else
-                        CompositionLocalProvider(
-                            LocalBarColor provides containerColor,
-                            LocalBarBackdrop provides null,
-                        ) {
-                            Box(Modifier.background(containerColor)) { CompactBar { topBar() } }
-                        }
+                        else
+                            CompositionLocalProvider(
+                                LocalBarColor provides containerColor,
+                                LocalBarBackdrop provides null,
+                            ) {
+                                Box(Modifier.background(containerColor)) { CompactBar { topBar() } }
+                            }
+                    }
                 }
             },
             bottomBar = {

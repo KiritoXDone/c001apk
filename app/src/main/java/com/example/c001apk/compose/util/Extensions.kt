@@ -11,8 +11,6 @@ import android.os.Build.VERSION.SDK_INT
 import android.util.TypedValue
 import android.widget.Toast
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.awaitEachGesture
-import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.lazy.LazyListState
@@ -23,16 +21,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.input.pointer.PointerEventPass
-import androidx.compose.ui.input.pointer.changedToUpIgnoreConsumed
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.semantics.onClick
-import androidx.compose.ui.semantics.semantics
 import com.example.c001apk.compose.constant.Constants.EMPTY_STRING
 import java.util.regex.Pattern
 import org.jsoup.nodes.Document
@@ -82,36 +75,6 @@ inline fun Modifier.noRippleClickable(
         interactionSource = remember { MutableInteractionSource() },
     ) {
         onClick()
-    }
-}
-
-fun Modifier.initialClick(
-    label: String,
-    accepts: (Offset) -> Boolean,
-    onClick: () -> Unit,
-): Modifier = composed {
-    val currentClick by rememberUpdatedState(onClick)
-    val currentAccepts by rememberUpdatedState(accepts)
-    semantics {
-        onClick(label) { currentClick(); true }
-    }.pointerInput(Unit) {
-        awaitEachGesture {
-            val down = awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
-            if (!currentAccepts(down.position)) return@awaitEachGesture
-            var tap = true
-            while (true) {
-                val event = awaitPointerEvent(PointerEventPass.Initial)
-                val change = event.changes.firstOrNull { it.id == down.id } ?: break
-                if (event.changes.size != 1 || change.isConsumed ||
-                    (change.position - down.position).getDistance() > viewConfiguration.touchSlop
-                ) tap = false
-                if (change.changedToUpIgnoreConsumed()) {
-                    if (tap && currentAccepts(change.position)) currentClick()
-                    break
-                }
-                if (awaitPointerEvent(PointerEventPass.Final).changes.any { it.isConsumed }) tap = false
-            }
-        }
     }
 }
 

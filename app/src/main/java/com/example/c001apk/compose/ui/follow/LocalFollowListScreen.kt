@@ -3,6 +3,7 @@ package com.example.c001apk.compose.ui.follow
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -21,7 +22,13 @@ fun LocalFollowListScreen(onBack: () -> Unit, onUser: (String) -> Unit) {
     MiuixScaffold(
         topBar = { MiuixTopBar(title = "本地关注", navigationIcon = { BackButton(onBack) }) },
     ) { padding ->
-        LazyColumn(Modifier.fillMaxSize(), contentPadding = padding) {
+        val topBarListState = rememberLazyListState()
+        TopBarScrollEffect { topBarListState.animateScrollToItem(0) }
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            state = topBarListState,
+            contentPadding = padding,
+        ) {
             item {
                 SwitchPreference(
                     title = "悄悄关注",

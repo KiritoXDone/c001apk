@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -49,6 +48,7 @@ import com.example.c001apk.compose.ui.component.MiuixHeader as TopAppBar
 import com.example.c001apk.compose.ui.component.MiuixScaffold as Scaffold
 import com.example.c001apk.compose.ui.component.cards.LoadingCard
 import com.example.c001apk.compose.ui.component.cards.SearchHistoryCard
+import com.example.c001apk.compose.ui.component.rememberTopBarScrollState
 import com.example.c001apk.compose.util.makeToast
 import com.google.gson.Gson
 import java.io.IOException
@@ -102,7 +102,6 @@ fun BlackListScreen(
     var textInput by remember { mutableStateOf(TextFieldValue(text = EMPTY_STRING)) }
     val textStyle = MiuixTheme.textStyles.main
     var showClearDialog by remember { mutableStateOf(false) }
-    val rememberScrollState = rememberScrollState()
 
     val backupSAFLauncher =
         rememberLauncherForActivityResult(
@@ -257,7 +256,7 @@ fun BlackListScreen(
     ) { paddingValues ->
         Column(
             modifier =
-                Modifier.fillMaxSize().verticalScroll(rememberScrollState).padding(paddingValues),
+                Modifier.fillMaxSize().verticalScroll(rememberTopBarScrollState()).padding(paddingValues),
         ) {
             HorizontalDivider()
 

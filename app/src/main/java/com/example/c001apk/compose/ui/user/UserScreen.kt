@@ -42,6 +42,7 @@ import com.example.c001apk.compose.ui.component.MiuixTopBar as TopAppBar
 import com.example.c001apk.compose.ui.component.MoreMenuButton
 import com.example.c001apk.compose.ui.component.cards.LoadingCard
 import com.example.c001apk.compose.ui.component.cards.UserInfoCard
+import com.example.c001apk.compose.ui.component.TopBarScrollEffect
 import com.example.c001apk.compose.util.CookieUtil.isLogin
 import com.example.c001apk.compose.util.DateUtils.timeStamp2Date
 import com.example.c001apk.compose.util.ReportType
@@ -187,6 +188,7 @@ fun UserScreen(
         ) {
             BoxWithConstraints(Modifier.fillMaxSize()) {
                 val sideInset = ((maxWidth - 800.dp) / 2).coerceAtLeast(0.dp)
+                TopBarScrollEffect { lazyListState.animateScrollToItem(0) }
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
                     contentPadding =

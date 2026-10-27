@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -51,6 +52,7 @@ import com.example.c001apk.compose.ui.component.settings.PreferenceGroup
 import com.example.c001apk.compose.ui.component.settings.SelectionItem
 import com.example.c001apk.compose.ui.component.settings.StateDropdownListItem
 import com.example.c001apk.compose.ui.component.settings.SwitchListItem
+import com.example.c001apk.compose.ui.component.TopBarScrollEffect
 import com.example.c001apk.compose.util.CacheDataManager.clearAllCache
 import com.example.c001apk.compose.util.CacheDataManager.getTotalCacheSize
 import java.util.Formatter
@@ -144,7 +146,10 @@ fun SettingsScreen(
     ) { paddingValues ->
         Row(Modifier.fillMaxSize()) {
             if (wide || activeSection == null) {
+                val topBarListState = rememberLazyListState()
+                TopBarScrollEffect { topBarListState.animateScrollToItem(0) }
                 LazyColumn(
+                    state = topBarListState,
                     modifier =
                         if (wide) Modifier.width(260.dp).fillMaxHeight()
                         else Modifier.fillMaxSize(),
@@ -180,7 +185,10 @@ fun SettingsScreen(
                 }
             }
             if (activeSection != null) {
+                val topBarListState = rememberLazyListState()
+                TopBarScrollEffect { topBarListState.animateScrollToItem(0) }
                 LazyColumn(
+                    state = topBarListState,
                     modifier = Modifier.weight(1f).fillMaxHeight().scrollEndHaptic(),
                     contentPadding =
                         PaddingValues(

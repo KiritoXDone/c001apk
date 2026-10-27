@@ -3,6 +3,7 @@ package com.example.c001apk.compose.ui.accounts
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -62,7 +63,13 @@ fun AccountsScreen(onBack: () -> Unit, onLogin: () -> Unit) {
     MiuixScaffold(
         topBar = { MiuixTopBar(title = "账号管理", navigationIcon = { BackButton(onBack) }) },
     ) { padding ->
-        LazyColumn(Modifier.fillMaxSize(), contentPadding = padding) {
+        val topBarListState = rememberLazyListState()
+        TopBarScrollEffect { topBarListState.animateScrollToItem(0) }
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            state = topBarListState,
+            contentPadding = padding,
+        ) {
             item {
                 BasicComponent(
                     title = "添加账号",

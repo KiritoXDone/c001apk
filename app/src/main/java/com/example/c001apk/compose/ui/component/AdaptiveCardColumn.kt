@@ -26,6 +26,7 @@ fun AdaptiveCardColumn(
     state: LazyStaggeredGridState = rememberLazyStaggeredGridState(),
     content: LazyStaggeredGridScope.() -> Unit,
 ) {
+    TopBarScrollEffect { state.animateScrollToItem(0) }
     BoxWithConstraints(modifier) {
         val columns = ReadingLayout.columns(maxWidth.value, LocalDensity.current.fontScale)
         LazyVerticalStaggeredGrid(

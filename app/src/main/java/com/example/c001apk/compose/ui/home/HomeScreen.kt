@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
@@ -38,6 +39,8 @@ import com.example.c001apk.compose.ui.component.MiuixScaffoldDefaults as Scaffol
 import com.example.c001apk.compose.ui.component.MiuixTabRow
 import com.example.c001apk.compose.ui.component.MiuixTopBar as TopAppBar
 import com.example.c001apk.compose.ui.component.rememberHapticClick
+import com.example.c001apk.compose.ui.component.TopBarScrollEffect
+import com.example.c001apk.compose.ui.component.TopBarScrollPage
 import com.example.c001apk.compose.ui.feed.reply.ReplyActivity
 import com.example.c001apk.compose.ui.home.app.AppListScreen
 import com.example.c001apk.compose.ui.home.feed.HomeFeedScreen
@@ -48,7 +51,6 @@ import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.FloatingActionButton
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
-import top.yukonga.miuix.kmp.basic.SmallTopAppBar
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Add
@@ -121,7 +123,13 @@ fun HomeTabEditorScreen(
             )
         },
     ) { paddingValues ->
-        LazyColumn(Modifier.fillMaxSize(), contentPadding = paddingValues) {
+        val topBarListState = rememberLazyListState()
+        TopBarScrollEffect { topBarListState.animateScrollToItem(0) }
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            state = topBarListState,
+            contentPadding = paddingValues,
+        ) {
             items(homeTabTypes, key = TabType::name) { type ->
                 val checked = type in selectedTabs
                 top.yukonga.miuix.kmp.preference.CheckboxPreference(
@@ -208,28 +216,27 @@ fun HomeScreen(
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
-            SmallTopAppBar(
-                title = "主页",
-                color = com.example.c001apk.compose.ui.component.LocalBarColor.current,
-                bottomContent = {
-                    MiuixTabRow(
-                        modifier = Modifier.padding(start = 12.dp, end = 12.dp, bottom = 8.dp),
-                        withContour = true,
-                        tabs = tabList.map(::tabTitle),
-                        selectedTabIndex = selectedTabIndex,
-                        onTabSelected = { index ->
-                            if (pagerState.currentPage == index) onRefresh()
-                            selectedTabType = tabList[index]
-                            scope.launch { pagerState.springAnimateToPage(index) }
-                        },
-                    )
-                },
-                actions = {
-                    IconButton(onClick = onSearch) {
-                        Icon(MiuixIcons.Search, contentDescription = "搜索")
-                    }
-                },
-            )
+            androidx.compose.foundation.layout.Column {
+                TopAppBar(
+                    title = "主页",
+                    actions = {
+                        IconButton(onClick = onSearch) {
+                            Icon(MiuixIcons.Search, contentDescription = "搜索")
+                        }
+                    },
+                )
+                MiuixTabRow(
+                    modifier = Modifier.padding(start = 12.dp, end = 12.dp, bottom = 8.dp),
+                    withContour = true,
+                    tabs = tabList.map(::tabTitle),
+                    selectedTabIndex = selectedTabIndex,
+                    onTabSelected = { index ->
+                        if (pagerState.currentPage == index) onRefresh()
+                        selectedTabType = tabList[index]
+                        scope.launch { pagerState.springAnimateToPage(index) }
+                    },
+                )
+            }
         },
         floatingActionButton = {
             if (isLogin && tabList.getOrNull(selectedTabIndex) == TabType.FEED) {
@@ -274,45 +281,47 @@ fun HomeScreen(
             HorizontalPager(
                 state = pagerState,
             ) { index ->
-                when (val type = tabList[index]) {
-                    TabType.FOLLOW,
-                    TabType.FEED,
-                    TabType.HOT,
-                    TabType.COOLPIC ->
-                        HomeFeedScreen(
-                            paddingValues = pagePadding,
-                            refreshState = refreshState && index == pagerState.currentPage,
-                            resetRefreshState = resetRefreshState,
-                            type = type,
-                            onViewUser = onViewUser,
-                            onViewFeed = onViewFeed,
-                            onOpenLink = onOpenLink,
-                            onCopyText = onCopyText,
-                            onReport = onReport,
-                            isScrollingUp = {
-                                isScrollingUp = it
-                            },
-                        )
+                TopBarScrollPage(pagerState.currentPage == index) {
+                    when (val type = tabList[index]) {
+                        TabType.FOLLOW,
+                        TabType.FEED,
+                        TabType.HOT,
+                        TabType.COOLPIC ->
+                            HomeFeedScreen(
+                                paddingValues = pagePadding,
+                                refreshState = refreshState && index == pagerState.currentPage,
+                                resetRefreshState = resetRefreshState,
+                                type = type,
+                                onViewUser = onViewUser,
+                                onViewFeed = onViewFeed,
+                                onOpenLink = onOpenLink,
+                                onCopyText = onCopyText,
+                                onReport = onReport,
+                                isScrollingUp = {
+                                    isScrollingUp = it
+                                },
+                            )
 
-                    TabType.APP ->
-                        AppListScreen(
-                            paddingValues = pagePadding,
-                            refreshState = refreshState && index == pagerState.currentPage,
-                            resetRefreshState = resetRefreshState,
-                            onViewApp = onViewApp,
-                            onCheckUpdate = onCheckUpdate,
-                        )
+                        TabType.APP ->
+                            AppListScreen(
+                                paddingValues = pagePadding,
+                                refreshState = refreshState && index == pagerState.currentPage,
+                                resetRefreshState = resetRefreshState,
+                                onViewApp = onViewApp,
+                                onCheckUpdate = onCheckUpdate,
+                            )
 
-                    TabType.TOPIC,
-                    TabType.PRODUCT ->
-                        HomeTopicScreen(
-                            paddingValues = pagePadding,
-                            type = type,
-                            onViewUser = onViewUser,
-                            onViewFeed = onViewFeed,
-                            onOpenLink = onOpenLink,
-                            onCopyText = onCopyText,
-                        )
+                        TabType.TOPIC,
+                        TabType.PRODUCT ->
+                            HomeTopicScreen(
+                                paddingValues = pagePadding,
+                                type = type,
+                                onViewUser = onViewUser,
+                                onViewFeed = onViewFeed,
+                                onOpenLink = onOpenLink,
+                                onCopyText = onCopyText,
+                            )
+                    }
                 }
             }
         }

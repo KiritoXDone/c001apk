@@ -2,6 +2,7 @@ package com.example.c001apk.compose.ui.app
 
 import android.content.Intent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animate
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
@@ -20,6 +21,7 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -42,6 +44,7 @@ import com.example.c001apk.compose.R
 import com.example.c001apk.compose.constant.Constants.EMPTY_STRING
 import com.example.c001apk.compose.logic.state.LoadingState
 import com.example.c001apk.compose.ui.component.BackButton
+import com.example.c001apk.compose.ui.component.LocalTopBarScroll
 import com.example.c001apk.compose.ui.component.MiuixHeader as TopAppBar
 import com.example.c001apk.compose.ui.component.MiuixMenu as DropdownMenu
 import com.example.c001apk.compose.ui.component.MiuixMenuItem as DropdownMenuItem
@@ -49,12 +52,16 @@ import com.example.c001apk.compose.ui.component.MoreMenuButton
 import com.example.c001apk.compose.ui.component.cards.AppInfoCard
 import com.example.c001apk.compose.ui.component.cards.LoadingCard
 import com.example.c001apk.compose.ui.component.rememberHapticClick
+import com.example.c001apk.compose.ui.component.TopBarScrollEffect
+import com.example.c001apk.compose.ui.component.TopBarScrollPage
+import com.example.c001apk.compose.ui.component.topBarTap
 import com.example.c001apk.compose.ui.feed.reply.ReplyActivity
 import com.example.c001apk.compose.util.CookieUtil.isLogin
 import com.example.c001apk.compose.util.ReportType
 import com.example.c001apk.compose.util.downloadApk
 import com.example.c001apk.compose.util.makeToast
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import me.onebone.toolbar.CollapsingToolbarScaffold
 import me.onebone.toolbar.ExperimentalToolbarApi
@@ -110,233 +117,247 @@ fun AppScreen(
     val windowInsets = WindowInsets.systemBars
     var isScrollingUp by remember { mutableStateOf(false) }
 
-    CollapsingToolbarScaffold(
-        state = state,
-        scrollStrategy = ScrollStrategy.ExitUntilCollapsed,
-        modifier = Modifier.fillMaxSize().background(MiuixTheme.colorScheme.surface),
-        toolbar = {
-            TopAppBar(
-                windowInsets =
-                    WindowInsets.systemBars.only(WindowInsetsSides.Start + WindowInsetsSides.Top),
-                navigationIcon = {
-                    BackButton { onBackClick() }
-                },
-                title = {
-                    Text(
-                        modifier =
-                            Modifier.graphicsLayer {
-                                alpha = if (state.toolbarState.progress == 0f) 1f else 0f
-                            },
-                        text = viewModel.title,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                },
-                actions = {
-                    if (viewModel.appState is LoadingState.Success) {
-                        Row(Modifier.wrapContentSize(Alignment.TopEnd)) {
-                            IconButton(
-                                onClick = {
-                                    onSearch(viewModel.title, "apk", viewModel.id)
+    val scrollRequests = remember { MutableSharedFlow<Unit>(extraBufferCapacity = 1) }
+    CompositionLocalProvider(LocalTopBarScroll provides scrollRequests) {
+        TopBarScrollEffect {
+            var previous = 0f
+            animate(0f, (state.toolbarState.maxHeight - state.toolbarState.height).toFloat()) { value, _ ->
+                state.toolbarState.dispatchRawDelta(value - previous)
+                previous = value
+            }
+        }
+        CollapsingToolbarScaffold(
+            state = state,
+            scrollStrategy = ScrollStrategy.ExitUntilCollapsed,
+            modifier = Modifier.fillMaxSize().background(MiuixTheme.colorScheme.surface),
+            toolbar = {
+                TopAppBar(
+                    modifier = Modifier.topBarTap(),
+                    windowInsets =
+                        WindowInsets.systemBars.only(WindowInsetsSides.Start + WindowInsetsSides.Top),
+                    navigationIcon = {
+                        BackButton { onBackClick() }
+                    },
+                    title = {
+                        Text(
+                            modifier =
+                                Modifier.graphicsLayer {
+                                    alpha = if (state.toolbarState.progress == 0f) 1f else 0f
                                 },
-                            ) {
-                                Icon(MiuixIcons.Search, contentDescription = null)
-                            }
-                            Box {
-                                MoreMenuButton { dropdownMenuExpanded = true }
-                                DropdownMenu(
-                                    expanded = dropdownMenuExpanded,
-                                    onDismissRequest = { dropdownMenuExpanded = false },
+                            text = viewModel.title,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    },
+                    actions = {
+                        if (viewModel.appState is LoadingState.Success) {
+                            Row(Modifier.wrapContentSize(Alignment.TopEnd)) {
+                                IconButton(
+                                    onClick = {
+                                        onSearch(viewModel.title, "apk", viewModel.id)
+                                    },
                                 ) {
-                                    com.example.c001apk.compose.ui.component.ContentShareMenuItems(
-                                        type = com.example.c001apk.compose.util.ShareType.APP,
-                                        id = packageName,
-                                        title =
-                                            (viewModel.appState as LoadingState.Success)
-                                                .response
-                                                .title,
-                                        dismiss = { dropdownMenuExpanded = false },
-                                    )
-                                    if (isLogin) {
+                                    Icon(MiuixIcons.Search, contentDescription = null)
+                                }
+                                Box {
+                                    MoreMenuButton { dropdownMenuExpanded = true }
+                                    DropdownMenu(
+                                        expanded = dropdownMenuExpanded,
+                                        onDismissRequest = { dropdownMenuExpanded = false },
+                                    ) {
+                                        com.example.c001apk.compose.ui.component.ContentShareMenuItems(
+                                            type = com.example.c001apk.compose.util.ShareType.APP,
+                                            id = packageName,
+                                            title =
+                                                (viewModel.appState as LoadingState.Success)
+                                                    .response
+                                                    .title,
+                                            dismiss = { dropdownMenuExpanded = false },
+                                        )
+                                        if (isLogin) {
+                                            DropdownMenuItem(
+                                                text = {
+                                                    Text(
+                                                        if (viewModel.isFollowed) {
+                                                            stringResource(id = R.string.menu_unfollow)
+                                                        } else {
+                                                            stringResource(id = R.string.menu_follow)
+                                                        },
+                                                    )
+                                                },
+                                                onClick = {
+                                                    dropdownMenuExpanded = false
+                                                    viewModel.onGetFollowApk()
+                                                },
+                                            )
+                                        }
                                         DropdownMenuItem(
                                             text = {
                                                 Text(
-                                                    if (viewModel.isFollowed) {
-                                                        stringResource(id = R.string.menu_unfollow)
+                                                    if (viewModel.isBlocked) {
+                                                        stringResource(id = R.string.menu_unblock)
                                                     } else {
-                                                        stringResource(id = R.string.menu_follow)
+                                                        "拉黑"
                                                     },
                                                 )
                                             },
                                             onClick = {
                                                 dropdownMenuExpanded = false
-                                                viewModel.onGetFollowApk()
+                                                viewModel.blockApp()
                                             },
                                         )
                                     }
-                                    DropdownMenuItem(
-                                        text = {
-                                            Text(
-                                                if (viewModel.isBlocked) {
-                                                    stringResource(id = R.string.menu_unblock)
-                                                } else {
-                                                    "拉黑"
-                                                },
-                                            )
-                                        },
-                                        onClick = {
-                                            dropdownMenuExpanded = false
-                                            viewModel.blockApp()
-                                        },
-                                    )
                                 }
                             }
                         }
-                    }
-                },
-                color = Color.Transparent,
-            )
-            if (viewModel.appState !is LoadingState.Error) {
-                AppInfoCard(
-                    modifier =
-                        Modifier.padding(top = 58.dp)
-                            .windowInsetsPadding(
-                                windowInsets.only(WindowInsetsSides.Start + WindowInsetsSides.Top),
-                            )
-                            .parallax(0.5f)
-                            .graphicsLayer {
-                                alpha = state.toolbarState.progress
-                            },
-                    data = (viewModel.appState as? LoadingState.Success)?.response,
-                    onDownloadApk = viewModel::onGetDownloadLink,
+                    },
+                    color = Color.Transparent,
                 )
+                if (viewModel.appState !is LoadingState.Error) {
+                    AppInfoCard(
+                        modifier =
+                            Modifier.padding(top = 58.dp)
+                                .windowInsetsPadding(
+                                    windowInsets.only(WindowInsetsSides.Start + WindowInsetsSides.Top),
+                                )
+                                .parallax(0.5f)
+                                .graphicsLayer {
+                                    alpha = state.toolbarState.progress
+                                },
+                        data = (viewModel.appState as? LoadingState.Success)?.response,
+                        onDownloadApk = viewModel::onGetDownloadLink,
+                    )
+                }
+            },
+        ) {
+            Column(modifier = Modifier.fillMaxSize()) {
+                when (viewModel.appState) {
+                    LoadingState.Loading,
+                    LoadingState.Empty,
+                    is LoadingState.Error -> {
+                        Box(modifier = Modifier.fillMaxSize()) {
+                            LoadingCard(
+                                modifier = Modifier.align(Alignment.Center).padding(horizontal = 10.dp),
+                                state = viewModel.appState,
+                                onClick =
+                                    if (viewModel.appState is LoadingState.Loading) null
+                                    else viewModel::refresh,
+                            )
+                        }
+                    }
+
+                    is LoadingState.Success -> {
+
+                        if (viewModel.commentStatus == 1) {
+
+                            HorizontalPager(
+                                state = pagerState,
+                                modifier = Modifier.weight(1f),
+                            ) { index ->
+                                TopBarScrollPage(pagerState.currentPage == index) {
+                                    AppContentScreen(
+                                        refreshState = refreshState,
+                                        resetRefreshState = {
+                                            refreshState = false
+                                        },
+                                        id = viewModel.id,
+                                        appCommentSort =
+                                            when (index) {
+                                                0 -> EMPTY_STRING
+                                                1 -> "&sort=dateline_desc"
+                                                2 -> "&sort=popular"
+                                                else -> EMPTY_STRING
+                                            },
+                                        appCommentTitle =
+                                            when (index) {
+                                                0 -> "最近回复"
+                                                1 -> "最新发布"
+                                                2 -> "热度排序"
+                                                else -> "最近回复"
+                                            },
+                                        onViewUser = onViewUser,
+                                        onViewFeed = onViewFeed,
+                                        onOpenLink = onOpenLink,
+                                        onCopyText = onCopyText,
+                                        onReport = onReport,
+                                        isScrollingUp = {
+                                            isScrollingUp = it
+                                        },
+                                        listHeader = {
+                                            AppSortOptions(
+                                                options = tabList,
+                                                selectedIndex = pagerState.currentPage,
+                                                onSelect = { selectedIndex ->
+                                                    if (pagerState.currentPage == selectedIndex) {
+                                                        refreshState = true
+                                                    }
+                                                    scope.launch {
+                                                        pagerState.springAnimateToPage(selectedIndex)
+                                                    }
+                                                },
+                                            )
+                                        },
+                                        listModifier = Modifier.nestedScroll(headerScrollConnection),
+                                    )
+                                }
+                            }
+                        } else {
+                            HorizontalDivider()
+                            Box(modifier = Modifier.fillMaxSize()) {
+                                Text(
+                                    modifier = Modifier.padding(16.dp).align(Alignment.Center),
+                                    text = viewModel.commentStatusText,
+                                )
+                            }
+                        }
+                    }
+                }
             }
-        },
-    ) {
-        Column(modifier = Modifier.fillMaxSize()) {
-            when (viewModel.appState) {
-                LoadingState.Loading,
-                LoadingState.Empty,
-                is LoadingState.Error -> {
-                    Box(modifier = Modifier.fillMaxSize()) {
-                        LoadingCard(
-                            modifier = Modifier.align(Alignment.Center).padding(horizontal = 10.dp),
-                            state = viewModel.appState,
-                            onClick =
-                                if (viewModel.appState is LoadingState.Loading) null
-                                else viewModel::refresh,
+
+            if (isLogin) {
+                AnimatedVisibility(
+                    visible = isScrollingUp,
+                    enter = slideInVertically { it * 2 },
+                    exit = slideOutVertically { it * 2 },
+                    modifier =
+                        Modifier.align(Alignment.BottomEnd).navigationBarsPadding().padding(20.dp),
+                ) {
+                    FloatingActionButton(
+                        onClick =
+                            rememberHapticClick {
+                                val intent = Intent(context, ReplyActivity::class.java)
+                                intent.putExtra("type", "createFeed")
+                                intent.putExtra("targetType", "apk")
+                                intent.putExtra(
+                                    "targetId",
+                                    "${1000000000 + (viewModel.id.toIntOrNull() ?: 4599)}",
+                                )
+                                val animationBundle =
+                                    ActivityOptionsCompat.makeCustomAnimation(
+                                            context,
+                                            R.anim.anim_bottom_sheet_slide_up,
+                                            R.anim.anim_bottom_sheet_slide_down,
+                                        )
+                                        .toBundle()
+                                ContextCompat.startActivity(context, intent, animationBundle)
+                            },
+                    ) {
+                        Icon(
+                            painter =
+                                rememberDrawablePainter(
+                                    ResourcesCompat.getDrawable(
+                                        context.resources,
+                                        R.drawable.outline_note_alt_24,
+                                        context.theme,
+                                    ),
+                                ),
+                            contentDescription = null,
                         )
                     }
                 }
-
-                is LoadingState.Success -> {
-
-                    if (viewModel.commentStatus == 1) {
-
-                        HorizontalPager(
-                            state = pagerState,
-                            modifier = Modifier.weight(1f),
-                        ) { index ->
-                            AppContentScreen(
-                                refreshState = refreshState,
-                                resetRefreshState = {
-                                    refreshState = false
-                                },
-                                id = viewModel.id,
-                                appCommentSort =
-                                    when (index) {
-                                        0 -> EMPTY_STRING
-                                        1 -> "&sort=dateline_desc"
-                                        2 -> "&sort=popular"
-                                        else -> EMPTY_STRING
-                                    },
-                                appCommentTitle =
-                                    when (index) {
-                                        0 -> "最近回复"
-                                        1 -> "最新发布"
-                                        2 -> "热度排序"
-                                        else -> "最近回复"
-                                    },
-                                onViewUser = onViewUser,
-                                onViewFeed = onViewFeed,
-                                onOpenLink = onOpenLink,
-                                onCopyText = onCopyText,
-                                onReport = onReport,
-                                isScrollingUp = {
-                                    isScrollingUp = it
-                                },
-                                listHeader = {
-                                    AppSortOptions(
-                                        options = tabList,
-                                        selectedIndex = pagerState.currentPage,
-                                        onSelect = { selectedIndex ->
-                                            if (pagerState.currentPage == selectedIndex) {
-                                                refreshState = true
-                                            }
-                                            scope.launch {
-                                                pagerState.springAnimateToPage(selectedIndex)
-                                            }
-                                        },
-                                    )
-                                },
-                                listModifier = Modifier.nestedScroll(headerScrollConnection),
-                            )
-                        }
-                    } else {
-                        HorizontalDivider()
-                        Box(modifier = Modifier.fillMaxSize()) {
-                            Text(
-                                modifier = Modifier.padding(16.dp).align(Alignment.Center),
-                                text = viewModel.commentStatusText,
-                            )
-                        }
-                    }
-                }
             }
         }
 
-        if (isLogin) {
-            AnimatedVisibility(
-                visible = isScrollingUp,
-                enter = slideInVertically { it * 2 },
-                exit = slideOutVertically { it * 2 },
-                modifier =
-                    Modifier.align(Alignment.BottomEnd).navigationBarsPadding().padding(20.dp),
-            ) {
-                FloatingActionButton(
-                    onClick =
-                        rememberHapticClick {
-                            val intent = Intent(context, ReplyActivity::class.java)
-                            intent.putExtra("type", "createFeed")
-                            intent.putExtra("targetType", "apk")
-                            intent.putExtra(
-                                "targetId",
-                                "${1000000000 + (viewModel.id.toIntOrNull() ?: 4599)}",
-                            )
-                            val animationBundle =
-                                ActivityOptionsCompat.makeCustomAnimation(
-                                        context,
-                                        R.anim.anim_bottom_sheet_slide_up,
-                                        R.anim.anim_bottom_sheet_slide_down,
-                                    )
-                                    .toBundle()
-                            ContextCompat.startActivity(context, intent, animationBundle)
-                        },
-                ) {
-                    Icon(
-                        painter =
-                            rememberDrawablePainter(
-                                ResourcesCompat.getDrawable(
-                                    context.resources,
-                                    R.drawable.outline_note_alt_24,
-                                    context.theme,
-                                ),
-                            ),
-                        contentDescription = null,
-                    )
-                }
-            }
-        }
     }
 
     when {

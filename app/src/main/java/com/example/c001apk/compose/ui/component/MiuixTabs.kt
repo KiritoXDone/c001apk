@@ -79,6 +79,7 @@ fun MiuixTabScaffold(
         return
     }
     MiuixScaffold(
+        topBarScrollRequests = LocalTopBarScroll.current,
         topBar = {
             Column {
                 MiuixTabRow(

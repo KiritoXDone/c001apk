@@ -75,6 +75,7 @@ import com.example.c001apk.compose.ui.component.cards.ChatTimeCard
 import com.example.c001apk.compose.ui.component.cards.LoadingCard
 import com.example.c001apk.compose.ui.component.icons.Backspace
 import com.example.c001apk.compose.ui.component.icons.EmojiEmotions
+import com.example.c001apk.compose.ui.component.TopBarScrollEffect
 import com.example.c001apk.compose.ui.theme.cardBg
 import com.example.c001apk.compose.util.CookieUtil
 import com.example.c001apk.compose.util.EmojiUtils
@@ -226,6 +227,11 @@ fun ChatScreen(
                 Modifier.fillMaxSize()
                     .windowInsetsPadding(windowInsets.only(WindowInsetsSides.Start)),
         ) {
+            TopBarScrollEffect {
+                lazyListState.animateScrollToItem(
+                    (lazyListState.layoutInfo.totalItemsCount - 1).coerceAtLeast(0),
+                )
+            }
             LazyColumn(
                 modifier = Modifier.weight(1f).fillMaxSize(),
                 contentPadding = PaddingValues(top = paddingValues.calculateTopPadding()),

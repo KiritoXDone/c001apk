@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
@@ -36,6 +37,7 @@ import com.example.c001apk.compose.ui.component.MiuixHeader as TopAppBar
 import com.example.c001apk.compose.ui.component.MiuixScaffold as Scaffold
 import com.example.c001apk.compose.ui.component.cards.LoadingCard
 import com.example.c001apk.compose.ui.component.rememberHapticClick
+import com.example.c001apk.compose.ui.component.TopBarScrollEffect
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -135,7 +137,10 @@ private fun EventContent(
             else -> "暂不可报名"
         }
 
+    val topBarListState = rememberLazyListState()
+    TopBarScrollEffect { topBarListState.animateScrollToItem(0) }
     LazyColumn(
+        state = topBarListState,
         modifier = Modifier.fillMaxSize(),
         contentPadding =
             PaddingValues(

@@ -19,6 +19,12 @@ internal class CollapsingTabsState(private val thresholdPx: Float) : NestedScrol
     private var direction = 0f
     private var distance = 0f
 
+    fun expand() {
+        visible = true
+        direction = 0f
+        distance = 0f
+    }
+
     override fun onPostScroll(
         consumed: Offset,
         available: Offset,

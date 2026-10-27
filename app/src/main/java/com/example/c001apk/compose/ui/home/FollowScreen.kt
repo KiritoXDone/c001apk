@@ -2,7 +2,6 @@ package com.example.c001apk.compose.ui.home
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -91,7 +90,7 @@ fun FollowScreen(
             if (prefs.localFollows.isEmpty()) {
                 Column(
                     Modifier.fillMaxSize()
-                        .verticalScroll(rememberScrollState())
+                        .verticalScroll(rememberTopBarScrollState())
                         .padding(
                             top = padding.calculateTopPadding(),
                             bottom = bottomPadding + padding.calculateBottomPadding(),

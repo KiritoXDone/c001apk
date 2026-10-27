@@ -8,6 +8,7 @@ import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.click
+import androidx.compose.ui.test.doubleClick
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
@@ -17,6 +18,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.example.c001apk.compose.ui.component.BackButton
 import com.example.c001apk.compose.ui.component.MiuixScaffold
 import com.example.c001apk.compose.ui.component.MoreMenuButton
+import com.example.c001apk.compose.ui.component.TopBarScrollEffect
 import com.example.c001apk.compose.ui.theme.C001apkComposeTheme
 import org.junit.Assert.assertEquals
 import org.junit.Rule
@@ -65,14 +67,18 @@ class FeedTopBarTest {
                             MoreMenuButton { calls += "menu" }
                         },
                     )
-                }) { }
+                }) { TopBarScrollEffect { calls += "doubleTop" } }
             }
         }
     }
 
     @Test fun titleTapsToggleAndAccessibilityActionUsesCurrentCallback() {
         header()
-        repeat(2) { compose.onNodeWithText("动态").performTouchInput { click() } }
+        repeat(2) {
+            compose.onNodeWithText("动态").performTouchInput { click() }
+            compose.mainClock.advanceTimeBy(400)
+            compose.waitForIdle()
+        }
         compose.runOnIdle { assertEquals(listOf("comments", "top"), calls) }
         compose.onNode(SemanticsMatcher("Title navigation action") {
             it.config.getOrNull(SemanticsActions.OnClick)?.label == "切换动态与评论位置"
@@ -88,6 +94,12 @@ class FeedTopBarTest {
         compose.runOnIdle { assertEquals(listOf("back", "save", "menu"), calls) }
     }
 
+    @Test fun doubleTapReturnsToTopWithoutSingleTapNavigation() {
+        header()
+        compose.onNodeWithText("动态").performTouchInput { doubleClick() }
+        compose.runOnIdle { assertEquals(listOf("doubleTop"), calls) }
+    }
+
     @Test fun draggingAwayAndBackDoesNotCountAsTitleTap() {
         header()
         compose.onNodeWithText("动态").performTouchInput {
@@ -98,6 +110,7 @@ class FeedTopBarTest {
         }
         compose.runOnIdle { assertEquals(emptyList<String>(), calls) }
         compose.onNodeWithText("动态").performTouchInput { click() }
+        compose.mainClock.advanceTimeBy(400)
         compose.runOnIdle { assertEquals(listOf("comments"), calls) }
     }
 }

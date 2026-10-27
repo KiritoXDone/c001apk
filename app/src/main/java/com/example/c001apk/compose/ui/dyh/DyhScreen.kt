@@ -19,6 +19,7 @@ import com.example.c001apk.compose.ui.component.BackButton
 import com.example.c001apk.compose.ui.component.MiuixScaffold as Scaffold
 import com.example.c001apk.compose.ui.component.MiuixTabRow
 import com.example.c001apk.compose.ui.component.MiuixTopBar as TopAppBar
+import com.example.c001apk.compose.ui.component.TopBarScrollPage
 import com.example.c001apk.compose.util.ReportType
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.utils.springAnimateToPage
@@ -71,18 +72,20 @@ fun DyhScreen(
         },
     ) { paddingValues ->
         HorizontalPager(state = pagerState) { index ->
-            DyhContentScreen(
-                id = id,
-                type = typeList[index],
-                refreshState = refreshState,
-                resetRefreshState = { refreshState = false },
-                paddingValues = paddingValues,
-                onViewUser = onViewUser,
-                onViewFeed = onViewFeed,
-                onOpenLink = onOpenLink,
-                onCopyText = onCopyText,
-                onReport = onReport,
-            )
+            TopBarScrollPage(pagerState.currentPage == index) {
+                DyhContentScreen(
+                    id = id,
+                    type = typeList[index],
+                    refreshState = refreshState,
+                    resetRefreshState = { refreshState = false },
+                    paddingValues = paddingValues,
+                    onViewUser = onViewUser,
+                    onViewFeed = onViewFeed,
+                    onOpenLink = onOpenLink,
+                    onCopyText = onCopyText,
+                    onReport = onReport,
+                )
+            }
         }
     }
 }

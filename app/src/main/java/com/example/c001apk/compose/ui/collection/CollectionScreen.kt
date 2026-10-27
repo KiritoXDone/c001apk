@@ -40,6 +40,7 @@ import com.example.c001apk.compose.ui.component.ItemCard
 import com.example.c001apk.compose.ui.component.MiuixHeader as TopAppBar
 import com.example.c001apk.compose.ui.component.MiuixScaffold as Scaffold
 import com.example.c001apk.compose.ui.component.cards.LoadingCard
+import com.example.c001apk.compose.ui.component.TopBarScrollEffect
 import com.example.c001apk.compose.util.DateUtils.fromToday
 import com.example.c001apk.compose.util.ReportType
 import top.yukonga.miuix.kmp.basic.Text
@@ -107,6 +108,7 @@ fun CollectionScreen(
                 viewModel.refresh()
             },
         ) {
+            TopBarScrollEffect { lazyListState.animateScrollToItem(0) }
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
                 contentPadding =

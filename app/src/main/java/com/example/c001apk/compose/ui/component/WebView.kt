@@ -278,6 +278,10 @@ fun WebView(
                 }
 
                 ActionType.NONE -> {}
+                ActionType.SCROLL_TO_TOP -> {
+                    resetActionType()
+                    webView.evaluateJavascript("window.scrollTo({top: 0, behavior: 'smooth'})", null)
+                }
             }
 
             if (onBack) {

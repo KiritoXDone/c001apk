@@ -24,6 +24,7 @@ import com.example.c001apk.compose.ui.component.cards.MessageWidgetCard
 import com.example.c001apk.compose.ui.component.cards.iconList
 import com.example.c001apk.compose.ui.component.cards.titleList
 import com.example.c001apk.compose.ui.component.icons.FlutterProfileIcons
+import com.example.c001apk.compose.ui.component.TopBarScrollEffect
 import com.example.c001apk.compose.ui.notification.NoticeType
 import com.example.c001apk.compose.util.ReportType
 import com.example.c001apk.compose.util.makeToast
@@ -103,6 +104,7 @@ fun MessageScreen(
             ) {
                 BoxWithConstraints(Modifier.fillMaxSize()) {
                     val sideInset = ((maxWidth - 800.dp) / 2).coerceAtLeast(0.dp)
+                    TopBarScrollEffect { listState.animateScrollToItem(0) }
                     LazyColumn(
                         Modifier.fillMaxSize(),
                         state = listState,

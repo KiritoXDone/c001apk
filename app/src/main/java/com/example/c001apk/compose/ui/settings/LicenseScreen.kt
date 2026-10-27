@@ -3,6 +3,7 @@ package com.example.c001apk.compose.ui.settings
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -10,6 +11,7 @@ import com.example.c001apk.compose.ui.component.BackButton
 import com.example.c001apk.compose.ui.component.MiuixScaffold as Scaffold
 import com.example.c001apk.compose.ui.component.MiuixTopBar as TopAppBar
 import com.example.c001apk.compose.ui.component.settings.BasicListItem
+import com.example.c001apk.compose.ui.component.TopBarScrollEffect
 import com.example.c001apk.compose.util.openInBrowser
 
 /** Created by bggRGjQaUbCoE on 2024/6/2 */
@@ -29,7 +31,10 @@ fun LicenseScreen(
             )
         },
     ) { paddingValues ->
+        val topBarListState = rememberLazyListState()
+        TopBarScrollEffect { topBarListState.animateScrollToItem(0) }
         LazyColumn(
+            state = topBarListState,
             modifier = Modifier.fillMaxSize(),
             contentPadding = paddingValues,
         ) {

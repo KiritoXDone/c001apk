@@ -60,13 +60,13 @@ import com.example.c001apk.compose.ui.component.MiuixDialogButton
 import com.example.c001apk.compose.ui.component.MiuixMenu as DropdownMenu
 import com.example.c001apk.compose.ui.component.MiuixMenuItem as DropdownMenuItem
 import com.example.c001apk.compose.ui.component.MiuixScaffold as Scaffold
-import com.example.c001apk.compose.ui.component.MiuixTopBar as TopAppBar
 import com.example.c001apk.compose.ui.component.MoreMenuButton
 import com.example.c001apk.compose.ui.component.cards.FeedCard
 import com.example.c001apk.compose.ui.component.cards.FeedReplyCard
 import com.example.c001apk.compose.ui.component.cards.FeedReplySortCard
 import com.example.c001apk.compose.ui.component.cards.LoadingCard
 import com.example.c001apk.compose.ui.component.rememberHapticClick
+import com.example.c001apk.compose.ui.component.TopBarScrollEffect
 import com.example.c001apk.compose.ui.feed.reply.ReplyActivity
 import com.example.c001apk.compose.util.CookieUtil
 import com.example.c001apk.compose.util.CookieUtil.isLogin
@@ -77,7 +77,6 @@ import com.example.c001apk.compose.util.copyText
 import com.example.c001apk.compose.util.getAllLinkAndText
 import com.example.c001apk.compose.util.isScrollingUp
 import com.example.c001apk.compose.util.makeToast
-import com.example.c001apk.compose.util.noRippleClickable
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.FloatingActionButton
 import top.yukonga.miuix.kmp.basic.Icon
@@ -387,6 +386,10 @@ fun FeedScreen(
                         viewModel.refresh()
                     },
                 ) {
+                    TopBarScrollEffect {
+                        viewReply = false
+                        lazyListState.animateScrollToItem(0)
+                    }
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
                         contentPadding =

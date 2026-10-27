@@ -61,6 +61,7 @@ fun CommonScreen(
             LocalTabContentPadding.current.calculateTopPadding() +
             if (needTopPadding) paddingValues.calculateTopPadding() else 0.dp
     val lazyListState = rememberLazyStaggeredGridState()
+    TopBarScrollEffect { lazyListState.animateScrollToItem(0) }
 
     LaunchedEffect(refreshState) {
         if (refreshState == true) {

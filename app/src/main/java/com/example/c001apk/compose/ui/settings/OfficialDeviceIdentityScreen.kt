@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -83,7 +82,7 @@ fun OfficialDeviceIdentityScreen(onBack: () -> Unit) {
     ) { padding ->
         Column(
             Modifier.fillMaxSize()
-                .verticalScroll(rememberScrollState())
+                .verticalScroll(rememberTopBarScrollState())
                 .padding(padding)
                 .padding(20.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),

@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -24,6 +23,7 @@ import com.example.c001apk.compose.constant.Constants.URL_SOURCE_CODE_FORK
 import com.example.c001apk.compose.ui.component.BackButton
 import com.example.c001apk.compose.ui.component.MiuixScaffold as Scaffold
 import com.example.c001apk.compose.ui.component.MiuixTopBar as TopAppBar
+import com.example.c001apk.compose.ui.component.rememberTopBarScrollState
 import com.example.c001apk.compose.ui.component.settings.BasicListItem
 import com.example.c001apk.compose.ui.component.settings.PreferenceGroup
 import com.example.c001apk.compose.util.openInBrowser
@@ -43,7 +43,6 @@ fun AboutScreen(
 ) {
 
     val context = LocalContext.current
-    val rememberScrollState = rememberScrollState()
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -57,7 +56,7 @@ fun AboutScreen(
         },
     ) { paddingValues ->
         Column(
-            Modifier.fillMaxSize().verticalScroll(rememberScrollState).padding(paddingValues),
+            Modifier.fillMaxSize().verticalScroll(rememberTopBarScrollState()).padding(paddingValues),
         ) {
             Box(
                 Modifier.fillMaxWidth().height(125.dp).align(Alignment.CenterHorizontally),

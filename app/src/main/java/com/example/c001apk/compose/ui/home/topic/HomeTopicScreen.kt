@@ -31,6 +31,8 @@ import com.example.c001apk.compose.logic.model.TopicBean
 import com.example.c001apk.compose.logic.state.LoadingState
 import com.example.c001apk.compose.ui.carousel.CarouselContentScreen
 import com.example.c001apk.compose.ui.component.cards.LoadingCard
+import com.example.c001apk.compose.ui.component.TopBarScrollEffect
+import com.example.c001apk.compose.ui.component.TopBarScrollPage
 import com.example.c001apk.compose.ui.home.TabType
 import com.example.c001apk.compose.ui.theme.cardBg
 import kotlinx.coroutines.launch
@@ -124,6 +126,7 @@ fun HomeTopicScreen(
                     Row(
                         modifier = Modifier.fillMaxSize().background(cardBg()),
                     ) {
+                        TopBarScrollEffect { listState.animateScrollToItem(0) }
                         LazyColumn(
                             state = listState,
                             contentPadding = paddingValues,
@@ -177,18 +180,20 @@ fun HomeTopicScreen(
                             modifier = Modifier.fillMaxHeight().weight(0.78f),
                             userScrollEnabled = false,
                         ) { index ->
-                            CarouselContentScreen(
-                                url = it[index].url,
-                                title = it[index].title,
-                                paddingValues = paddingValues,
-                                refreshState = null,
-                                resetRefreshState = {},
-                                onViewUser = onViewUser,
-                                onViewFeed = onViewFeed,
-                                onOpenLink = onOpenLink,
-                                onCopyText = onCopyText,
-                                isHomeFeed = true,
-                            )
+                            TopBarScrollPage(pageState.currentPage == index) {
+                                CarouselContentScreen(
+                                    url = it[index].url,
+                                    title = it[index].title,
+                                    paddingValues = paddingValues,
+                                    refreshState = null,
+                                    resetRefreshState = {},
+                                    onViewUser = onViewUser,
+                                    onViewFeed = onViewFeed,
+                                    onOpenLink = onOpenLink,
+                                    onCopyText = onCopyText,
+                                    isHomeFeed = true,
+                                )
+                            }
                         }
                     }
                 }
