@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="app/src/main/res/mipmap-xxxhdpi/ic_launcher.webp" alt="c001apk" width="88">
+<img src="app/src/main/res/mipmap-xxxhdpi/ic_launcher.png" alt="c001apk" width="88">
 
 # c001apk
 

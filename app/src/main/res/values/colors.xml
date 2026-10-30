@@ -8,10 +8,10 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="ic_launcher_foreground">#FFFFFF</color>
-    <color name="ic_launcher_background">#607D8B</color>
+    <color name="ic_launcher_background">#019D71</color>
     <color name="cover">#0D000000</color>
     <color name="color_surface">#FFFFFFFF</color>
     <color name="color_on_surface">#FF000000</color>
 <color name="color_container">#FFF5F5F5</color>
-    <color name="splash_icon">#3482FF</color>
+    <color name="splash_icon">@color/ic_launcher_background</color>
 </resources>
