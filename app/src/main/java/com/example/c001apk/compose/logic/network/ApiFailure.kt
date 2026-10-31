@@ -52,7 +52,7 @@ object ApiFailures {
                 ApiFailure(ApiFailureKind.RATE_LIMIT, "请求过于频繁，请稍后重试")
             status == -2 && ("应用不存在" in message || "未上架" in message || "已下架" in message) ->
                 ApiFailure(ApiFailureKind.BUSINESS, "该应用未在酷安上架")
-            else -> ApiFailure(ApiFailureKind.BUSINESS, "服务器未能完成请求，请稍后重试")
+            else -> ApiFailure(ApiFailureKind.BUSINESS, message.ifBlank { "服务器未能完成请求，请稍后重试" })
         }
     }
 
