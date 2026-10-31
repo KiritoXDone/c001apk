@@ -81,6 +81,7 @@ SDK 组件、Release 签名、测试和发布流程见[构建指南](docs/BUILDI
 
 - [frisk1127/c001apk-compose](https://github.com/frisk1127/c001apk-compose)：Compose 客户端基础。
 - [TG-Twilight/c001apk](https://github.com/TG-Twilight/c001apk)：功能移植与协议实现参考。
+- [People-11/shuzilm_id](https://github.com/People-11/shuzilm_id)：数盟 ID 的纯 Kotlin 注册实现参考。
 - [compose-miuix-ui/miuix](https://github.com/compose-miuix-ui/miuix)：界面组件、导航、图标与模糊效果。
 - [YuKongA/Mishka](https://github.com/YuKongA/Mishka)：界面设计参考。
 - [daimiaopeng/coolapk-desktop](https://github.com/daimiaopeng/coolapk-desktop)：协议兼容实现参考。
