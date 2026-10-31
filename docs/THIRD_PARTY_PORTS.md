@@ -12,6 +12,10 @@ Token V3 算法、协议查找表、公开分享页 JSON 与网易验证码配�
 
 32 张 `niuniu_emotion_*.png` 沿用 TG-Twilight 所收录的酷安官方 16.6.4 表情素材，名称映射用于显示兼容。2026-10-28 按 [issue #19](https://github.com/KiritoXDone/c001apk/issues/19) 核对最新上游，32 张 Git blob 哈希均一致；回复及私信面板提供独立“牛牛”分类，分页由共享目录生成。版权归酷安及相应权利人，根 AGPL-3.0 不改变这些素材的权利。
 
+## 数盟注册协议
+
+纯 Kotlin 注册实现参考 [People-11/shuzilm_id](https://github.com/People-11/shuzilm_id/tree/03118bc4dd2fbf4807f971c839391742c181da9b) 公开说明的协议行为及精简字段集，有效执行路径与其 `sample/DuClient.kt` 保持一致，仅对接工程配置，外围负责后台调用与身份写入保护；省略未调用的分析辅助函数。未引入该仓库的原生样本。当前模块、采集范围和验证方式见 [数盟注册说明](DIGITAL_UNION.md)。
+
 ## Markdown
 
 CommonMark 0.30.0 与 GFM 表格、删除线、任务列表扩展遵循 BSD 3-Clause；完整许可证打包于 `app/src/main/assets/licenses/CommonMark-BSD-3-Clause.txt`。解析行为参考 TG-Twilight 98526cc，使用原生 Compose 渲染，不使用 WebView 执行正文。

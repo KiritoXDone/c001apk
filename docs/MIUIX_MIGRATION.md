@@ -60,23 +60,9 @@ bash ./gradlew :app:connectedDebugAndroidTest
 
 ## 数盟 ID
 
-根据用户提供的 `smid.zip` 接入 `cn.shuzilm.core` Java 包装层、配置资源和 ARM64 `libdu.so`。SDK 使用资料中的官方身份 `com.coolapk.market` / `16.1.3` / `2604022`；应用安装包继续使用现有独立包名与正常应用版本号。身份适配仅作用于 SDK 的 Context / PackageManager，不改动系统包管理器或官方客户端。
+当前使用参考 People-11/shuzilm_id 注册格式重写的纯 Kotlin 实现，不再加载或打包 `libdu.so`。双地址并发查询，连接和读取超时沿用参考实现的 30 秒，应用调用层保留启动不阻塞和手动填写保护。已有 ID 继续使用，自动生成结果不会覆盖并发手动修改。
 
-首次进入时异步获取并等待 native 注册完成；已经保存的 ID 直接复用。先尝试 SDK 默认地址，未取得有效 ID、超时或 SDK 进程退出后使用 `https://global-auni.checktrustworthiness.com` 回退地址。进入原生库前转换为其支持的 `global-auni.checktrustworthiness.com:443`，保留 HTTPS 端口；拒绝非根路径、查询、凭据、IPv6 字面量及非法端口，避免静默截断地址。每个地址在各自独立的进程中最多轮询 4 次、最多等待 17.5 秒。地址随单次查询传入 native 配置，不改写全局默认地址；后续新请求仍从默认地址开始。设置中的“数字联盟 ID”可以重新获取或手动填写。保存 ID 时在同一 DataStore 事务内更新设备请求头和旧协议默认参数，保留账号、主题以及用户自定义参数。重新获取失败不会覆盖已保存的 ID。SDK 回调、超时和重复操作由仓库层统一处理；不输出 ID、Cookie 或 token。
-
-数盟 SDK 仅在不对外导出的 `:digital_union` 私有服务进程中加载。主进程负责地址切换，通过绑定服务获取结果；请求预算共 35 秒，另为每个进程的绑定收尾和退出各保留最多 2 秒，总清理上限 8 秒。默认请求结束后先解绑并结束其进程，再启动回退进程，避免旧请求、SDK 全局配置及无法取消的原生线程污染回退。取消操作只清理，不发起回退。两个地址均失败时返回可重试错误，不终止主界面，也不覆盖已有 ID。私有进程不初始化账号、DataStore 或图片管线。
-
-保留参考实现的 `pkglist`、`operation`、`cdlmt` 禁用配置。SDK 初始化仅在需要获取 ID 时进行，未增加电话、位置等运行时权限。此集成使用用户提供的二进制，不能据此推断其全部内部行为。数盟获取和酷安接口是否可用，以交付验证记录中的实机结果为准。
-
-`libdu.so` 已接入用户提供的 `atoifix` 栈越界补丁，保留栈保护检查。SHA-256：`f03cb88122cfb3ad23e3554f93d8f98cede1625c661711428badb80dcb9c7be5`。补丁来源、指令范围及可复现校验见 [原生库修复说明](DIGITAL_UNION_NATIVE_PATCH.md)。
-
-数盟网络仪器测试需显式启用，普通测试不会请求数盟服务：
-
-```sh
-adb shell am instrument -w -e smidNetwork true \
-  -e class com.example.c001apk.compose.ui.DigitalUnionNetworkTest \
-  com.example.c001apk.compose.test/androidx.test.runner.AndroidJUnitRunner
-```
+具体模块、字段范围、失败处理和显式网络验证见 [数盟注册说明](DIGITAL_UNION.md)。旧的原生栈越界补丁保留为[历史记录](DIGITAL_UNION_NATIVE_PATCH.md)。
 
 ## 分发校验
 
@@ -86,7 +72,7 @@ CI 支持手动构建；推送 `vMAJOR.MINOR.PATCH` 标签会执行测试、Lint
 
 ## 本轮上游功能移植
 
-完整范围和 33 条 TG-Twilight 提交对应关系见 [移植跟踪](TWILIGHT_PORT.md)。默认分享使用 `www.coolapk1s.com`，官方链接仍能打开；数盟继续使用 native SDK。公告小助手和独立 announcements 分支按用户要求排除。
+完整范围和 33 条 TG-Twilight 提交对应关系见 [移植跟踪](TWILIGHT_PORT.md)。默认分享使用 `www.coolapk1s.com`，官方链接仍能打开；数盟改用精简 Kotlin 注册协议。公告小助手和独立 announcements 分支按用户要求排除。
 
 应用自更新默认读取 `KiritoXDone/c001apk` 的正式 Release，自动检查开关和手动检查入口统一位于“设置 → 关于 → 应用更新”。应用内不提供自定义更新来源，旧来源配置不再读取；开发者构建时可传入 `-PupdateRepository=owner/repo`，CI 默认使用当前 GitHub 仓库。
 
