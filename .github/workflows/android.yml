@@ -9,7 +9,7 @@ on:
         default: release
       app_version:
         description: Semantic app version
-        default: '1.4.8'
+        default: '1.4.9'
         type: string
   workflow_call:
     inputs:
@@ -18,7 +18,7 @@ on:
         default: debug
       app_version:
         type: string
-        default: '1.4.8'
+        default: '1.4.9'
       source_ref:
         description: Git ref to build; defaults to the workflow ref
         type: string
@@ -36,7 +36,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       BUILD_VARIANT: ${{ inputs.variant || 'debug' }}
-      APP_VERSION: ${{ inputs.app_version || '1.4.8' }}
+      APP_VERSION: ${{ inputs.app_version || '1.4.9' }}
       C001APK_KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
       C001APK_KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
       C001APK_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
