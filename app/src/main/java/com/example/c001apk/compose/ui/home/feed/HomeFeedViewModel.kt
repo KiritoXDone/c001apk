@@ -13,6 +13,9 @@ import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flow
+import com.example.c001apk.compose.logic.state.LoadingState
 
 /** Created by bggRGjQaUbCoE on 2024/6/3 */
 @HiltViewModel(assistedFactory = HomeFeedViewModel.ViewModelFactory::class)
@@ -28,6 +31,10 @@ constructor(
     contentFilters: ContentFilterStore,
     private val userPreferencesRepository: UserPreferencesRepository,
 ) : BaseViewModel(networkRepo, blackListRepo, contentFilters) {
+
+    private val coolPicPages = CoolPicPageLoader(dataListUrl, dataListTitle) { url, title, page, last ->
+        networkRepo.getDataList(url, title, null, last, page).first { it !is LoadingState.Loading }
+    }
 
     @AssistedFactory
     interface ViewModelFactory {
@@ -50,9 +57,10 @@ constructor(
     override suspend fun customFetchData() =
         when (type) {
             TabType.FOLLOW,
-            TabType.HOT,
-            TabType.COOLPIC ->
+            TabType.HOT ->
                 networkRepo.getDataList(dataListUrl, dataListTitle, null, lastItem, page)
+
+            TabType.COOLPIC -> flow { emit(coolPicPages.load(page, lastItem)) }
 
             TabType.FEED ->
                 networkRepo.getHomeFeed(page, firstLaunch, installTime, firstItem, lastItem)
@@ -73,6 +81,7 @@ constructor(
         response: List<HomeFeedResponse.Data>,
     ): List<HomeFeedResponse.Data>? {
         firstLaunch = 0
+        if (type == TabType.COOLPIC && coolPicPages.emptyFeed) isEnd = true
         return null
     }
 

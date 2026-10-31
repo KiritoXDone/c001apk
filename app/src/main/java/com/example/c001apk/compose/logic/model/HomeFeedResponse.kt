@@ -297,6 +297,7 @@ data class HomeFeedResponse(
         val pageTitle: String?,
         val cardPageName: String?,
         val selectedTab: String? = null,
+        val url: String? = null,
     ) : Parcelable
 
     @Parcelize
