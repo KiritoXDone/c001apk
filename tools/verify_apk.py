@@ -47,8 +47,8 @@ def verify(apk, sdk, expected_certificate=None):
         native = [item for item in archive.infolist() if item.filename.startswith("lib/") and item.filename.endswith(".so")]
         if not native or {item.filename.split('/')[1] for item in native} != {"arm64-v8a"}:
             raise ValueError("Expected only ARM64 native libraries")
-        if "lib/arm64-v8a/libdu.so" not in {item.filename for item in native}:
-            raise ValueError("Native Digital Union SDK is missing")
+        if any(item.filename.endswith("/libdu.so") for item in native):
+            raise ValueError("Legacy native Digital Union SDK must not be packaged")
         if any(item.compress_type != zipfile.ZIP_DEFLATED for item in native):
             raise ValueError("Expected compressed native libraries")
     return {"apk": str(apk), "package": package[1], "versionCode": int(package[2]), "versionName": package[3],

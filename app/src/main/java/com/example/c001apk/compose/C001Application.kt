@@ -3,7 +3,6 @@ package com.example.c001apk.compose
 import android.app.Application
 import coil.Coil
 import coil.ImageLoader
-import com.example.c001apk.compose.logic.smid.isDigitalUnionProcess
 import com.example.c001apk.compose.util.AddCookiesInterceptor
 import com.example.c001apk.compose.util.MojitoOkHttpImageLoader
 import com.example.c001apk.compose.util.dp
@@ -24,8 +23,6 @@ class C001Application : Application() {
         super.onCreate()
 
         c001Application = this
-        // The SDK worker must not open the UI process's DataStore, accounts or image pipelines.
-        if (isDigitalUnionProcess()) return
         registerActivityLifecycleCallbacks(
             com.example.c001apk.compose.logic.network.CaptchaCoordinator,
         )

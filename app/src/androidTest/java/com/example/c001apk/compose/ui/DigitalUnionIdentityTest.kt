@@ -1,39 +1,11 @@
 package com.example.c001apk.compose.ui
 
-import android.content.pm.PackageManager
-import android.os.Build
-import androidx.test.platform.app.InstrumentationRegistry
-import cn.shuzilm.core.DUHelper
 import com.example.c001apk.compose.logic.datastore.UserPreferencesCompat
-import com.example.c001apk.compose.logic.smid.SmidConfig
 import com.example.c001apk.compose.logic.smid.withDigitalUnionId
-import com.example.c001apk.compose.util.longVersionCodeCompat
 import org.junit.Assert.*
 import org.junit.Test
 
 class DigitalUnionIdentityTest {
-    @Test
-    fun sdkUsesOfficialIdentityWithoutChangingHostPackage() {
-        val host = InstrumentationRegistry.getInstrumentation().targetContext
-        val sdk = DUHelper.PackageLockedContext(host, SmidConfig.DIGITAL_UNION_PACKAGE_NAME)
-        val before = host.packageManager.getPackageInfo(host.packageName, 0)
-        val info =
-            if (Build.VERSION.SDK_INT >= 33)
-                sdk.packageManager.getPackageInfo(
-                    sdk.packageName,
-                    PackageManager.PackageInfoFlags.of(0),
-                )
-            else sdk.packageManager.getPackageInfo(sdk.packageName, 0)
-        assertEquals("com.coolapk.market", sdk.packageName)
-        assertEquals("com.coolapk.market", info.packageName)
-        assertEquals("16.1.3", info.versionName)
-        assertEquals(2604022L, info.longVersionCodeCompat)
-        assertEquals("com.example.c001apk.compose", host.packageName)
-        val after = host.packageManager.getPackageInfo(host.packageName, 0)
-        assertEquals(before.versionName, after.versionName)
-        assertEquals(before.packageName, after.packageName)
-    }
-
     @Test
     fun applyingIdMigratesProtocolDefaultsAndPreservesThemeAndAccount() {
         val original =
