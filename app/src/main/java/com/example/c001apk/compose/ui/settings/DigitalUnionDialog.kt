@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.c001apk.compose.ui.component.MiuixAlertDialog
 import com.example.c001apk.compose.ui.component.MiuixDialogButton
@@ -44,18 +45,32 @@ fun DigitalUnionDialog(
                     label = "数字联盟 ID",
                     useLabelAsPlaceholder = true,
                 )
-                Button(
-                    onClick = { edited = false; onGenerate() },
-                    enabled = !generating,
-                    modifier = Modifier.fillMaxWidth(),
+                Row(
+                    modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    if (generating) {
-                        InfiniteProgressIndicator(Modifier.size(20.dp))
-                        Spacer(Modifier.width(8.dp))
+                    Button(
+                        onClick = { edited = false; onGenerate() },
+                        enabled = !generating,
+                        modifier = Modifier.weight(1f).fillMaxHeight(),
+                        insideMargin = PaddingValues(horizontal = 8.dp, vertical = 12.dp),
+                    ) {
+                        if (generating) {
+                            InfiniteProgressIndicator(Modifier.size(20.dp))
+                            Spacer(Modifier.width(8.dp))
+                        }
+                        Text(
+                            if (generating) "正在获取…" else if (id.isBlank()) "自动获取" else "重新获取",
+                            textAlign = TextAlign.Center,
+                        )
                     }
-                    Text(if (generating) "正在获取…" else if (id.isBlank()) "自动获取" else "重新获取")
+                    Button(
+                        onClick = onImport,
+                        enabled = !generating,
+                        modifier = Modifier.weight(1f).fillMaxHeight(),
+                        insideMargin = PaddingValues(horizontal = 8.dp, vertical = 12.dp),
+                    ) { Text("从官方酷安导入", textAlign = TextAlign.Center) }
                 }
-                Button(onClick = onImport, enabled = !generating) { Text("从官方酷安导入") }
                 error?.let { Text(it, color = MiuixTheme.colorScheme.onSurfaceVariantSummary) }
             }
         },
