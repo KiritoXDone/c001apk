@@ -20,8 +20,8 @@ constructor(
 
     suspend fun ensureId(force: Boolean = false): Result<String> = queryMutex.withLock {
         val current = preferences.data.first()
-        if (!force && current.szlmId.isNotBlank()) {
-            if (current.xAppDevice.isBlank() || current.versionName == "13.4.1") {
+        if (!force && current.szlmId.isNotBlank() && !current.digitalUnionRefreshPending) {
+            if (current.xAppDevice.isBlank() || (!current.protocolVersionCustomized && current.versionName == "13.4.1")) {
                 if (!preferences.saveGeneratedIdentity(current.szlmId, current)) return@withLock latestIdentity()
             }
             return@withLock Result.success(current.szlmId)

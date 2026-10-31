@@ -14,7 +14,7 @@ fun UserPreferencesCompat.withDigitalUnionId(id: String): UserPreferencesCompat 
     val build = buildNumber.ifBlank { Build.ID.orEmpty() }
     val release = androidVersion.ifBlank { Build.VERSION.RELEASE.orEmpty() }
     val migrateVersion =
-        versionName.isBlank() || (versionName == "13.4.1" && versionCode == "2312121")
+        versionName.isBlank() || (!protocolVersionCustomized && versionName == "13.4.1" && versionCode == "2312121" && apiVersion == "13")
     val officialVersion = if (migrateVersion) Constants.VERSION_NAME else versionName
     val officialCode = if (migrateVersion) Constants.VERSION_CODE else versionCode
     val original = runCatching {

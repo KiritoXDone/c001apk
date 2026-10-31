@@ -71,6 +71,8 @@ message UserPreferences {
   bool disablePredictiveBack = 64;
   // Stable page IDs: Home = 0, Following = 1, Profile = 2. Empty keeps the default order.
   repeated int32 mainNavigationOrder = 65;
+  bool digitalUnionRefreshPending = 66;
+  bool protocolVersionCustomized = 67;
 }
 
 enum ThemeType{

@@ -11,9 +11,9 @@ object Constants {
     const val CHANNEL = "coolapk"
     const val MODE = "universal"
     const val APP_LABEL = "token://com.coolapk.market/dcf01e569c1e3db93a3d0fcf191a622c"
-    const val VERSION_NAME = "16.1.3"
+    const val VERSION_NAME = "16.7.0"
     const val API_VERSION = "16"
-    const val VERSION_CODE = "2604022"
+    const val VERSION_CODE = "2610291"
 
     const val PREFIX_COOLMARKET = "coolmarket://"
     const val PREFIX_HTTP = "http"

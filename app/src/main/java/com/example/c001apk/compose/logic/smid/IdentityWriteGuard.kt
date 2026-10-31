@@ -9,4 +9,4 @@ internal fun identityUnchanged(expected: UserPreferencesCompat, current: UserPre
         expected.manufacturer == current.manufacturer && expected.brand == current.brand &&
         expected.model == current.model && expected.buildNumber == current.buildNumber &&
         expected.androidVersion == current.androidVersion && expected.sdkInt == current.sdkInt &&
-        expected.userAgent == current.userAgent
+        expected.userAgent == current.userAgent && expected.protocolVersion() == current.protocolVersion()

@@ -14,6 +14,8 @@ internal class MainStartupState {
     private val failures = Channel<Unit>(Channel.CONFLATED)
     val identityFailures = failures.receiveAsFlow()
 
+    suspend fun reportIdentityFailure() { failures.send(Unit) }
+
     suspend fun prepare(
         initializeAccount: suspend () -> Unit,
         ensureId: suspend () -> Result<String>,
@@ -24,6 +26,6 @@ internal class MainStartupState {
             preparingAccount = false
         }
         // Retain a failure until the UI resumes, then deliver it to one collector only.
-        if (ensureId().isFailure) failures.send(Unit)
+        if (ensureId().isFailure) reportIdentityFailure()
     }
 }

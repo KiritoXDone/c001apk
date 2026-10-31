@@ -6,6 +6,8 @@ import com.example.c001apk.compose.ThemeMode
 import com.example.c001apk.compose.ThemeType
 import com.example.c001apk.compose.logic.model.HapticStrength
 import com.example.c001apk.compose.logic.model.MainNavigationOrder
+import com.example.c001apk.compose.logic.smid.protocolVersion
+import com.example.c001apk.compose.logic.smid.withProtocolVersion
 import com.example.c001apk.compose.logic.smid.withCurrentDevice
 import com.example.c001apk.compose.logic.smid.withDigitalUnionId
 import javax.inject.Inject
@@ -78,7 +80,7 @@ constructor(
     suspend fun setSZLMId(value: String) =
         withContext(Dispatchers.IO) {
             userPreferences.updateData {
-                it.withDigitalUnionId(value.trim()).copy(deviceIdentityRevision = it.deviceIdentityRevision + 1)
+                it.withDigitalUnionId(value.trim()).copy(deviceIdentityRevision = it.deviceIdentityRevision + 1, digitalUnionRefreshPending = false)
             }
         }
 
@@ -88,7 +90,7 @@ constructor(
             if (com.example.c001apk.compose.logic.smid.identityUnchanged(expected, current)) {
                 applied = true
                 current.withDigitalUnionId(value.trim())
-                    .copy(deviceIdentityRevision = current.deviceIdentityRevision + 1)
+                    .copy(deviceIdentityRevision = current.deviceIdentityRevision + 1, digitalUnionRefreshPending = false)
             } else current
         }
         return saved.takeIf { applied }
@@ -148,17 +150,17 @@ constructor(
 
     suspend fun setVersionName(value: String) =
         withContext(Dispatchers.IO) {
-            userPreferences.updateData { it.copy(versionName = value) }
+            userPreferences.updateData { it.withProtocolVersion(it.protocolVersion().copy(name = value)) }
         }
 
     suspend fun setApiVersion(value: String) =
         withContext(Dispatchers.IO) {
-            userPreferences.updateData { it.copy(apiVersion = value) }
+            userPreferences.updateData { it.withProtocolVersion(it.protocolVersion().copy(api = value)) }
         }
 
     suspend fun setVersionCode(value: String) =
         withContext(Dispatchers.IO) {
-            userPreferences.updateData { it.copy(versionCode = value) }
+            userPreferences.updateData { it.withProtocolVersion(it.protocolVersion().copy(code = value)) }
         }
 
     suspend fun setManufacturer(value: String) =

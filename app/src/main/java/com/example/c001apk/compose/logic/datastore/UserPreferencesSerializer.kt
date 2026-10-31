@@ -3,6 +3,7 @@ package com.example.c001apk.compose.logic.datastore
 import androidx.datastore.core.CorruptionException
 import androidx.datastore.core.Serializer
 import com.example.c001apk.compose.UserPreferences
+import com.example.c001apk.compose.logic.smid.upgradeDefaultProtocol
 import com.google.protobuf.InvalidProtocolBufferException
 import java.io.InputStream
 import java.io.OutputStream
@@ -13,7 +14,7 @@ class UserPreferencesSerializer @Inject constructor() : Serializer<UserPreferenc
 
     override suspend fun readFrom(input: InputStream) =
         try {
-            UserPreferences.parseFrom(input).let(::UserPreferencesCompat)
+            UserPreferences.parseFrom(input).let(::UserPreferencesCompat).upgradeDefaultProtocol()
         } catch (e: InvalidProtocolBufferException) {
             throw CorruptionException("cannot read proto", e)
         }

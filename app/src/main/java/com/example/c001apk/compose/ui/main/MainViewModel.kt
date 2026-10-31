@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.c001apk.compose.logic.repository.NetworkRepo
 import com.example.c001apk.compose.logic.repository.UserPreferencesRepository
 import com.example.c001apk.compose.logic.smid.DigitalUnionRepository
+import com.example.c001apk.compose.logic.smid.observeProtocolIdentityRefresh
 import com.example.c001apk.compose.ui.base.PrefsViewModel
 import com.example.c001apk.compose.util.CookieUtil
 import com.example.c001apk.compose.util.encodeCookieValue
@@ -36,6 +37,10 @@ constructor(
                 ensureId = { digitalUnion.ensureId() },
             )
             getCheckLoginInfo()
+        }
+        viewModelScope.launch {
+            observeProtocolIdentityRefresh(userPreferencesRepository.data,
+                refresh = { digitalUnion.ensureId() }, onFailure = startup::reportIdentityFailure)
         }
     }
 

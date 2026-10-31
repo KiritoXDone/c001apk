@@ -76,6 +76,8 @@ data class UserPreferencesCompat(
     val contentFilterJson: String = "",
     val hideHomePublishButton: Boolean = false,
     val deviceIdentityRevision: Long = 0,
+    val digitalUnionRefreshPending: Boolean = false,
+    val protocolVersionCustomized: Boolean = false,
     val predictiveBack: Boolean = true,
     val mainNavigationOrder: List<Int> = MainNavigationOrder.default,
 ) {
@@ -145,6 +147,8 @@ data class UserPreferencesCompat(
         contentFilterJson = original.contentFilterJson,
         hideHomePublishButton = original.hideHomePublishButton,
         deviceIdentityRevision = original.deviceIdentityRevision,
+        digitalUnionRefreshPending = original.digitalUnionRefreshPending,
+        protocolVersionCustomized = original.protocolVersionCustomized,
         predictiveBack = !original.disablePredictiveBack,
         mainNavigationOrder = MainNavigationOrder.normalize(original.mainNavigationOrderList),
         followSelection =
@@ -234,6 +238,8 @@ data class UserPreferencesCompat(
             .setContentFilterJson(contentFilterJson)
             .setHideHomePublishButton(hideHomePublishButton)
             .setDeviceIdentityRevision(deviceIdentityRevision)
+            .setDigitalUnionRefreshPending(digitalUnionRefreshPending)
+            .setProtocolVersionCustomized(protocolVersionCustomized)
             .setDisablePredictiveBack(!predictiveBack)
             .addAllMainNavigationOrder(MainNavigationOrder.normalize(mainNavigationOrder))
             .build()

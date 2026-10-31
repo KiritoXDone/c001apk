@@ -53,9 +53,6 @@ fun ParamsScreen(
                     data = prefs.versionName.ifEmpty { null },
                 ) {
                     viewModel.setVersionName(it)
-                    viewModel.setUserAgent(
-                        "Dalvik/2.1.0 (Linux; U; Android ${prefs.androidVersion}; ${prefs.model} ${prefs.buildNumber}) (#Build; ${prefs.brand}; ${prefs.model}; ${prefs.buildNumber}; ${prefs.androidVersion}) +CoolMarket/$it-${prefs.versionCode}-${Constants.MODE}",
-                    )
                 }
 
                 ParamsItem(
@@ -70,9 +67,6 @@ fun ParamsScreen(
                     data = prefs.versionCode.ifEmpty { null },
                 ) {
                     viewModel.setVersionCode(it)
-                    viewModel.setUserAgent(
-                        "Dalvik/2.1.0 (Linux; U; Android ${prefs.androidVersion}; ${prefs.model} ${prefs.buildNumber}) (#Build; ${prefs.brand}; ${prefs.model}; ${prefs.buildNumber}; ${prefs.androidVersion}) +CoolMarket/${prefs.versionName}-$it-${Constants.MODE}",
-                    )
                 }
             }
             PreferenceGroup(title = "设备信息") {

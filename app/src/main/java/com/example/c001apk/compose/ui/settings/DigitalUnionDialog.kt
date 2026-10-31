@@ -2,6 +2,7 @@ package com.example.c001apk.compose.ui.settings
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.c001apk.compose.ui.component.MiuixAlertDialog
@@ -19,7 +20,14 @@ fun DigitalUnionDialog(
     onDismiss: () -> Unit,
     onSave: (String) -> Unit,
 ) {
-    var value by remember(id) { mutableStateOf(id) }
+    var value by rememberSaveable { mutableStateOf(id) }
+    var edited by rememberSaveable { mutableStateOf(false) }
+    LaunchedEffect(id) {
+        if (!edited) value = id
+    }
+    LaunchedEffect(generating, error) {
+        if (!edited && !generating && error == null) value = id
+    }
     MiuixAlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("数字联盟 ID") },
@@ -31,13 +39,13 @@ fun DigitalUnionDialog(
                 )
                 TextField(
                     value = value,
-                    onValueChange = { value = it },
+                    onValueChange = { value = it; edited = true },
                     modifier = Modifier.fillMaxWidth(),
                     label = "数字联盟 ID",
                     useLabelAsPlaceholder = true,
                 )
                 Button(
-                    onClick = onGenerate,
+                    onClick = { edited = false; onGenerate() },
                     enabled = !generating,
                     modifier = Modifier.fillMaxWidth(),
                 ) {
