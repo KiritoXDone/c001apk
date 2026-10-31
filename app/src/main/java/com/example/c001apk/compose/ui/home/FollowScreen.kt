@@ -61,7 +61,7 @@ fun FollowScreen(
                                 if (prefs.isLogin) Icon(MiuixIcons.ChevronForward, null,
                                     Modifier.size(12.dp).rotate(90f))
                             }
-                            MiuixMenu(expanded = menu, onDismissRequest = { menu = false }) {
+                            MiuixMenu(expanded = menu, onDismissRequest = { menu = false }, contentScale = 1f) {
                                 labels.forEach { (value, title) ->
                                     BasicComponent(
                                         title = title,

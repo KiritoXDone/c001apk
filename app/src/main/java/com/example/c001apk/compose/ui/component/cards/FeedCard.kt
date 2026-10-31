@@ -693,7 +693,7 @@ fun FeedHeader(
                 }
                 if (data.uid == CookieUtil.uid) {
                     DropdownMenuItem(
-                        text = { Text(stringResource(id = R.string.menu_delete)) },
+                        text = { Text(stringResource(id = R.string.menu_delete), color = MiuixTheme.colorScheme.error) },
                         onClick = {
                             dropdownMenuExpanded = false
                             onDelete?.let { it(data.id.orEmpty(), LikeType.FEED, null) }

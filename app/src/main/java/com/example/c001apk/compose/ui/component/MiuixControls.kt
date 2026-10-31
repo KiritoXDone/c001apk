@@ -10,7 +10,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.disabled
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.DpSize
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.Button
@@ -18,6 +21,7 @@ import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.ListPopupColumn
+import top.yukonga.miuix.kmp.basic.ListPopupDefaults
 import top.yukonga.miuix.kmp.basic.PopupPositionProvider
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.More
@@ -105,6 +109,7 @@ fun MiuixMenu(
     modifier: Modifier = Modifier,
     alignment: PopupPositionProvider.Align = PopupPositionProvider.Align.Start,
     onDismissFinished: (() -> Unit)? = null,
+    contentScale: Float = 0.9f,
     content: @Composable () -> Unit,
 ) {
     WindowListPopup(
@@ -113,8 +118,15 @@ fun MiuixMenu(
         popupModifier = modifier,
         alignment = alignment,
         onDismissFinished = onDismissFinished,
+        minWidth = ListPopupDefaults.MinWidth * contentScale,
     ) {
-        ListPopupColumn(content)
+        // Scale inside the platform window, leaving anchor and window coordinates unchanged.
+        val density = LocalDensity.current
+        CompositionLocalProvider(
+            LocalDensity provides Density(density.density * contentScale, density.fontScale),
+        ) {
+            ListPopupColumn(content)
+        }
     }
 }
 
@@ -171,6 +183,9 @@ fun MiuixMenuItem(
         BasicComponent(
             modifier =
                 modifier.then(
+                    if (!enabled) Modifier.semantics(mergeDescendants = true) { disabled() }
+                    else Modifier,
+                ).then(
                     if (onLongClick != null)
                         Modifier.combinedClickable(
                             enabled = enabled,
