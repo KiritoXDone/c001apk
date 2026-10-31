@@ -105,6 +105,7 @@ fun FeedCard(
         showIndication = !isFeedContent,
     ) {
         if (!isFeedContent) {
+            FeedVisibilityNotice(data.publishStatus)
             FeedHeader(
                 modifier = Modifier.padding(start = horizontal),
                 data = data,

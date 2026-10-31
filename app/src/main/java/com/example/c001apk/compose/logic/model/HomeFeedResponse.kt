@@ -16,6 +16,8 @@ data class HomeFeedResponse(
 
     @Parcelize
     data class Data(
+        @SerializedName("publish_status")
+        val publishStatus: Int? = null,
         val secondCategoryRows: List<Entities>? = null,
         val isStickTop: Int?,
         val likeUserInfo: UserInfo?,

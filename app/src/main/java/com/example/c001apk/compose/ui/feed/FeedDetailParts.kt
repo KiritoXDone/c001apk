@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.c001apk.compose.logic.model.HomeFeedResponse
 import com.example.c001apk.compose.ui.component.CoilLoader
+import com.example.c001apk.compose.ui.component.cards.FeedVisibilityNotice
 import com.example.c001apk.compose.ui.component.icons.Smartphone
 import com.example.c001apk.compose.util.DateUtils.fromToday
 import com.example.c001apk.compose.util.Utils.richToString
@@ -31,6 +32,7 @@ import top.yukonga.miuix.kmp.utils.SinkFeedback
 @Composable
 fun FeedDetailAuthor(data: HomeFeedResponse.Data, onViewUser: (String) -> Unit) {
     ReadingSurface(first = true) {
+        FeedVisibilityNotice(data.publishStatus)
         Column(
             Modifier.fillMaxWidth()
                 .clickable(interactionSource = null, indication = SinkFeedback()) {
