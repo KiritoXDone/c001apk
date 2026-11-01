@@ -13,6 +13,7 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.sp
 import com.example.c001apk.compose.logic.model.HomeFeedResponse
 import com.example.c001apk.compose.ui.component.CoilLoader
@@ -31,7 +32,7 @@ import top.yukonga.miuix.kmp.utils.SinkFeedback
 
 @Composable
 fun FeedDetailAuthor(data: HomeFeedResponse.Data, onViewUser: (String) -> Unit) {
-    ReadingSurface(first = true) {
+    ReadingSurface(first = true, topPadding = if (data.publishStatus == 1) 0.dp else 6.dp) {
         FeedVisibilityNotice(data.publishStatus)
         Column(
             Modifier.fillMaxWidth()
@@ -121,13 +122,18 @@ fun FeedDetailAuthor(data: HomeFeedResponse.Data, onViewUser: (String) -> Unit) 
 
 /** Article blocks stay lazy while the outer edges form one continuous reading card. */
 @Composable
-fun ReadingSurface(first: Boolean = false, last: Boolean = false, content: @Composable () -> Unit) {
+fun ReadingSurface(
+    first: Boolean = false,
+    last: Boolean = false,
+    topPadding: Dp = if (first) 6.dp else 0.dp,
+    content: @Composable () -> Unit,
+) {
     val top = if (first) 20.dp else 0.dp
     val bottom = if (last) 20.dp else 0.dp
     Column(
         Modifier.fillMaxWidth()
             .squircleSurface(MiuixTheme.colorScheme.surfaceContainer, top, top, bottom, bottom)
-            .padding(top = if (first) 6.dp else 0.dp, bottom = if (last) 8.dp else 0.dp),
+            .padding(top = topPadding, bottom = if (last) 8.dp else 0.dp),
     ) {
         content()
     }
