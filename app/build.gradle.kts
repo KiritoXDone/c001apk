@@ -143,7 +143,7 @@ android {
 ksp {
     arg("room.incremental", "true")
     arg("room.expandProjection", "true")
-    arg("room.schemaLocation", "$projectDir/schemas")
+    arg("room.schemaLocation", layout.buildDirectory.dir("schemas").get().asFile.path)
 }
 
 protobuf {

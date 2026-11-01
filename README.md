@@ -51,15 +51,16 @@
 
 ## 构建
 
-需要 **JDK 21** 和 Android SDK。克隆完整 Git 历史，配置 `JAVA_HOME`，并通过 `ANDROID_HOME` 或 `local.properties` 的 `sdk.dir` 指定 SDK 路径。
+需要 **Python 3.12 及以上**和 Android SDK。克隆完整 Git 历史，通过 `ANDROID_HOME` 或 `local.properties` 的 `sdk.dir` 指定 SDK 路径；脚本优先使用 `build/jdk/` 的便携 JDK 21，也支持 `JAVA_HOME` 指定的 JDK 21，缺失时自动下载。
 
 ```sh
 git clone https://github.com/KiritoXDone/c001apk.git
 cd c001apk
-bash ./gradlew :app:assembleDebug
+python scripts/prebuild.py
+python scripts/build.py build-apk --build-type debug
 ```
 
-Debug APK 位于 `app/build/outputs/apk/debug/app-debug.apk`。Windows 使用 `gradlew.bat` 替代 `bash ./gradlew`。
+调试安装包位于 `build/apk/debug/`，模块输出位于 `build/gradle/`。各系统使用相同的脚本命令。
 
 SDK 组件、Release 签名、测试和发布流程见[构建指南](docs/BUILDING.md)。
 
@@ -67,7 +68,7 @@ SDK 组件、Release 签名、测试和发布流程见[构建指南](docs/BUILDI
 
 欢迎提交 [Issue](https://github.com/KiritoXDone/c001apk/issues) 或 Pull Request。报告问题前请先搜索已有 Issue，并提供应用版本、设备型号、Android 版本和复现步骤；附图或日志中的账号凭据、Cookie 和设备标识请先移除。
 
-每个 PR 尽量只处理一个问题，说明改动目的和测试方式。移植上游代码时请注明来源与提交，保留原有版权和许可声明。
+每个 PR 尽量只处理一个问题，说明改动目的和测试方式。项目约定见 [AGENTS.md](AGENTS.md)，提交、版本和合并请求技能保存在 `.codex/skills/` 与 `.claude/skills/`。移植上游代码时请注明来源与提交，保留原有版权和许可声明。
 
 ## 文档
 

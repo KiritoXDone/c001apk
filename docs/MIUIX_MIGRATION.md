@@ -35,24 +35,24 @@
 
 ## 构建
 
-最低 Android **13 / API 33，ARM64**，使用官方 miuix-blur 的 AGSL 渲染；没有低版本模糊降级分支。目标 API 35，编译平台 `android-37.0`。
+应用支持 Android **7 / API 24，ARM64**；模糊效果需要 Android 13 / API 33，使用官方 miuix-blur 的 AGSL 渲染。目标 API 35，编译平台 `android-37.0`。
 
 构建工具版本已固定：JDK 21（miuix-nav 内联 API 的字节码要求）、Gradle 9.7.1、AGP 9.4.1、Kotlin 2.4.20、KSP 2.3.12、Hilt 2.60.1、Activity / Activity Compose 1.13.0。Activity 版本提供 miuix 窗口菜单要求的 NavigationEventDispatcher。Android SDK 需安装 `platforms;android-37.0` 和 `build-tools;36.0.0`，子模块还使用 API 34/35。
 
+工具链与 SDK 配置见[构建指南](BUILDING.md)，使用统一脚本执行：
+
 ```sh
-export JAVA_HOME=/path/to/jdk21
-export PATH="$JAVA_HOME/bin:$PATH"
-export ANDROID_HOME=/path/to/Android/Sdk
-bash ./gradlew :app:assembleRelease
-bash ./gradlew :app:assembleDebug :app:testDebugUnitTest :media-support:testDebugUnitTest :app:lintDebug
-bash ./gradlew :app:assembleDebugAndroidTest
+python scripts/prebuild.py
+python scripts/build.py build-apk --build-type release
+python scripts/build.py gradle :app:assembleDebug :app:testDebugUnitTest :media-support:testDebugUnitTest :app:lintDebug
+python scripts/build.py gradle :app:assembleDebugAndroidTest
 # 已连接 Android 13+ 设备时：
-bash ./gradlew :app:connectedDebugAndroidTest
+python scripts/build.py gradle :app:connectedDebugAndroidTest
 ```
 
-压缩 APK：`app/build/outputs/apk/release/c001apk_<版本名>(<版本号>).apk`；调试 APK：`app/build/outputs/apk/debug/app-debug.apk`。配置发布密钥时调试包和发布包使用相同签名，未配置时使用本地调试签名；调试版和发布版统一使用独立包名 `com.example.c001apk.compose`；后续覆盖更新需保留同一签名密钥。发布包启用 R8 和资源压缩。未配置发布密钥时，本地构建使用本机调试密钥；CI Release 强制要求发布密钥。签名配置支持环境变量及 local.properties；公开分发需保管固定发布密钥。
+安装包由脚本收集到 `build/apk/release/` 与 `build/apk/debug/`；直接透传编译任务时，原始输出位于 `build/gradle/app/outputs/apk/`。配置发布密钥时调试包和发布包使用相同签名，未配置时使用本地调试签名；调试版和发布版统一使用独立包名 `com.example.c001apk.compose`；后续覆盖更新需保留同一签名密钥。发布包启用 R8 和资源压缩。未配置发布密钥时，本地构建使用本机调试密钥；CI Release 强制要求发布密钥。签名配置支持环境变量及 local.properties；公开分发需保管固定发布密钥。
 
-版本名使用 `1.3.9`，支持 `-PappVersion=x.y.z`；建议从包含 Git 历史的仓库或 bundle 构建。网络环境需要代理时，Gradle/JVM 应配置对应代理属性。
+版本名取自 `app/build.gradle.kts`，构建脚本支持 `--app-version x.y.z`；需要完整 Git 历史以生成正确的版本号。网络环境需要代理时，Gradle/JVM 应配置对应代理属性。
 
 ## 验证范围
 

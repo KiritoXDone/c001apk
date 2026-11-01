@@ -69,31 +69,29 @@ jobs:
       - name: Validate and build
         run: |
           set -euo pipefail
-          python3 -m unittest discover -s tools -p 'test_*.py'
-          bash ./gradlew :app:testDebugUnitTest :media-support:testDebugUnitTest :mojito:testDebugUnitTest :app:lintDebug --max-workers=2
+          python3 -B -m unittest discover -s tools -p 'test_*.py'
+          python3 scripts/prebuild.py
+          python3 scripts/build.py gradle :app:testDebugUnitTest :media-support:testDebugUnitTest :mojito:testDebugUnitTest :app:lintDebug --max-workers=2
           case "$BUILD_VARIANT" in
-            debug) task=:app:assembleDebug; extra=();;
-            release) task=:app:assembleRelease; extra=(-PrequireReleaseSigning=true);;
-            release-no-r8) task=:app:assembleRelease; extra=(-PrequireReleaseSigning=true -PdisableR8=true);;
+            debug) extra=();;
+            release|release-no-r8) extra=(--require-release-signing);;
             *) exit 1;;
           esac
-          bash ./gradlew "$task" "${extra[@]}" -PappVersion="$APP_VERSION" -PupdateRepository="$GITHUB_REPOSITORY" --max-workers=2
+          python3 scripts/build.py build-apk --build-type "$BUILD_VARIANT" "${extra[@]}" --app-version "$APP_VERSION" --update-repository "$GITHUB_REPOSITORY" --max-workers 2
       - name: Verify APK identity and signature
         run: |
           set -euo pipefail
-          folder=release
-          test "$BUILD_VARIANT" != debug || folder=debug
-          mkdir -p verified-apk
-          for apk in "app/build/outputs/apk/$folder/"*.apk; do
+          mkdir -p build/verified-apk
+          for apk in "build/apk/$BUILD_VARIANT/"*.apk; do
             args=()
             test "$BUILD_VARIANT" = debug || args=(--certificate-sha256 "$EXPECTED_CERTIFICATE")
-            python3 tools/verify_apk.py "$apk" "${args[@]}" > "verified-apk/$(basename "$apk").json"
-            cp "$apk" verified-apk/
+            python3 tools/verify_apk.py "$apk" "${args[@]}" > "build/verified-apk/$(basename "$apk").json"
+            cp "$apk" build/verified-apk/
           done
       - uses: actions/upload-artifact@v7.0.2
         with:
           name: c001apk-${{ inputs.variant }}
-          path: verified-apk/
+          path: build/verified-apk/
           if-no-files-found: error
           overwrite: true
       - name: Remove temporary signing material

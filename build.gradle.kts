@@ -1,4 +1,4 @@
-// Top-level build file where you can add configuration options common to all sub-projects/modules.
+// 统一声明各模块使用的插件版本。
 plugins {
     alias(libs.plugins.android.application) apply false
     alias(libs.plugins.google.dagger.hilt.android) apply false
@@ -11,6 +11,10 @@ plugins {
 }
 
 allprojects {
+    // clean 只清理 Gradle 输出，保留便携工具链与本地验证记录。
+    val outputName = if (project == rootProject) "root" else project.path.removePrefix(":").replace(":", "/")
+    layout.buildDirectory.set(rootProject.layout.projectDirectory.dir("build/gradle/$outputName"))
+
     configurations.configureEach {
         resolutionStrategy.dependencySubstitution {
             substitute(module("me.panpf:sketch-gif"))
