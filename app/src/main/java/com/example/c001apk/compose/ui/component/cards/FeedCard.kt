@@ -85,6 +85,8 @@ fun FeedCard(
     onCopyText: (String?) -> Unit,
     onReport: ((String, ReportType) -> Unit)? = null,
     onLike: ((String, Int, LikeType) -> Unit)? = null,
+    onRemoveFromCollection: (() -> Unit)? = null,
+    removingFromCollection: Boolean = false,
     onDelete: ((String, LikeType, String?) -> Unit)? = null,
     onBlockUser: (String) -> Unit,
     showTradeLinkHint: Boolean = false,
@@ -114,6 +116,8 @@ fun FeedCard(
                 onReport = onReport,
                 isFeedTop = isFeedTop,
                 onDelete = onDelete,
+                onRemoveFromCollection = onRemoveFromCollection,
+                removingFromCollection = removingFromCollection,
                 onBlockUser = onBlockUser,
             )
         }
@@ -541,6 +545,8 @@ fun FeedHeader(
     isFeedContent: Boolean,
     isFeedTop: Boolean,
     onReport: ((String, ReportType) -> Unit)? = null,
+    onRemoveFromCollection: (() -> Unit)? = null,
+    removingFromCollection: Boolean = false,
     onDelete: ((String, LikeType, String?) -> Unit)? = null,
     onBlockUser: ((String) -> Unit)? = null,
 ) {
@@ -689,6 +695,13 @@ fun FeedHeader(
                             dropdownMenuExpanded = false
                             onReport?.let { it(data.id.orEmpty(), ReportType.FEED) }
                         },
+                    )
+                }
+                onRemoveFromCollection?.let { remove ->
+                    DropdownMenuItem(
+                        text = { Text(if (removingFromCollection) "取消收藏中…" else "取消收藏", color = MiuixTheme.colorScheme.error) },
+                        enabled = !removingFromCollection,
+                        onClick = { dropdownMenuExpanded = false; remove() },
                     )
                 }
                 if (data.uid == CookieUtil.uid) {

@@ -11,6 +11,7 @@ import com.example.c001apk.compose.logic.repository.BlackListRepo
 import com.example.c001apk.compose.logic.repository.NetworkRepo
 import com.example.c001apk.compose.logic.state.LoadingState
 import com.example.c001apk.compose.ui.base.BaseViewModel
+import com.example.c001apk.compose.util.CookieUtil
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -29,6 +30,28 @@ class CollectionViewModel @AssistedInject constructor(
     blackListRepo: BlackListRepo,
     contentFilters: ContentFilterStore,
 ) : BaseViewModel(networkRepo, blackListRepo, contentFilters) {
+
+    private val accountRevision = CookieUtil.accountSession.revision
+    internal val removals = CollectionFeedRemovals(
+        scope = viewModelScope,
+        isCurrentOwner = {
+            val owner = (collectionState as? LoadingState.Success)?.response?.uid
+            CookieUtil.isLogin && accountRevision == CookieUtil.accountSession.revision &&
+                !owner.isNullOrBlank() && owner == CookieUtil.uid
+        },
+        remove = { feedId -> networkRepo.saveFeedCollections(feedId, emptySet(), setOf(id)) },
+        onRemoved = { feedId ->
+            (loadingState as? LoadingState.Success)?.let { state ->
+                val remaining = state.response.filterNot { it.entityType == "feed" && it.id == feedId }
+                loadingState = if (remaining.isEmpty()) LoadingState.Empty else state.copy(response = remaining)
+            }
+        },
+        notify = { toastText = it },
+    )
+
+    override fun handleResponse(response: List<HomeFeedResponse.Data>) = removals.filter(response)
+
+    override fun handleLoadMore(response: List<HomeFeedResponse.Data>) = removals.filter(response)
 
     @AssistedFactory
     interface ViewModelFactory {
@@ -49,7 +72,9 @@ class CollectionViewModel @AssistedInject constructor(
 
     var isPull = false
     override fun refresh() {
+        if (removals.pending.isNotEmpty()) return
         if (!isRefreshing && !isLoadMore) {
+            removals.resetForRefresh()
             if (collectionState is LoadingState.Success) {
                 page = 1
                 isEnd = false

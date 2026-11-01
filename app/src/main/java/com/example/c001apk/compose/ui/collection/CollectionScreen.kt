@@ -19,6 +19,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -26,6 +27,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -33,6 +35,8 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.c001apk.compose.constant.Constants.EMPTY_STRING
 import com.example.c001apk.compose.logic.state.LoadingState
+import com.example.c001apk.compose.logic.providable.LocalUserPreferences
+import com.example.c001apk.compose.util.makeToast
 import com.example.c001apk.compose.ui.component.BackButton
 import com.example.c001apk.compose.ui.component.CoilLoader
 import com.example.c001apk.compose.ui.component.FooterCard
@@ -64,6 +68,13 @@ fun CollectionScreen(
             factory.create(id = id)
         }
     val layoutDirection = LocalLayoutDirection.current
+    val prefs = LocalUserPreferences.current
+    val owner = (viewModel.collectionState as? LoadingState.Success)?.response?.uid
+    val canRemove = prefs.isLogin && !owner.isNullOrBlank() && owner == prefs.uid
+    val context = LocalContext.current
+    LaunchedEffect(viewModel.toastText) {
+        viewModel.toastText?.let { context.makeToast(it); viewModel.resetToastText() }
+    }
     val lazyListState = rememberLazyListState()
     val shouldShowTitle by remember {
         derivedStateOf { lazyListState.firstVisibleItemIndex > 0 }
@@ -205,6 +216,8 @@ fun CollectionScreen(
                 if (viewModel.collectionState is LoadingState.Success) {
 
                     ItemCard(
+                        onRemoveFromCollection = if (canRemove) viewModel.removals::removeFeed else null,
+                        removingFromCollection = viewModel.removals.pending,
                         loadingState = viewModel.loadingState,
                         loadMore = viewModel::loadMore,
                         isEnd = viewModel.stopAutomaticLoading,
