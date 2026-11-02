@@ -119,6 +119,12 @@ fun HistoryScreen(
     ) { paddingValues ->
         if (showCloud) {
             CloudHistoryList(paddingValues, onOpenLink)
+        } else if (type == HistoryType.HISTORY.name) {
+            LocalHistoryList(
+                records = dataList, padding = paddingValues,
+                onViewFeed = onViewFeed, onViewUser = onViewUser, onCopyText = onCopyText,
+                onDelete = viewModel::delete, onBlockUser = viewModel::blockUser, onReport = onReport,
+            )
         } else {
             AdaptiveCardColumn(
                 modifier =

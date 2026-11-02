@@ -1,10 +1,14 @@
 package com.example.c001apk.compose.ui.history
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -29,20 +33,29 @@ import top.yukonga.miuix.kmp.squircle.squircleClip
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @Composable
+@OptIn(ExperimentalFoundationApi::class)
 internal fun CloudHistoryRow(
     entry: CloudHistoryEntry,
     onOpenLink: (String, String?) -> Unit,
+    onLongClick: (() -> Unit)? = null,
+    onAvatarClick: (() -> Unit)? = null,
+    endActions: (@Composable RowScope.() -> Unit)? = null,
 ) {
     val title = remember(entry.title, entry.typeName) {
         entry.title.orEmpty().richToString().ifBlank { entry.typeName.orEmpty().ifBlank { "浏览记录" } }
     }
     val summary = remember(entry.description) { entry.description.orEmpty().richToString() }
     BasicComponent(
-        onClick = { onOpenLink(entry.url.orEmpty(), entry.title) },
+        modifier = if (onLongClick != null) Modifier.combinedClickable(
+            onClick = { onOpenLink(entry.url.orEmpty(), entry.title) }, onLongClick = onLongClick,
+        ) else Modifier,
+        onClick = if (onLongClick == null) ({ onOpenLink(entry.url.orEmpty(), entry.title) }) else null,
+        endActions = endActions,
         insideMargin = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
         startAction = {
             Box(
-                Modifier.size(44.dp).squircleClip(8.dp).background(MiuixTheme.colorScheme.secondaryContainer),
+                Modifier.size(44.dp).squircleClip(8.dp).background(MiuixTheme.colorScheme.secondaryContainer)
+                    .then(if (onAvatarClick != null) Modifier.clickable(onClick = onAvatarClick) else Modifier),
                 contentAlignment = Alignment.Center,
             ) {
                 if (entry.logo.isNullOrBlank()) Icon(MiuixIcons.Recent, null, Modifier.size(24.dp),
