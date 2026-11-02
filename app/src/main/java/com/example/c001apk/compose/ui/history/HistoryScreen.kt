@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
@@ -32,7 +31,7 @@ import com.example.c001apk.compose.ui.component.MiuixMoreMenu
 import com.example.c001apk.compose.ui.component.MiuixMenuItem
 import com.example.c001apk.compose.ui.component.AdaptiveCardColumn
 import com.example.c001apk.compose.ui.component.BackButton
-import com.example.c001apk.compose.ui.component.MiuixActionButton as TextButton
+import com.example.c001apk.compose.ui.component.MiuixDialogButton
 import com.example.c001apk.compose.ui.component.MiuixAlertDialog as AlertDialog
 import com.example.c001apk.compose.ui.component.MiuixScaffold as Scaffold
 import com.example.c001apk.compose.ui.component.MiuixTopBar as TopAppBar
@@ -176,17 +175,17 @@ fun HistoryScreen(
             AlertDialog(
                 onDismissRequest = { showClearDialog = false },
                 confirmButton = {
-                    TextButton(
+                    MiuixDialogButton(
                         onClick = {
                             showClearDialog = false
                             viewModel.clearAll()
                         },
                     ) {
-                        Text(text = stringResource(id = android.R.string.ok))
+                        Text("清除")
                     }
                 },
                 dismissButton = {
-                    TextButton(
+                    MiuixDialogButton(
                         onClick = {
                             showClearDialog = false
                         },
@@ -195,7 +194,10 @@ fun HistoryScreen(
                     }
                 },
                 title = { Text(if (type == HistoryType.HISTORY.name) "清除全部本地浏览历史？" else "确定清除全部？") },
-                modifier = Modifier.fillMaxWidth(),
+                text = {
+                    Text(if (type == HistoryType.HISTORY.name) "仅清除本机保存的浏览记录，不影响云端历史。"
+                        else "仅清除本地收藏，不影响账号收藏夹。")
+                },
             )
         }
     }
