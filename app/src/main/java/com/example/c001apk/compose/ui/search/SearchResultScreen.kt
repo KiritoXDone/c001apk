@@ -53,10 +53,12 @@ enum class SearchFeedType {
     VOTE,
 }
 
-enum class SearchOrderType {
-    DATELINE,
-    HOT,
-    REPLY,
+enum class SearchOrderType(val title: String, val sort: String, val isStrict: Boolean = false) {
+    COMPREHENSIVE("综合", "none"),
+    DATELINE("实时", "dateline"),
+    HOT("热度", "hot"),
+    REPLY("回复", "reply"),
+    EXACT("精确", "none", isStrict = true),
 }
 
 private fun searchTypeTitle(type: SearchType): String {
@@ -84,13 +86,7 @@ private fun searchFeedTitle(type: SearchFeedType): String {
     }
 }
 
-private fun searchOrderTitle(type: SearchOrderType): String {
-    return when (type) {
-        SearchOrderType.DATELINE -> "时间"
-        SearchOrderType.HOT -> "热度"
-        SearchOrderType.REPLY -> "回复"
-    }
-}
+private fun searchOrderTitle(type: SearchOrderType): String = type.title
 
 private fun pageTypeTitle(pageType: String?): String? {
     if (pageType.isNullOrEmpty()) return pageType
@@ -125,7 +121,7 @@ fun SearchResultScreen(
     var refreshState by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     var feedType by rememberSaveable { mutableStateOf(SearchFeedType.ALL) }
-    var orderType by rememberSaveable { mutableStateOf(SearchOrderType.DATELINE) }
+    var orderType by rememberSaveable { mutableStateOf(SearchOrderType.COMPREHENSIVE) }
     val filterMenu =
         remember(feedType, orderType) {
             DropdownEntry(

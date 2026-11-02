@@ -57,36 +57,8 @@ fun SearchContentScreen(
         }
 
     if (searchType == SearchType.FEED) {
-        LaunchedEffect(feedType) {
-            if (feedType != viewModel.searchFeedType) {
-                viewModel.searchFeedType = feedType
-                viewModel.feedType =
-                    when (feedType) {
-                        SearchFeedType.ALL -> "all"
-                        SearchFeedType.FEED -> "feed"
-                        SearchFeedType.ARTICLE -> "feedArticle"
-                        SearchFeedType.COOLPIC -> "picture"
-                        SearchFeedType.COMMENT -> "comment"
-                        SearchFeedType.RATING -> "rating"
-                        SearchFeedType.ANSWER -> "answer"
-                        SearchFeedType.QUESTION -> "question"
-                        SearchFeedType.VOTE -> "vote"
-                    }
-                viewModel.refresh()
-            }
-        }
-
-        LaunchedEffect(orderType) {
-            if (orderType != viewModel.sortType) {
-                viewModel.sortType = orderType
-                viewModel.sort =
-                    when (orderType) {
-                        SearchOrderType.DATELINE -> "default"
-                        SearchOrderType.HOT -> "hot"
-                        SearchOrderType.REPLY -> "reply"
-                    }
-                viewModel.refresh()
-            }
+        LaunchedEffect(feedType, orderType) {
+            viewModel.updateFilters(feedType, orderType)
         }
     }
 

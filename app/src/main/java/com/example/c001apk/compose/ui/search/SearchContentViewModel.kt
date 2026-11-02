@@ -34,21 +34,44 @@ class SearchContentViewModel @AssistedInject constructor(
         ): SearchContentViewModel
     }
 
-    var feedType: String = "all"
-    var sort: String = "default" //hot // reply
-
-    var searchFeedType = SearchFeedType.ALL
-    var sortType = SearchOrderType.DATELINE
+    private var feedType = "all"
+    private var searchFeedType = SearchFeedType.ALL
+    private var sortType = SearchOrderType.COMPREHENSIVE
 
     init {
         fetchData()
     }
 
+    fun updateFilters(feed: SearchFeedType, order: SearchOrderType) {
+        if (feed == searchFeedType && order == sortType) return
+        searchFeedType = feed
+        sortType = order
+        feedType = when (feed) {
+            SearchFeedType.ALL -> "all"
+            SearchFeedType.FEED -> "feed"
+            SearchFeedType.ARTICLE -> "feedArticle"
+            SearchFeedType.COOLPIC -> "picture"
+            SearchFeedType.COMMENT -> "comment"
+            SearchFeedType.RATING -> "rating"
+            SearchFeedType.ANSWER -> "answer"
+            SearchFeedType.QUESTION -> "question"
+            SearchFeedType.VOTE -> "vote"
+        }
+        // A filter change must also replace an in-flight refresh, not only pagination.
+        cancelFetch()
+        isRefreshing = false
+        refresh()
+    }
+
     override suspend fun customFetchData() =
-        networkRepo.getSearch(
-            type, feedType, sort, keyword,
-            pageType, pageParam, page, lastItem
-        )
+        if (type == "feed") {
+            networkRepo.getFeedSearch(
+                keyword, feedType, sortType.sort, sortType.isStrict, sortType.title,
+                pageType, pageParam, page, lastItem,
+            )
+        } else {
+            networkRepo.getSearch(type, feedType, "default", keyword, pageType, pageParam, page, lastItem)
+        }
 
     override fun handleLoadMore(response: List<HomeFeedResponse.Data>): List<HomeFeedResponse.Data> {
         return response.distinctBy { it.entityId }
