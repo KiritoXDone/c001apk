@@ -31,6 +31,13 @@ import retrofit2.http.Url
 
 /** Created by bggRGjQaUbCoE on 2024/6/3 */
 interface ApiService {
+    @GET("/v6/user/hitHistoryList")
+    suspend fun getCloudHistory(
+        @Query("page") page: Int,
+        @Query("firstItem") firstItem: String?,
+        @Query("lastItem") lastItem: String?,
+    ): com.example.c001apk.compose.logic.model.CloudHistoryResponse
+
 
     @GET("/v6/main/indexV8")
     fun getHomeFeed(

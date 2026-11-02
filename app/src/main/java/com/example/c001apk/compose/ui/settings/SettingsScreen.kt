@@ -471,7 +471,7 @@ fun SettingsScreen(
                                     SwitchListItem(
                                         value = prefs.recordHistory,
                                         leadingImageVector = MiuixIcons.Recent,
-                                        headlineText = "记录浏览历史",
+                                        headlineText = "记录本地浏览历史",
                                     ) {
                                         viewModel.setRecordHistory(it)
                                     }

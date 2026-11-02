@@ -20,6 +20,7 @@ fun GroupedListItem(
     first: Boolean,
     last: Boolean,
     modifier: Modifier = Modifier,
+    showDivider: Boolean = true,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val top = if (first) CardDefaults.CornerRadius else 0.dp
@@ -33,6 +34,6 @@ fun GroupedListItem(
         CompositionLocalProvider(LocalContentColor provides MiuixTheme.colorScheme.onSurfaceContainer) {
             content()
         }
-        if (!last) HorizontalDivider(Modifier.padding(start = 72.dp, end = 16.dp))
+        if (!last && showDivider) HorizontalDivider(Modifier.padding(start = 72.dp, end = 16.dp))
     }
 }
