@@ -3,8 +3,10 @@ package com.example.c001apk.compose.util
 import java.io.File
 import java.io.IOException
 import java.io.InputStream
+import okio.FileSystem
+import okio.Path.Companion.toOkioPath
 
-/** Publishes a complete download without exposing another request's unfinished file. */
+// 仅发布完整下载，避免暴露其他请求尚未写完的文件。
 internal fun writeImageCache(
     destination: File,
     input: InputStream,
@@ -14,8 +16,7 @@ internal fun writeImageCache(
 ): File {
     val directory = checkNotNull(destination.parentFile)
     directory.mkdirs()
-    // A view can request the same original both when its transition finishes and when
-    // the thumbnail arrives. Each writer must own its file until it closes and publishes it.
+    // 并发下载各自持有临时文件，关闭后才发布。
     val temporary = File.createTempFile("image-", ".tmp", directory)
     try {
         var received = 0L
@@ -36,9 +37,8 @@ internal fun writeImageCache(
             throw IOException("incomplete image download")
         }
         if (isCanceled()) throw IOException("image request canceled")
-        // Same-directory rename leaves readers with either the previous complete image
-        // or this complete image, even when two downloads finish at the same time.
-        if (!temporary.renameTo(destination)) throw IOException("image cache rename failed")
+        // 同目录原子替换，读取方始终只能看到替换前或替换后的完整图片。
+        FileSystem.SYSTEM.atomicMove(temporary.toOkioPath(), destination.toOkioPath())
         return destination
     } finally {
         temporary.delete()

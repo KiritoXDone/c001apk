@@ -2,14 +2,14 @@
 
 ## 环境
 
-- JDK 21。
+- Python 3.12 及以上；便携 JDK 21 由预构建脚本准备，也可通过 `JAVA_HOME` 指定 JDK 21。
 - Android SDK：`platforms;android-34`、`platforms;android-35`、`platforms;android-37.0` 和 `build-tools;36.0.0`。
 - 仓库自带的 Gradle Wrapper，依赖版本见 [版本目录](../gradle/libs.versions.toml)。
 
-配置 `JAVA_HOME`，并通过 `ANDROID_HOME` 或根目录 `local.properties` 中的 `sdk.dir` 指定 SDK 路径。例如：
+通过 `ANDROID_HOME` 或根目录 `local.properties` 中的 `sdk.dir` 指定 SDK 路径。例如将以下占位符替换为本机实际路径，配置文件不入库：
 
 ```properties
-sdk.dir=/path/to/Android/sdk
+sdk.dir=<本机 Android SDK 路径>
 ```
 
 安装 SDK 组件：
@@ -23,23 +23,34 @@ sdkmanager 'platforms;android-34' 'platforms;android-35' \
 
 ## 本地构建
 
-在仓库根目录执行，Windows 使用 `gradlew.bat` 替代 `bash ./gradlew`：
+各系统统一使用 Python 脚本。脚本从自身位置定位仓库，不依赖当前工作目录；以下命令在仓库根目录执行：
 
 ```sh
-bash ./gradlew :app:assembleDebug
-bash ./gradlew :app:assembleRelease
+python scripts/prebuild.py
+python scripts/build.py doctor
+python scripts/build.py build-apk --build-type debug
+python scripts/build.py build-apk --build-type release
 ```
+
+工具链优先使用 `build/jdk/` 中的 JDK 21，其次使用 `JAVA_HOME` 中的 JDK 21；均不可用时自动下载 Temurin 并校验 SHA-256。可执行 `python scripts/prebuild.py --portable` 主动准备便携 JDK。下载缓存保存在 `build/tmp/`，不会覆盖已有工具链，也不修改系统 Java 配置。
 
 产物路径：
 
 | 类型 | APK 路径 |
 | --- | --- |
-| Debug | `app/build/outputs/apk/debug/app-debug.apk` |
-| Release | `app/build/outputs/apk/release/c001apk_<版本名>(<版本号>).apk` |
+| 调试安装包 | `build/apk/debug/c001apk-debug-arm64-v8a-<版本名>.<版本号>.apk` |
+| 发布安装包 | `build/apk/release/c001apk-release-arm64-v8a-<版本名>.<版本号>.apk` |
+| 关闭优化的发布包 | `build/apk/release-no-r8/` |
+| 模块中间产物与报告 | `build/gradle/<模块>/` |
+| 项目 Gradle 缓存 | `build/cache/` |
 
-Debug 不启用 R8 和资源裁剪；Release 默认开启。排查优化相关问题时，可对 Release 传入 `-PdisableR8=true`。
+脚本从 Gradle 的 `output-metadata.json` 获取实际版本和产物名，支持版本参数覆盖。每个构建类型独立保存；同版本、同类型重新构建会更新对应安装包，旧版本保留。原始 APK 位于 `build/gradle/app/outputs/apk/<类型>/`。Room 生成的数据库结构位于 `build/gradle/app/schemas/`。
 
-版本名默认取自 [app/build.gradle.kts](../app/build.gradle.kts)，可通过 `-PappVersion=x.y.z` 指定。应用包名为 `com.example.c001apk.compose`，最低 Android 版本为 7.0（API 24），仅包含 ARM64 原生库。
+需要其他任务时使用 `python scripts/build.py gradle <任务及参数>`。`clean` 只清理模块输出，不清理便携工具链和本地记录；不要删除整个 `build/` 来重新编译。
+
+调试构建不启用 R8 和资源裁剪，发布构建默认开启。排查优化相关问题时使用 `python scripts/build.py build-apk --build-type release-no-r8`。
+
+版本名默认取自 [app/build.gradle.kts](../app/build.gradle.kts)，可通过 `--app-version x.y.z` 指定；并行线程数可用 `--max-workers 2` 限制。应用包名为 `com.example.c001apk.compose`，最低 Android 版本为 7.0（API 24），仅包含 ARM64 原生库。
 
 ## 签名
 
@@ -57,7 +68,7 @@ C001APK_KEY_PASSWORD
 配置后执行：
 
 ```sh
-bash ./gradlew :app:assembleRelease -PrequireReleaseSigning=true
+python scripts/build.py build-apk --build-type release --require-release-signing
 ```
 
 `requireReleaseSigning` 会在未配置发布密钥时终止构建。密钥文件和签名凭据不要提交到仓库。
@@ -65,20 +76,24 @@ bash ./gradlew :app:assembleRelease -PrequireReleaseSigning=true
 ## 测试与校验
 
 ```sh
-bash ./gradlew :app:testDebugUnitTest :media-support:testDebugUnitTest \
+python scripts/build.py gradle :app:testDebugUnitTest :media-support:testDebugUnitTest \
   :mojito:testDebugUnitTest :app:lintDebug
-python3 -m unittest discover -s tools -p 'test_*.py'
+python -B -m unittest discover -s tools -p 'test_*.py'
 ```
+
+本地单元测试使用同版本的 DataStore JVM 核心，避免安卓桩的版本号触发不支持覆盖文件的旧版重命名分支；应用与设备测试继续使用安卓实现。图片缓存通过 Okio 执行同目录原子替换，兼容最低 API 24，磁盘读写测试不按操作系统跳过。各模块报告位于 `build/gradle/<模块>/reports/`。
 
 校验正式 APK，替换为实际文件路径及预期签名证书的 SHA-256 摘要：
 
 ```sh
-python3 tools/verify_apk.py /path/to/app.apk \
+python tools/verify_apk.py build/apk/release/<实际安装包文件名>.apk \
   --sdk "$ANDROID_HOME" \
   --certificate-sha256 'EXPECTED_CERTIFICATE_SHA256'
 ```
 
 工具检查包名、最低 Android 版本、ABI、必需资源、原生库压缩、签名和 ZIP 对齐，并输出 JSON 报告。
+
+ZIP 的 16 千字节对齐不等于原生库的内存页兼容性。仍需在目标设备实际启动；系统提示兼容模式时，应记录相关库名，不能据此声称已经完整支持 16 千字节内存页。
 
 设备测试及需要显式启用的网络测试见 [miuix 改造说明](MIUIX_MIGRATION.md)。已有测试结果保存在[验证记录](VERIFICATION.md)中。
 
@@ -99,7 +114,7 @@ python3 tools/verify_apk.py /path/to/app.apk \
 ## 发布版本
 
 1. 更新 `app/build.gradle.kts` 中的默认版本、`.github/workflows/android.yml` 中的版本默认值，以及 `CHANGELOG.md` 对应版本的更新记录。
-2. 提交并推送代码，为该提交创建 `vMAJOR.MINOR.PATCH` 格式的标签并推送。
+2. 提交代码；因提交会增加 `versionCode`，最终发布包必须从该提交重新构建。说明待推送内容并取得确认后，推送代码及对应的 `vMAJOR.MINOR.PATCH` 标签。
 3. 等待 [Publish Release 工作流](../.github/workflows/release.yml) 完成。
 
 工作流从标签读取版本号，检出该标签的源码，执行单元测试、Lint、Release 构建和 APK 签名校验。通过后使用对应更新记录创建 GitHub Release，一并发布 APK、JSON 校验报告和 `SHA256SUMS`。
@@ -113,7 +128,7 @@ python3 tools/verify_apk.py /path/to/app.apk \
 应用内更新入口位于“设置 → 关于 → 应用更新”。更新仓库在构建时指定，应用内不提供自定义来源：
 
 ```sh
-bash ./gradlew :app:assembleRelease -PupdateRepository=owner/repo
+python scripts/build.py build-apk --build-type release --update-repository owner/repo
 ```
 
 本地构建默认读取 `KiritoXDone/c001apk`，CI 默认使用当前 GitHub 仓库。应用检查正式 Release，支持自动检查、手动检查和跳过版本，APK 下载由浏览器处理。

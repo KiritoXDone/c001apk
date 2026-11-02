@@ -24,7 +24,12 @@ def verify(apk, sdk, expected_certificate=None):
     if environment.get("JAVA_HOME"):
         environment["PATH"] = str(Path(environment["JAVA_HOME"]) / "bin") + os.pathsep + environment.get("PATH", "")
     def run(name, *args):
-        return subprocess.check_output([str(build_tools / name), *map(str, args)], text=True, stderr=subprocess.STDOUT, env=environment)
+        # Windows 的签名启动器是批处理，直接执行其 JAR 避免路径二次转义。
+        if os.name == "nt" and name == "apksigner":
+            command = ["java", "-jar", str(build_tools / "lib/apksigner.jar")]
+        else:
+            command = [str(build_tools / (name + ".exe" if os.name == "nt" else name))]
+        return subprocess.check_output([*command, *map(str, args)], text=True, stderr=subprocess.STDOUT, env=environment)
     signature = run("apksigner", "verify", "--verbose", "--print-certs", apk)
     digest = certificate_digest(signature)
     if expected_certificate and digest != expected_certificate.replace(":", "").strip().lower():

@@ -143,7 +143,7 @@ android {
 ksp {
     arg("room.incremental", "true")
     arg("room.expandProjection", "true")
-    arg("room.schemaLocation", "$projectDir/schemas")
+    arg("room.schemaLocation", layout.buildDirectory.dir("schemas").get().asFile.path)
 }
 
 protobuf {
@@ -159,6 +159,16 @@ protobuf {
                 }
             }
         }
+    }
+}
+
+// 本地单元测试使用 JVM 文件操作，避免安卓桩的版本号触发旧版重命名分支。
+configurations.matching {
+    it.name.endsWith("UnitTestCompileClasspath") || it.name.endsWith("UnitTestRuntimeClasspath")
+}.configureEach {
+    resolutionStrategy.dependencySubstitution {
+        substitute(module("androidx.datastore:datastore-core"))
+            .using(module("androidx.datastore:datastore-core-jvm:${libs.versions.androidxDataStore.get()}"))
     }
 }
 
@@ -208,6 +218,7 @@ dependencies {
     implementation(libs.google.protobuf.kotlin.lite)
 
     implementation(libs.squareup.okhttp)
+    implementation(libs.squareup.okio)
     implementation(libs.squareup.retrofit)
     implementation(libs.squareup.retrofit.converter.gson)
 

@@ -62,7 +62,7 @@ jobs:
       - uses: actions/download-artifact@v8.0.2
         with:
           name: c001apk-release
-          path: release-assets
+          path: build/release-assets
       - name: Prepare release notes and checksums
         env:
           RELEASE_VERSION: ${{ needs.version.outputs.version }}
@@ -79,8 +79,8 @@ jobs:
           section = re.search(r'^## ' + re.escape(version) + r'(?:\s[^\n]*)?\n(.*?)(?=^## |\Z)', changelog, re.M | re.S)
           notes = section[1].strip() if section else f'c001apk {version}'
           notes += '\n\nAndroid 7+ · ARM64；模糊效果需要 Android 13+。\n\n包名：`com.example.c001apk.compose`。\n'
-          Path('release-notes.md').write_text(notes)
-          apks = sorted(Path('release-assets').glob('*.apk'))
+          Path('build/release-notes.md').write_text(notes)
+          apks = sorted(Path('build/release-assets').glob('*.apk'))
           if len(apks) != 1:
               raise SystemExit('Expected exactly one verified release APK')
           apk = apks[0]
@@ -98,7 +98,7 @@ jobs:
           public_report.write_text(json.dumps(report, indent=2) + '\n')
           if report_path != public_report:
               report_path.unlink()
-          Path('release-assets/SHA256SUMS').write_text(digest + '  ' + public_apk.name + '\n')
+          Path('build/release-assets/SHA256SUMS').write_text(digest + '  ' + public_apk.name + '\n')
           PY
       - name: Publish verified APK
         env:
@@ -106,10 +106,10 @@ jobs:
           RELEASE_TAG: ${{ needs.version.outputs.tag }}
         run: |
           set -euo pipefail
-          assets=(release-assets/*.apk release-assets/*.json release-assets/SHA256SUMS)
+          assets=(build/release-assets/*.apk build/release-assets/*.json build/release-assets/SHA256SUMS)
           if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
             gh release upload "$RELEASE_TAG" "${assets[@]}" --clobber
-            gh release edit "$RELEASE_TAG" --title "$RELEASE_TAG" --notes-file release-notes.md --draft=false
+            gh release edit "$RELEASE_TAG" --title "$RELEASE_TAG" --notes-file build/release-notes.md --draft=false
           else
-            gh release create "$RELEASE_TAG" "${assets[@]}" --verify-tag --title "$RELEASE_TAG" --notes-file release-notes.md
+            gh release create "$RELEASE_TAG" "${assets[@]}" --verify-tag --title "$RELEASE_TAG" --notes-file build/release-notes.md
           fi
