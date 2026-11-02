@@ -108,7 +108,7 @@ python -B -m unittest discover -s tools -p test_*.py
 
 `CLAUDE.md` 只保留一行 `@AGENTS.md`。规范正文只维护本文件；`.codex/skills/` 与 `.claude/skills/` 的同名技能保持内容一致，路径均使用仓库相对写法。
 
-- 创建或修改提交前阅读 [提交技能](.codex/skills/commit/SKILL.md)。默认当前任务一次本地提交，只暂存明确路径，不夹带无关改动。
+- 创建或修改提交前阅读 [提交技能](.codex/skills/commit/SKILL.md)。严格按独立逻辑改动拆分提交，禁止杂糅；同一任务、文件或推送不代表应合为一笔。相关实现及必要依赖、测试和文档一同提交，同文件的独立改动按块暂存。
 - 更新应用版本时阅读 [版本技能](.codex/skills/version-bump/SKILL.md)。普通工程规范和脚本调整不自行更新版本。
 - 创建、说明或审查合并请求前阅读 [合并请求技能](.codex/skills/pr/SKILL.md)。当前默认目标分支为 `main`，没有参考项目的双通道发布流程。
 - 推送前说明改动、远端、目标分支及所有待推送提交，等待用户明确确认；已有覆盖本次推送的确认时不重复询问。
