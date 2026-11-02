@@ -81,7 +81,7 @@ python scripts/build.py gradle :app:testDebugUnitTest :media-support:testDebugUn
 python -B -m unittest discover -s tools -p 'test_*.py'
 ```
 
-部分磁盘读写测试依赖覆盖式文件重命名。在 Windows 上，现有 DataStore 与图片缓存实现可能因此失败；应查看具体测试报告，并在 Linux 环境复核，不能跳过用例后声称全部通过。各模块报告位于 `build/gradle/<模块>/reports/`。
+本地单元测试使用同版本的 DataStore JVM 核心，避免安卓桩的版本号触发不支持覆盖文件的旧版重命名分支；应用与设备测试继续使用安卓实现。图片缓存通过 Okio 执行同目录原子替换，兼容最低 API 24，磁盘读写测试不按操作系统跳过。各模块报告位于 `build/gradle/<模块>/reports/`。
 
 校验正式 APK，替换为实际文件路径及预期签名证书的 SHA-256 摘要：
 
