@@ -66,7 +66,7 @@ class SearchContentViewModel @AssistedInject constructor(
     override suspend fun customFetchData() =
         if (type == "feed") {
             networkRepo.getFeedSearch(
-                keyword, feedType, sortType.sort, sortType.isStrict, sortType.title,
+                keyword, feedType, sortType.sort, sortType.isStrict,
                 pageType, pageParam, page, lastItem,
             )
         } else {

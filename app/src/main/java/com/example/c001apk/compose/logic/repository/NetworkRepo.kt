@@ -11,7 +11,6 @@ import com.example.c001apk.compose.logic.model.HomeFeedResponse
 import com.example.c001apk.compose.logic.model.ProductConfigData
 import com.example.c001apk.compose.logic.model.configSections
 import com.example.c001apk.compose.logic.network.ApiService
-import com.example.c001apk.compose.logic.network.feedSearchUrl
 import com.example.c001apk.compose.logic.network.feedSearchScope
 import com.example.c001apk.compose.logic.state.LoadingState
 import com.example.c001apk.compose.util.CookieUtil
@@ -149,24 +148,16 @@ constructor(
         feedType: String,
         sort: String,
         isStrict: Boolean,
-        title: String,
         pageType: String?,
         pageParam: String?,
         page: Int,
         lastItem: String?,
     ) = flowList {
         val scope = feedSearchScope(pageType, pageParam)
-        if (scope != null) {
-            apiService.getSearch(
-                "feed", feedType, sort, keyword, scope.type, scope.parameter, page, lastItem,
-                isStrict = if (isStrict) 1 else 0,
-            ).await()
-        } else {
-            apiService.getDataList(
-                feedSearchUrl(keyword, sort, isStrict, feedType),
-                title, null, lastItem, page,
-            ).await()
-        }
+        apiService.getSearch(
+            "feed", feedType, sort, keyword, scope?.type, scope?.parameter, page, lastItem,
+            isStrict = if (isStrict) 1 else 0,
+        ).await()
     }
 
     suspend fun getReply2Reply(id: String, page: Int, lastItem: String?) = flowList {
