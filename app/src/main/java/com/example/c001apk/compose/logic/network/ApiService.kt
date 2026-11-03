@@ -81,6 +81,7 @@ interface ApiService {
         @Query("page") page: Int,
         @Query("lastItem") lastItem: String?,
         @Query("showAnonymous") showAnonymous: Int = -1,
+        @Query("isStrict") isStrict: Int? = null,
     ): Call<HomeFeedResponse>
 
     @GET(

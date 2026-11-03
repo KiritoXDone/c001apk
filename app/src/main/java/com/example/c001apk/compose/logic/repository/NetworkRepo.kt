@@ -12,6 +12,7 @@ import com.example.c001apk.compose.logic.model.ProductConfigData
 import com.example.c001apk.compose.logic.model.configSections
 import com.example.c001apk.compose.logic.network.ApiService
 import com.example.c001apk.compose.logic.network.feedSearchUrl
+import com.example.c001apk.compose.logic.network.feedSearchScope
 import com.example.c001apk.compose.logic.state.LoadingState
 import com.example.c001apk.compose.util.CookieUtil
 import com.google.gson.Gson
@@ -154,10 +155,18 @@ constructor(
         page: Int,
         lastItem: String?,
     ) = flowList {
-        apiService.getDataList(
-            feedSearchUrl(keyword, sort, isStrict, feedType, pageType, pageParam),
-            title, null, lastItem, page,
-        ).await()
+        val scope = feedSearchScope(pageType, pageParam)
+        if (scope != null) {
+            apiService.getSearch(
+                "feed", feedType, sort, keyword, scope.type, scope.parameter, page, lastItem,
+                isStrict = if (isStrict) 1 else 0,
+            ).await()
+        } else {
+            apiService.getDataList(
+                feedSearchUrl(keyword, sort, isStrict, feedType),
+                title, null, lastItem, page,
+            ).await()
+        }
     }
 
     suspend fun getReply2Reply(id: String, page: Int, lastItem: String?) = flowList {
