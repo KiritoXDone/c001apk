@@ -92,7 +92,7 @@ fun FeedCard(
     showTradeLinkHint: Boolean = false,
     onDismissTradeLinkHint: () -> Unit = {},
 ) {
-    val horizontal = 16.dp
+    val horizontal = 12.dp
     Card(
         modifier =
             modifier
