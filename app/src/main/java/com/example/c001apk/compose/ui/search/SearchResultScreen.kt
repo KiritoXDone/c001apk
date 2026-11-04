@@ -97,6 +97,7 @@ private fun pageTypeTitle(pageType: String?): String? {
 @Composable
 fun SearchResultScreen(
     onBackClick: () -> Unit,
+    onQueryChange: (String) -> Unit,
     keyword: String,
     title: String?,
     pageType: String?,
@@ -159,8 +160,10 @@ fun SearchResultScreen(
             Column {
                 SearchResultHeader(
                     query = query,
-                    onQueryChange = { query = it },
+                    onQueryChange = { query = it; onQueryChange(it) },
                     onSearch = { value ->
+                        query = value
+                        onQueryChange(value)
                         refreshState = value == submittedKeyword
                         submittedKeyword = value
                         searchViewModel.saveHistory(value)

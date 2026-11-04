@@ -31,10 +31,15 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme
 /** Created by bggRGjQaUbCoE on 2024/6/6 */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun SearchScreen(onBackClick: () -> Unit, title: String?, onSearch: (String) -> Unit) {
+fun SearchScreen(
+    onBackClick: () -> Unit,
+    title: String?,
+    query: String,
+    onQueryChange: (String) -> Unit,
+    onSearch: (String) -> Unit,
+) {
     val viewModel = hiltViewModel<SearchViewModel>(key = title)
     val searchHistory by viewModel.searchHistory.collectAsStateWithLifecycle(initialValue = emptyList())
-    var query by rememberSaveable(title) { mutableStateOf("") }
     var searchExpanded by rememberSaveable(title) { mutableStateOf(false) }
     var showClearDialog by remember { mutableStateOf(false) }
     val interactionSource = remember { MutableInteractionSource() }
@@ -48,11 +53,12 @@ fun SearchScreen(onBackClick: () -> Unit, title: String?, onSearch: (String) -> 
         keyboardController?.hide()
     }
     fun cancelSearch() {
-        query = ""
+        onQueryChange("")
         dismissInput()
     }
     fun onCheckSearch(keyword: String = query) {
         if (keyword.isNotBlank()) {
+            onQueryChange(keyword)
             dismissInput()
             viewModel.saveHistory(keyword)
             onSearch(keyword)
@@ -70,7 +76,7 @@ fun SearchScreen(onBackClick: () -> Unit, title: String?, onSearch: (String) -> 
                 ) {
                     InputField(
                         query = query,
-                        onQueryChange = { query = it },
+                        onQueryChange = onQueryChange,
                         onSearch = { onCheckSearch(it) },
                         expanded = searchExpanded,
                         onExpandedChange = { searchExpanded = it },

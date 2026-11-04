@@ -144,6 +144,7 @@ fun MainNavigation(
                 ),
             ) { entry ->
                 AppDestinationContent(
+                    entryId = entry.id,
                     route = entry.destination,
                     navigator = navigator,
                     mainPageState = mainPageState,

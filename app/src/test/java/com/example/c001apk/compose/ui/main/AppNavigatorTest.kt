@@ -96,4 +96,50 @@ class AppNavigatorTest {
         repeat(8) { assertTrue(nav.popBackStack()) }
         assertEquals(root, nav.currentEntry)
     }
+
+    @Test
+    fun editedResultQueryReturnsToItsSearchEntryWithoutReplacingVisitIdentity() {
+        val nav = navigator()
+        nav.navigateToSearch("THANOX", "tag", "THANOX")
+        val searchId = nav.currentEntry.id
+        nav.updateSearchInput(searchId, "后台")
+        nav.navigateToSearchResult("后台", "THANOX", "tag", "THANOX")
+        val resultId = nav.currentEntry.id
+        nav.updateSearchInput(resultId, "后台运行 C++ & 100%")
+        assertEquals(resultId, nav.currentEntry.id)
+        nav.popBackStack()
+        assertEquals(searchId, nav.currentEntry.id)
+        assertEquals("后台运行 C++ & 100%", (nav.currentDestination as AppDestination.Search).query)
+        val restored = Json.decodeFromString<AppNavEntry>(Json.encodeToString(nav.currentEntry))
+        assertEquals(nav.currentEntry, restored)
+    }
+
+    @Test
+    fun searchDraftClearingAndHistorySelectionUseTheSameState() {
+        val nav = navigator()
+        nav.navigateToSearch(null, null, null)
+        val searchId = nav.currentEntry.id
+        nav.updateSearchInput(searchId, "历史关键词")
+        nav.navigateToSearchResult("历史关键词", null, null, null)
+        nav.updateSearchInput(nav.currentEntry.id, "")
+        nav.popBackStack()
+        assertEquals("", (nav.currentDestination as AppDestination.Search).query)
+        nav.updateSearchInput(searchId, "下一次搜索")
+        assertEquals("下一次搜索", (nav.currentDestination as AppDestination.Search).query)
+    }
+
+    @Test
+    fun resultUpdatesDoNotLeakAcrossScopesOrAfterNavigationReset() {
+        val nav = navigator()
+        nav.navigateToSearch("话题 A", "tag", "A")
+        nav.updateSearchInput(nav.currentEntry.id, "原关键词")
+        nav.navigateToSearchResult("其他搜索", "话题 B", "tag", "B")
+        val resultId = nav.currentEntry.id
+        nav.updateSearchInput(resultId, "不能覆盖 A")
+        nav.popBackStack()
+        assertEquals("原关键词", (nav.currentDestination as AppDestination.Search).query)
+        nav.reset()
+        nav.updateSearchInput(resultId, "已过期的回调")
+        assertEquals(AppDestination.Main, nav.currentDestination)
+    }
 }

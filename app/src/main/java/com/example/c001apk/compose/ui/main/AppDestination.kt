@@ -33,6 +33,7 @@ sealed interface AppDestination {
     @Serializable data class User(val uid: String) : AppDestination
     @Serializable data class Search(
         val title: String?, val pageType: String?, val pageParam: String?,
+        val query: String = "",
     ) : AppDestination
     @Serializable data class SearchResult(
         val keyword: String, val title: String?, val pageType: String?, val pageParam: String?,

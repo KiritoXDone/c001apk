@@ -44,6 +44,7 @@ import kotlin.math.min
 @Composable
 internal fun AppDestinationContent(
     route: AppDestination,
+    entryId: String,
     navigator: AppNavigator,
     mainPageState: MainPageState,
     onMainPageSelected: (Int) -> Unit,
@@ -228,6 +229,8 @@ internal fun AppDestinationContent(
             val pageParam = route.pageParam
             TopBarScrollPage(active = false) {
                 SearchScreen(
+                    query = route.query,
+                    onQueryChange = { navigator.updateSearchInput(entryId, it) },
                     onBackClick = navigator::popBackStack,
                     title = title,
                     onSearch = { keyword ->
@@ -245,6 +248,7 @@ internal fun AppDestinationContent(
             val pageParam = route.pageParam
             TopBarScrollPage(active = false) {
                 SearchResultScreen(
+                    onQueryChange = { navigator.updateSearchInput(entryId, it) },
                     onBackClick = navigator::popBackStack,
                     keyword = keyword,
                     title = title,
