@@ -37,6 +37,10 @@ animations remain owned by Android.
 
 Native in-content right swipes are enabled on ordinary routes when this switch is on, with the library's child-first gesture arbitration. The IME disables in-content dismissal while editing. WebView retains its internal-history BackHandler and disables in-content page dismissal; system back continues to reach the page handler before the navigator. Dialogs continue using their existing Miuix window back handling.
 
+“更多评论”使用 `MiuixNavigationSheet` 的原生子导航栈，弹层为 `NavTransitions.Modal` 路由，拖拽关闭使用 `NavSwipeDirection.TopToBottom`，不再创建 `WindowBottomSheet`。回复数据仍由所属详情页的 ViewModel 持有，原生退出动画完成后才清理回复状态。
+
+系统预测返回遵循设置：关闭时使用仅处理完成事件的返回处理器，取消手势保留弹层；普通向下拖拽仍由 miuix-nav 处理。`NavigationGestureGate` 仅协调父子导航优先级，在弹层存在和退出期间暂停底层页面侧滑，退出后恢复；弹层内容自己的返回处理器保持优先。其他尚未迁移的组件窗口仍遵循其现有行为。
+
 ## Build and verification
 
 JDK 21 and app JVM target 21 are required by Miuix's public inline navigation APIs. Lifecycle dependencies align with the library's 2.11.0 requirement. The serialization compiler plugin uses the project's Kotlin version.

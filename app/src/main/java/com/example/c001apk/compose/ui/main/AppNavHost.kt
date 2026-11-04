@@ -4,6 +4,8 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.platform.LocalWindowInfo
@@ -38,10 +40,12 @@ internal fun AppNavHost(
     content: @Composable (AppNavEntry) -> Unit,
 ) {
     val predictiveBack = LocalUserPreferences.current.predictiveBack
+    val childGestures = remember(navigator) { NavigationGestureGate() }
     val currentOnBack by rememberUpdatedState(onBack)
     // WebView owns its internal history; its BackHandler still receives system back first.
     val swipeDismiss = if (
         active && gesturesEnabled && predictiveBack && !WindowInsets.isImeVisible &&
+        !childGestures.isBlocked(navigator.currentEntry.id) &&
         navigator.currentDestination !is AppDestination.WebView
     ) NavSwipeDirection.LeftToRight else NavSwipeDirection.None
     val screenCornerRadius = rememberNavSystemCornerRadius()
@@ -77,7 +81,13 @@ internal fun AppNavHost(
                     isBackEnabled = !LocalUserPreferences.current.predictiveBack && navigator.canGoBack,
                     onBackCompleted = { currentOnBack() },
                 )
-                content(entry)
+                CompositionLocalProvider(
+                    LocalParentNavigationGesture provides remember(childGestures, entry.id) {
+                        ParentNavigationGesture(childGestures, entry.id)
+                    },
+                ) {
+                    content(entry)
+                }
             }
         }
     }

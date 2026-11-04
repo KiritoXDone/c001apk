@@ -42,7 +42,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -60,7 +59,6 @@ import com.example.c001apk.compose.ui.component.FooterCard
 import com.example.c001apk.compose.ui.component.ItemCard
 import com.example.c001apk.compose.ui.component.LocalMarkdownRaw
 import com.example.c001apk.compose.ui.component.MiuixAlertDialog
-import com.example.c001apk.compose.ui.component.MiuixBottomSheet as ModalBottomSheet
 import com.example.c001apk.compose.ui.component.MiuixDialogButton
 import com.example.c001apk.compose.ui.component.MiuixMenu as DropdownMenu
 import com.example.c001apk.compose.ui.component.MiuixMenuItem as DropdownMenuItem
@@ -77,9 +75,6 @@ import com.example.c001apk.compose.util.CookieUtil
 import com.example.c001apk.compose.util.CookieUtil.isLogin
 import com.example.c001apk.compose.util.ReportType
 import com.example.c001apk.compose.util.ShareType
-import com.example.c001apk.compose.util.Utils.richToString
-import com.example.c001apk.compose.util.copyText
-import com.example.c001apk.compose.util.getAllLinkAndText
 import com.example.c001apk.compose.util.isScrollingUp
 import com.example.c001apk.compose.util.makeToast
 import kotlinx.coroutines.launch
@@ -639,82 +634,16 @@ fun FeedScreen(
                 }
             }
 
-            fun resetBottomSheet() {
-                openBottomSheet = false
-                viewModel.resetReplyState()
-            }
-
             if (openBottomSheet) {
-                val topInsetPx = WindowInsets.systemBars.getTop(LocalDensity.current)
-                val topInset = with(LocalDensity.current) { topInsetPx.toDp() }
-
-                ModalBottomSheet(
-                    onDismissRequest = {
-                        resetBottomSheet()
-                    },
-                    modifier = Modifier.padding(top = topInset),
-                ) {
-                    ReplyThreadContent(
-                        state = viewModel.replyLoadingState,
-                        rootId = viewModel.replyRootId,
-                        threadKey = viewModel.replyId,
-                        footerState = viewModel.replyFooterState,
-                        isEnd = viewModel.stopReplyAutomaticLoading,
-                        onLoadMore = viewModel::loadMoreReply,
-                        onDismiss = ::resetBottomSheet,
-                    ) { reply, index ->
-                        FeedListEntry(
-                            item = reply,
-                            index = index,
-                            onViewUser = { uid ->
-                                resetBottomSheet()
-                                onViewUser(uid)
-                            },
-                            onViewFeed = { id, isViewReply ->
-                                resetBottomSheet()
-                                onViewFeed(id, isViewReply)
-                            },
-                            onOpenLink = { url, title ->
-                                resetBottomSheet()
-                                onOpenLink(url, title)
-                            },
-                            onCopyText = {
-                                context.copyText(it?.getAllLinkAndText?.richToString())
-                            },
-                            onReport = { id, type ->
-                                resetBottomSheet()
-                                onReport(id, type)
-                            },
-                            isTotalReply = true,
-                            onLike = { id, like, likeType ->
-                                viewModel.onLikeReply(id, like, likeType)
-                            },
-                            onDelete = { id, deleteType, _ ->
-                                viewModel.onDeleteRely(id, deleteType)
-                            },
-                            onBlockUser = { uid, _ ->
-                                viewModel.onBlockReplyUser(uid)
-                            },
-                            isReply2Reply = !viewModel.frid.isNullOrEmpty(),
-                            onShowTotalReply = { id, uid, frid ->
-                                viewModel.resetReplyState()
-                                viewModel.replyId = id
-                                viewModel.replyUid = uid
-                                viewModel.frid = frid
-                                viewModel.fetchTotalReply()
-                            },
-                            onReply = { rid, uid, username, _ ->
-                                viewModel.isSheet = true
-                                viewModel.replyId = rid
-                                viewModel.replyUid = uid
-                                viewModel.replyName = username
-                                viewModel.frid = null
-                                viewModel.replyType = "reply"
-                                launchReply()
-                            },
-                        )
-                    }
-                }
+                FeedReplySheet(
+                    viewModel = viewModel,
+                    onDismiss = { openBottomSheet = false; viewModel.resetReplyState() },
+                    onViewUser = onViewUser,
+                    onViewFeed = onViewFeed,
+                    onOpenLink = onOpenLink,
+                    onReport = onReport,
+                    onLaunchReply = ::launchReply,
+                )
             }
         }
     }

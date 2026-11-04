@@ -9,6 +9,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.assertIsDisplayed
+import com.example.c001apk.compose.ui.component.MiuixNavigationSheet
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipe
 import androidx.compose.ui.geometry.Offset
@@ -101,6 +103,99 @@ class PredictiveBackPreferenceTest {
         }
         compose.runOnIdle { navigator.navigate(AppDestination.Feed("test")) }
         compose.waitForIdle()
+    }
+
+    private fun showNavigationSheet(predictive: Boolean) {
+        enabled.value = predictive
+        val showing = mutableStateOf(true)
+        compose.setContent {
+            CompositionLocalProvider(
+                LocalUserPreferences provides UserPreferencesCompat.default().copy(predictiveBack = enabled.value),
+            ) {
+                MiuixTheme {
+                    val dispatcher = checkNotNull(LocalNavigationEventDispatcherOwner.current).navigationEventDispatcher
+                    DisposableEffect(dispatcher) {
+                        dispatcher.addInput(back)
+                        onDispose { dispatcher.removeInput(back) }
+                    }
+                    navigator = rememberAppNavigator()
+                    AppNavHost(navigator, modifier = Modifier.fillMaxSize().testTag("sheet-host"),
+                        onBack = { parentBackCount++; navigator.popBackStack() }) { entry ->
+                        if (entry.destination is AppDestination.Feed) {
+                            Box(Modifier.fillMaxSize().testTag("parent-feed")) { Text("动态详情") }
+                            if (showing.value) MiuixNavigationSheet(
+                                onDismissRequest = { backCount++; showing.value = false },
+                            ) {
+                                Box(Modifier.fillMaxSize().testTag("nav-sheet")) { Text("全部回复") }
+                                NavigationBackHandler(
+                                    state = rememberNavigationEventState(NavigationEventInfo.None),
+                                    isBackEnabled = inner.value,
+                                    onBackCompleted = { inner.value = false },
+                                )
+                            }
+                        } else Text("主页")
+                    }
+                }
+            }
+        }
+        compose.runOnIdle { navigator.navigate(AppDestination.Feed("sheet-test")) }
+        compose.waitForIdle()
+    }
+
+    @Test
+    fun navigationSheetHonorsDisabledPredictiveBackAndRestoresParentGesture() {
+        showNavigationSheet(false)
+        val before = compose.onNodeWithTag("nav-sheet").fetchSemanticsNode().boundsInRoot
+        compose.runOnIdle { back.backStarted(event(0f)); back.backProgressed(event(.6f)) }
+        compose.waitForIdle()
+        val during = compose.onNodeWithTag("nav-sheet").fetchSemanticsNode().boundsInRoot
+        assertEquals(before.top, during.top, 1f)
+        assertEquals(before.left, during.left, 1f)
+        compose.runOnIdle { back.backCancelled() }
+        compose.runOnIdle { assertEquals(0, backCount) }
+        compose.runOnIdle { back.backStarted(event(0f)); back.backProgressed(event(.6f)); back.backCompleted() }
+        compose.waitForIdle()
+        compose.onNodeWithTag("nav-sheet").assertDoesNotExist()
+        compose.runOnIdle { assertEquals(1, backCount); assertEquals(0, parentBackCount); assertTrue(navigator.canGoBack); enabled.value = true }
+        compose.onNodeWithTag("sheet-host").performTouchInput {
+            swipe(Offset(width * .1f, centerY), Offset(width * .95f, centerY), durationMillis = 600)
+        }
+        compose.waitForIdle()
+        compose.runOnIdle { assertFalse(navigator.canGoBack) }
+    }
+
+    @Test
+    fun navigationSheetPreviewsCancellationAndKeepsInnerBackPriority() {
+        showNavigationSheet(true)
+        val before = compose.onNodeWithTag("nav-sheet").fetchSemanticsNode().boundsInRoot
+        compose.runOnIdle { back.backStarted(event(0f)); back.backProgressed(event(.6f)) }
+        compose.waitForIdle()
+        val during = compose.onNodeWithTag("nav-sheet").fetchSemanticsNode().boundsInRoot
+        assertTrue(during.top > before.top + 10f)
+        compose.runOnIdle { back.backCancelled() }
+        compose.waitForIdle()
+        assertEquals(before.top, compose.onNodeWithTag("nav-sheet").fetchSemanticsNode().boundsInRoot.top, 1f)
+        compose.runOnIdle { inner.value = true; enabled.value = false }
+        compose.runOnIdle { back.backStarted(event(0f)); back.backProgressed(event(.6f)); back.backCompleted() }
+        compose.waitForIdle()
+        compose.runOnIdle { assertFalse(inner.value); assertEquals(0, backCount); assertEquals(0, parentBackCount) }
+        compose.onNodeWithTag("nav-sheet").assertIsDisplayed()
+    }
+
+    @Test
+    fun navigationSheetClaimsDownwardDragWithoutPoppingTheParent() {
+        showNavigationSheet(true)
+        compose.onNodeWithTag("nav-sheet").performTouchInput {
+            swipe(Offset(width * .1f, centerY), Offset(width * .9f, centerY), durationMillis = 600)
+        }
+        compose.waitForIdle()
+        compose.runOnIdle { assertEquals(0, backCount); assertEquals(0, parentBackCount) }
+        compose.onNodeWithTag("nav-sheet").performTouchInput {
+            swipe(Offset(centerX, height * .1f), Offset(centerX, height * .9f), durationMillis = 600)
+        }
+        compose.waitForIdle()
+        compose.onNodeWithTag("nav-sheet").assertDoesNotExist()
+        compose.runOnIdle { assertEquals(1, backCount); assertTrue(navigator.canGoBack); assertEquals(0, parentBackCount) }
     }
 
     @Test
