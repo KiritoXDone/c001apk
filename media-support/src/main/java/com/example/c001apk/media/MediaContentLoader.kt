@@ -64,7 +64,10 @@ internal class MediaContentLoader(
     private var lifecycleVisible = false
     private var pageSelected = false
     private var pendingPlayRequest = false
-    private var muted = false
+    private lateinit var soundPreferences: LivePhotoSoundPreferences
+    private var muted: Boolean
+        get() = soundPreferences.muted
+        set(value) { soundPreferences.muted = value }
     private var livePhotoEnabled = true
     private var playing = false
     private var playbackFinished = false
@@ -100,6 +103,7 @@ internal class MediaContentLoader(
         onMojitoViewCallback: OnMojitoViewCallback?,
     ) {
         this.context = context
+        soundPreferences = LivePhotoSoundPreferences(context)
         playbackSession.attach(context)
         playbackSession.register(this)
         delegate.init(context, originUrl, targetUrl, onMojitoViewCallback)
@@ -166,10 +170,8 @@ internal class MediaContentLoader(
             setOnClickListener { toggleLivePhotoMenu() }
         }
         audioButton = ImageButton(context).apply {
-            setImageResource(R.drawable.ic_sound)
             imageTintList = null
             background = null
-            contentDescription = "关闭实况声音"
             setPadding(0, 0, 0, 0)
             visibility = View.GONE
             setOnClickListener {
@@ -178,6 +180,7 @@ internal class MediaContentLoader(
                 updateAudioButton()
             }
         }
+        updateAudioButton()
         primaryMenuAction = createMenuAction {
             setLivePhotoEnabled(!livePhotoEnabled)
         }
@@ -560,6 +563,7 @@ internal class MediaContentLoader(
         textureView.visibility = View.VISIBLE
         textureView.alpha = 0f
         logState("play start")
+        updateAudioButton()
         playbackSession.play(context, this, textureView, video, muted)
     }
 
@@ -898,6 +902,7 @@ internal class MediaContentLoader(
 
     override fun onPageSelectionChanged(selected: Boolean) {
         pageSelected = selected
+        if (selected && ::audioButton.isInitialized) updateAudioButton()
         logState("selected=$selected")
         if (!selected) {
             setLivePhotoMenuVisible(false)
