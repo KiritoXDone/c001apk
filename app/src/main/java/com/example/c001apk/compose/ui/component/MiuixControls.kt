@@ -15,6 +15,10 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
+import androidx.navigationevent.NavigationEventInfo
+import androidx.navigationevent.compose.NavigationBackHandler
+import androidx.navigationevent.compose.rememberNavigationEventState
+import com.example.c001apk.compose.logic.providable.LocalUserPreferences
 import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.Button
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
@@ -226,6 +230,7 @@ fun MiuixBottomSheet(
     content: @Composable () -> Unit,
 ) {
     val contentDensity = LocalDensity.current
+    val predictiveBack = LocalUserPreferences.current.predictiveBack
     WindowBottomSheet(
         show = true,
         modifier = modifier,
@@ -234,6 +239,12 @@ fun MiuixBottomSheet(
         dragHandleColor = MiuixTheme.colorScheme.onSurfaceVariantSummary.copy(alpha = 0.2f),
         insideMargin = DpSize(0.dp, 0.dp),
     ) {
+        // 在弹层窗口内优先于库处理返回，内容自身的处理器仍保留更高优先级。
+        NavigationBackHandler(
+            state = rememberNavigationEventState(NavigationEventInfo.None),
+            isBackEnabled = !predictiveBack,
+            onBackCompleted = onDismissRequest,
+        )
         // The platform Dialog supplies a new density; preserve the page's component/font scale.
         CompositionLocalProvider(LocalDensity provides contentDensity) {
             Box(

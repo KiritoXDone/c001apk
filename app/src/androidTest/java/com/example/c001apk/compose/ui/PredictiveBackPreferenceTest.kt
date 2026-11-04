@@ -2,6 +2,8 @@ package com.example.c001apk.compose.ui
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.mutableStateOf
@@ -12,6 +14,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipe
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.unit.dp
 import androidx.navigationevent.DirectNavigationEventInput
 import androidx.navigationevent.NavigationEvent
 import androidx.navigationevent.NavigationEventInfo
@@ -21,6 +24,7 @@ import androidx.navigationevent.compose.rememberNavigationEventState
 import androidx.test.platform.app.InstrumentationRegistry
 import com.example.c001apk.compose.logic.datastore.UserPreferencesCompat
 import com.example.c001apk.compose.logic.providable.LocalUserPreferences
+import com.example.c001apk.compose.ui.component.MiuixBottomSheet
 import com.example.c001apk.compose.ui.main.AppDestination
 import com.example.c001apk.compose.ui.main.AppNavHost
 import com.example.c001apk.compose.ui.main.AppNavigator
@@ -101,6 +105,102 @@ class PredictiveBackPreferenceTest {
         }
         compose.runOnIdle { navigator.navigate(AppDestination.Feed("test")) }
         compose.waitForIdle()
+    }
+
+    private fun showBottomSheet(predictive: Boolean) {
+        enabled.value = predictive
+        val showing = mutableStateOf(true)
+        compose.setContent {
+            CompositionLocalProvider(
+                LocalUserPreferences provides UserPreferencesCompat.default().copy(predictiveBack = enabled.value),
+            ) {
+                MiuixTheme {
+                    if (showing.value) {
+                        MiuixBottomSheet(onDismissRequest = { backCount++; showing.value = false }) {
+                            val dispatcher = checkNotNull(LocalNavigationEventDispatcherOwner.current).navigationEventDispatcher
+                            DisposableEffect(dispatcher) {
+                                dispatcher.addInput(back)
+                                onDispose { dispatcher.removeInput(back) }
+                            }
+                            Box(Modifier.fillMaxWidth().height(300.dp).testTag("sheet-content")) {
+                                Text("查看更多回复")
+                            }
+                            NavigationBackHandler(
+                                state = rememberNavigationEventState(NavigationEventInfo.None),
+                                isBackEnabled = inner.value,
+                                onBackCompleted = { inner.value = false },
+                            )
+                        }
+                    }
+                }
+            }
+        }
+        compose.waitForIdle()
+    }
+
+    @Test
+    fun disabledBottomSheetKeepsStillDuringBackProgress() {
+        showBottomSheet(false)
+        val before = compose.onNodeWithTag("sheet-content").fetchSemanticsNode().boundsInRoot
+        compose.runOnIdle { back.backStarted(event(0f)); back.backProgressed(event(.6f)) }
+        compose.waitForIdle()
+        val during = compose.onNodeWithTag("sheet-content").fetchSemanticsNode().boundsInRoot
+        assertEquals("Disabled sheet must not translate horizontally", before.left, during.left, 1f)
+        assertEquals("Disabled sheet must not translate vertically", before.top, during.top, 1f)
+        assertEquals("Disabled sheet must not scale horizontally", before.width, during.width, 1f)
+        assertEquals("Disabled sheet must not scale vertically", before.height, during.height, 1f)
+        compose.runOnIdle { back.backCancelled() }
+        compose.runOnIdle { assertEquals(0, backCount) }
+        compose.runOnIdle { back.backStarted(event(0f)); back.backProgressed(event(.6f)); back.backCompleted() }
+        compose.waitForIdle()
+        compose.runOnIdle { assertEquals(1, backCount) }
+        compose.onNodeWithTag("sheet-content").assertDoesNotExist()
+    }
+
+    @Test
+    fun enabledBottomSheetStillPreviewsAndCancels() {
+        showBottomSheet(true)
+        val before = compose.onNodeWithTag("sheet-content").fetchSemanticsNode().boundsInRoot
+        compose.runOnIdle { back.backStarted(event(0f)); back.backProgressed(event(.6f)) }
+        compose.waitForIdle()
+        val during = compose.onNodeWithTag("sheet-content").fetchSemanticsNode().boundsInRoot
+        assertTrue("Enabled sheet should follow back progress", during.top > before.top + 10f)
+        compose.runOnIdle { back.backCancelled() }
+        compose.waitForIdle()
+        val cancelled = compose.onNodeWithTag("sheet-content").fetchSemanticsNode().boundsInRoot
+        assertEquals(before.top, cancelled.top, 1f)
+        compose.runOnIdle { assertEquals(0, backCount) }
+        compose.runOnIdle { back.backStarted(event(0f)); back.backProgressed(event(.6f)); back.backCompleted() }
+        compose.waitForIdle()
+        compose.runOnIdle { assertEquals(1, backCount) }
+        compose.onNodeWithTag("sheet-content").assertDoesNotExist()
+    }
+
+    @Test
+    fun changingBottomSheetPreferenceKeepsInnerHandlerPriority() {
+        showBottomSheet(true)
+        val before = compose.onNodeWithTag("sheet-content").fetchSemanticsNode().boundsInRoot
+        compose.runOnIdle { enabled.value = false }
+        compose.runOnIdle { back.backStarted(event(0f)); back.backProgressed(event(.6f)) }
+        compose.waitForIdle()
+        val disabled = compose.onNodeWithTag("sheet-content").fetchSemanticsNode().boundsInRoot
+        assertEquals(before.top, disabled.top, 1f)
+        compose.runOnIdle { back.backCancelled() }
+        compose.runOnIdle { enabled.value = true }
+        compose.runOnIdle { back.backStarted(event(0f)); back.backProgressed(event(.6f)) }
+        compose.waitForIdle()
+        val enabledPreview = compose.onNodeWithTag("sheet-content").fetchSemanticsNode().boundsInRoot
+        assertTrue(enabledPreview.top > before.top + 10f)
+        compose.runOnIdle { back.backCancelled() }
+        compose.waitForIdle()
+        compose.runOnIdle { inner.value = true; enabled.value = false }
+        compose.runOnIdle { back.backStarted(event(0f)); back.backProgressed(event(.4f)); back.backCompleted() }
+        compose.runOnIdle { assertFalse(inner.value); assertEquals(0, backCount) }
+        compose.onNodeWithTag("sheet-content").assertExists()
+        compose.runOnIdle { back.backStarted(event(0f)); back.backCompleted() }
+        compose.waitForIdle()
+        compose.runOnIdle { assertEquals(1, backCount) }
+        compose.onNodeWithTag("sheet-content").assertDoesNotExist()
     }
 
     @Test

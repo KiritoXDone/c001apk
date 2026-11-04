@@ -35,7 +35,9 @@ commits; cancellation does not pop. Inner page handlers and window/IME dismissal
 priority. No hidden APIs or system settings are changed; system back-to-home and cross-activity
 animations remain owned by Android.
 
-Native in-content right swipes are enabled on ordinary routes when this switch is on, with the library's child-first gesture arbitration. The IME disables in-content dismissal while editing. WebView retains its internal-history BackHandler and disables in-content page dismissal; system back continues to reach the page handler before the navigator. Dialogs continue using their existing Miuix window back handling.
+Native in-content right swipes are enabled on ordinary routes when this switch is on, with the library's child-first gesture arbitration. The IME disables in-content dismissal while editing. WebView retains its internal-history BackHandler and disables in-content page dismissal; system back continues to reach the page handler before the navigator.
+
+共享 `MiuixBottomSheet`（包括全部回复和产品参数）也遵循预测返回开关。关闭时，在弹层独立窗口的内容起始处注册仅处理完成事件的 `NavigationBackHandler`：手势过程中弹层不移动，取消不关闭，完成仅调用一次关闭回调。始终组合该处理器，只切换启用状态，让内容自身的返回处理器保留更高优先级；开启时继续使用 Miuix 原生预览。普通下拉关闭和遮罩点击不受影响，其他对话框和菜单仍沿用既有 Miuix 窗口行为。
 
 ## Build and verification
 
