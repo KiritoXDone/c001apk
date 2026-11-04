@@ -27,16 +27,18 @@
 
 ## 界面预览
 
+以下为 v1.5.3 的实机截图（深色模式）。
+
 <table>
   <tr>
     <th>主页</th>
     <th>我的</th>
-    <th>外观设置</th>
+    <th>设置</th>
   </tr>
   <tr>
     <td><img src="docs/screenshots/home.png" alt="主页动态列表" width="280"></td>
     <td><img src="docs/screenshots/my.png" alt="我的页面" width="280"></td>
-    <td><img src="docs/screenshots/settings.png" alt="外观与字号设置" width="280"></td>
+    <td><img src="docs/screenshots/settings.png" alt="设置页面" width="280"></td>
   </tr>
 </table>
 
