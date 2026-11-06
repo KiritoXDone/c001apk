@@ -33,7 +33,6 @@ import androidx.core.widget.doAfterTextChanged
 import com.example.c001apk.compose.ui.theme.C001apkViewTheme
 import com.example.c001apk.compose.ui.theme.DefaultFontScale
 import top.yukonga.miuix.kmp.basic.Checkbox
-import top.yukonga.miuix.kmp.basic.InfiniteProgressIndicator
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.squircle.addSquircleRect
 import top.yukonga.miuix.kmp.theme.MiuixTheme
@@ -153,13 +152,5 @@ class MiuixCheckboxView @JvmOverloads constructor(context: Context, attrs: Attri
                 )
             }
         }
-    }
-}
-
-class MiuixLoadingView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null) :
-    AbstractComposeView(context, attrs) {
-    @Composable
-    override fun Content() {
-        C001apkViewTheme { InfiniteProgressIndicator() }
     }
 }

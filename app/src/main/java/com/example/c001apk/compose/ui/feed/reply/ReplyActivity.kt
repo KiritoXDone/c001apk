@@ -54,6 +54,7 @@ import com.example.c001apk.compose.R
 import com.example.c001apk.compose.databinding.ActivityReplyBinding
 import com.example.c001apk.compose.databinding.ItemCaptchaBinding
 import com.example.c001apk.compose.logic.model.OSSUploadPrepareModel
+import com.example.c001apk.compose.ui.component.createMiuixLoadingDialog
 import com.example.c001apk.compose.ui.component.MiuixViewDialogBuilder
 import com.example.c001apk.compose.ui.feed.reply.emoji.EmojiPagerAdapter
 import com.example.c001apk.compose.ui.feed.reply.emoji.updateEmojiCategoryStyle
@@ -987,27 +988,9 @@ class ReplyActivity :
         }
     }
 
-    @SuppressLint("InflateParams")
     private fun showDialog() {
-        dialog =
-            MiuixViewDialogBuilder(this)
-                .apply {
-                    setView(
-                        LayoutInflater.from(this@ReplyActivity)
-                            .inflate(R.layout.dialog_refresh, null, false),
-                    )
-                    setCancelable(false)
-                }
-                .create()
-        dialog?.show()
-        val decorView: View? = dialog?.window?.decorView
-        val paddingTop: Int = decorView?.paddingTop ?: 0
-        val paddingBottom: Int = decorView?.paddingBottom ?: 0
-        val paddingLeft: Int = decorView?.paddingLeft ?: 0
-        val paddingRight: Int = decorView?.paddingRight ?: 0
-        val width = 128.dp + paddingLeft + paddingRight
-        val height = 128.dp + paddingTop + paddingBottom
-        dialog?.window?.setLayout(width, height)
+        closeDialog()
+        dialog = createMiuixLoadingDialog(this).also { it.show() }
     }
 
     private fun launchAtTopic(type: String) {
