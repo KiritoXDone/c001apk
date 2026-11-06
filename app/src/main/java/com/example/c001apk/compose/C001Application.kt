@@ -3,6 +3,7 @@ package com.example.c001apk.compose
 import android.app.Application
 import coil.Coil
 import coil.ImageLoader
+import com.example.c001apk.compose.util.BoundedImageInterceptor
 import com.example.c001apk.compose.util.AddCookiesInterceptor
 import com.example.c001apk.compose.util.MojitoOkHttpImageLoader
 import com.example.c001apk.compose.util.dp
@@ -40,6 +41,7 @@ class C001Application : Application() {
                         .build()
                 }
                 .components {
+                    add(BoundedImageInterceptor())
                     add(AppIconKeyer())
                     add(AppIconFetcher.Factory(48.dp, false, this@C001Application))
                 }

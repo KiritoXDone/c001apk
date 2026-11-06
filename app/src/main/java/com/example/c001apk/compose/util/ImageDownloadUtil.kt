@@ -12,6 +12,7 @@ import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.core.graphics.drawable.toBitmap
 import coil.imageLoader
+import coil.request.CachePolicy
 import coil.request.ImageRequest
 import com.example.c001apk.compose.R
 import java.io.File
@@ -99,6 +100,8 @@ object ImageDownloadUtil {
 
         val request =
             ImageRequest.Builder(context)
+                .setParameter(ORIGINAL_IMAGE_EXPORT, true)
+                .memoryCachePolicy(CachePolicy.DISABLED)
                 .data(imageUrl)
                 .addHeader("User-Agent", userAgent ?: "")
                 .target(
