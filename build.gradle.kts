@@ -14,11 +14,4 @@ allprojects {
     // clean 只清理 Gradle 输出，保留便携工具链与本地验证记录。
     val outputName = if (project == rootProject) "root" else project.path.removePrefix(":").replace(":", "/")
     layout.buildDirectory.set(rootProject.layout.projectDirectory.dir("build/gradle/$outputName"))
-
-    configurations.configureEach {
-        resolutionStrategy.dependencySubstitution {
-            substitute(module("me.panpf:sketch-gif"))
-                .using(module("io.github.panpf.sketch:sketch-gif:2.7.1"))
-        }
-    }
 }
