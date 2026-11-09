@@ -54,8 +54,7 @@ public class ErrorTracker {
      * @param e UnsatisfiedLinkError或ExceptionInInitializerError：找不到对应到的so文件
      */
     public void onNotFoundGifSoError(@NonNull Throwable e) {
-        SLog.e(NAME, "Didn't find “libpl_droidsonroids_gif.so” file, unable decode the GIF images. " +
-                "Please go to “https://github.com/panpf/sketch” find how to import the sketch-gif library");
+        SLog.e(NAME, "GIF 原生库加载失败，请检查 android-gif-drawable 的 ABI 与内存页兼容性：%s", e);
 
         String abis;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {

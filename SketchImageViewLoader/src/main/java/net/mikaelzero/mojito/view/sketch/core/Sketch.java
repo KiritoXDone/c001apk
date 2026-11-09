@@ -39,7 +39,7 @@ import net.mikaelzero.mojito.view.sketch.core.uri.AssetUriModel;
 import net.mikaelzero.mojito.view.sketch.core.uri.DrawableUriModel;
 import net.mikaelzero.mojito.view.sketch.core.util.SketchUtils;
 
-import me.panpf.sketch.gif.BuildConfig;
+import net.mikaelzero.mojito.view.sketch.BuildConfig;
 
 /**
  * {@link Sketch} 是一个功能强大且全面的图片加载器，可以从网络或者本地加载图片，支持 gif、手势缩放以及分块显示超大图

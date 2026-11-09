@@ -117,6 +117,12 @@ private val licenseList =
             LicenseType.Apache2,
         ),
         LicenseItem(
+            "Karol Wrótniak / Droids on Roids",
+            "android-gif-drawable",
+            "https://github.com/koral--/android-gif-drawable",
+            LicenseType.MIT,
+        ),
+        LicenseItem(
             "plain-dev",
             "NineGridImageView",
             "https://github.com/plain-dev/NineGridImageView",
