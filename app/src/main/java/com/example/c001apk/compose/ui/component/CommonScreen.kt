@@ -7,7 +7,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.staggeredgrid.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -64,6 +66,7 @@ fun CommonScreen(
             LocalTabContentPadding.current.calculateTopPadding() +
             if (needTopPadding) paddingValues.calculateTopPadding() else 0.dp
     val lazyListState = rememberLazyStaggeredGridState()
+    val canPlayImages = remember(lazyListState) { { !lazyListState.isScrollInProgress } }
     TopBarScrollEffect { lazyListState.animateScrollToItem(0) }
 
     LaunchedEffect(refreshState) {
@@ -94,70 +97,72 @@ fun CommonScreen(
                 top = contentTopPadding,
             ),
     ) {
-        BoxWithConstraints(Modifier.fillMaxSize()) {
-            val scale = LocalDensity.current.fontScale.coerceIn(1f, 2f)
-            val columns = ReadingLayout.columns(maxWidth.value, scale)
-            LazyVerticalStaggeredGrid(
-                columns = StaggeredGridCells.Fixed(columns),
-                modifier = listModifier.fillMaxSize().scrollEndHaptic(),
-                contentPadding =
-                    PaddingValues(
-                        top = contentTopPadding,
-                        bottom = 24.dp + paddingValues.calculateBottomPadding(),
-                    ),
-                verticalItemSpacing = 12.dp,
-                horizontalArrangement = Arrangement.spacedBy(0.dp),
-                state = lazyListState,
-            ) {
-                if (listHeader != null) {
-                    item(key = "listHeader", span = StaggeredGridItemSpan.FullLine) { listHeader() }
-                }
-                GridItemCard(
-                    isReceivedLikeList = isReceivedLikeList,
-                    loadingState = displayState,
-                    loadMore = viewModel::loadMore,
-                    isEnd = viewModel.stopAutomaticLoading,
-                    onViewUser = onViewUser,
-                    onViewFeed = onViewFeed,
-                    onOpenLink = onOpenLink,
-                    onCopyText = onCopyText,
-                    isHomeFeed = isHomeFeed,
-                    onReport = onReport,
-                    onViewFFFList = onViewFFFList,
-                    onLike = viewModel::onLike,
-                    onDelete = { id, deleteType, _ ->
-                        viewModel.onDelete(id, deleteType)
-                    },
-                    onBlockUser = { uid, _ ->
-                        viewModel.onBlockUser(uid)
-                    },
-                    onFollowUser = viewModel::onFollowUser,
-                    onHandleRecent = onHandleRecent,
-                    onHandleMessage = onHandleMessage,
-                    onViewChat = onViewChat,
-                    onDeleteNotice = onDeleteNotice,
-                    productConfigRows = productConfigRows,
-                    selectedProductConfigIds = selectedProductConfigIds,
-                    onViewProductConfig = onViewProductConfig,
-                    onToggleProductConfigComparison = onToggleProductConfigComparison,
-                    onShowProductConfigComparison = onShowProductConfigComparison,
-                    onShowGlobalProductComparison = onShowGlobalProductComparison,
-                    onToggleProductEntityComparison = onToggleProductEntityComparison,
-                )
-
-                item(key = "footer", span = StaggeredGridItemSpan.FullLine) {
-                    com.example.c001apk.compose.ui.component.cards.LoadingCard(
-                        modifier = Modifier.padding(horizontal = 12.dp),
-                        state = viewModel.footerState,
-                        onClick =
-                            if (
-                                viewModel.footerState
-                                    is com.example.c001apk.compose.logic.state.FooterState.Error
-                            )
-                                viewModel::loadMore
-                            else null,
-                        isFeed = false,
+        CompositionLocalProvider(LocalFeedImagePlayback provides canPlayImages) {
+            BoxWithConstraints(Modifier.fillMaxSize()) {
+                val scale = LocalDensity.current.fontScale.coerceIn(1f, 2f)
+                val columns = ReadingLayout.columns(maxWidth.value, scale)
+                LazyVerticalStaggeredGrid(
+                    columns = StaggeredGridCells.Fixed(columns),
+                    modifier = listModifier.fillMaxSize().scrollEndHaptic(),
+                    contentPadding =
+                        PaddingValues(
+                            top = contentTopPadding,
+                            bottom = 24.dp + paddingValues.calculateBottomPadding(),
+                        ),
+                    verticalItemSpacing = 12.dp,
+                    horizontalArrangement = Arrangement.spacedBy(0.dp),
+                    state = lazyListState,
+                ) {
+                    if (listHeader != null) {
+                        item(key = "listHeader", span = StaggeredGridItemSpan.FullLine) { listHeader() }
+                    }
+                    GridItemCard(
+                        isReceivedLikeList = isReceivedLikeList,
+                        loadingState = displayState,
+                        loadMore = viewModel::loadMore,
+                        isEnd = viewModel.stopAutomaticLoading,
+                        onViewUser = onViewUser,
+                        onViewFeed = onViewFeed,
+                        onOpenLink = onOpenLink,
+                        onCopyText = onCopyText,
+                        isHomeFeed = isHomeFeed,
+                        onReport = onReport,
+                        onViewFFFList = onViewFFFList,
+                        onLike = viewModel::onLike,
+                        onDelete = { id, deleteType, _ ->
+                            viewModel.onDelete(id, deleteType)
+                        },
+                        onBlockUser = { uid, _ ->
+                            viewModel.onBlockUser(uid)
+                        },
+                        onFollowUser = viewModel::onFollowUser,
+                        onHandleRecent = onHandleRecent,
+                        onHandleMessage = onHandleMessage,
+                        onViewChat = onViewChat,
+                        onDeleteNotice = onDeleteNotice,
+                        productConfigRows = productConfigRows,
+                        selectedProductConfigIds = selectedProductConfigIds,
+                        onViewProductConfig = onViewProductConfig,
+                        onToggleProductConfigComparison = onToggleProductConfigComparison,
+                        onShowProductConfigComparison = onShowProductConfigComparison,
+                        onShowGlobalProductComparison = onShowGlobalProductComparison,
+                        onToggleProductEntityComparison = onToggleProductEntityComparison,
                     )
+
+                    item(key = "footer", span = StaggeredGridItemSpan.FullLine) {
+                        com.example.c001apk.compose.ui.component.cards.LoadingCard(
+                            modifier = Modifier.padding(horizontal = 12.dp),
+                            state = viewModel.footerState,
+                            onClick =
+                                if (
+                                    viewModel.footerState
+                                        is com.example.c001apk.compose.logic.state.FooterState.Error
+                                )
+                                    viewModel::loadMore
+                                else null,
+                            isFeed = false,
+                        )
+                    }
                 }
             }
         }

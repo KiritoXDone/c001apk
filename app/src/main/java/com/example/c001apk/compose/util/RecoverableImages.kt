@@ -1,5 +1,6 @@
 package com.example.c001apk.compose.util
 
+import android.graphics.drawable.Drawable
 import android.widget.ImageView
 import coil.load
 import coil.request.ImageRequest
@@ -17,6 +18,7 @@ fun ImageView.bindRecoverableImage(
     url: String,
     key: Any,
     onOpen: () -> Unit,
+    onSuccess: (Drawable) -> Unit = {},
     configure: ImageRequest.Builder.() -> Unit = {},
 ) {
     val previous = getTag(R.id.image_request_binding) as? ImageBinding
@@ -34,7 +36,10 @@ fun ImageView.bindRecoverableImage(
             error(ImageFailureDrawable(context))
             fallback(ImageFailureDrawable(context))
             listener(
-                onSuccess = { _, _ -> contentDescription = "查看图片" },
+                onSuccess = { _, result ->
+                    contentDescription = "查看图片"
+                    onSuccess(result.drawable)
+                },
                 onError = { _, result ->
                     binding.failed = true
                     contentDescription = "图片加载失败，点按重试"

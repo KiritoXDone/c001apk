@@ -1,6 +1,7 @@
 package com.example.c001apk.compose.ui.component
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.viewinterop.AndroidView
@@ -10,6 +11,8 @@ import com.example.c001apk.compose.util.ImageShowUtil.getImageLp
 import com.example.c001apk.compose.util.isGifUrl
 import com.example.c001apk.compose.view.NineGridImageView
 import top.yukonga.miuix.kmp.theme.MiuixTheme
+
+internal val LocalFeedImagePlayback = compositionLocalOf<() -> Boolean> { { true } }
 
 /** Created by bggRGjQaUbCoE on 2024/6/5 */
 @Composable
@@ -21,6 +24,7 @@ fun NineImageView(
     isSingle: Boolean = false,
 ) {
     val prefs = LocalUserPreferences.current
+    val canPlayImages = LocalFeedImagePlayback.current
 
     val primaryContainer = MiuixTheme.colorScheme.primaryContainer.toArgb()
     val onPrimaryContainer = MiuixTheme.colorScheme.onPrimaryContainer.toArgb()
@@ -36,6 +40,7 @@ fun NineImageView(
             }
         },
         update = { imageView ->
+            imageView.isAnimationEnabled = canPlayImages()
             imageView.isSingle = isSingle
             imageView.userAgent = prefs.userAgent
             imageView.colorPrimaryContainer = primaryContainer

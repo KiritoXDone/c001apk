@@ -62,6 +62,15 @@ constructor(
 
     var isSingle = false
 
+    var isAnimationEnabled = true
+        set(value) {
+            if (field == value) return
+            field = value
+            for (index in 0 until childCount) {
+                (getChildAt(index) as BadgedImageView).isAnimationEnabled = value
+            }
+        }
+
     private var urlList: List<String>? = null
     private var lastLoadStyle: List<Any>? = null
 
@@ -220,6 +229,7 @@ constructor(
                 val isGif = replace.isGifUrl
                 val imageView = BadgedImageView(context)
                 imageView.apply {
+                    isAnimationEnabled = this@NineGridImageView.isAnimationEnabled
                     colorPrimaryContainer = this@NineGridImageView.colorPrimaryContainer
                     colorOnPrimaryContainer = this@NineGridImageView.colorOnPrimaryContainer
                     setCornerRadius(12.dp)
@@ -261,6 +271,7 @@ constructor(
                 imageView.bindRecoverableImage(
                     url = url,
                     key = url to style,
+                    onSuccess = { imageView.pauseAnimationIfNeeded() },
                     onOpen = {
                         ImageShowUtil.startBigImgView(
                             this,

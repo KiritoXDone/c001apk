@@ -4,8 +4,10 @@ import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Rect
+import android.graphics.drawable.Animatable
 import android.graphics.drawable.Drawable
 import android.view.Gravity
+import coil.drawable.CrossfadeDrawable
 import com.example.c001apk.compose.util.dp
 
 
@@ -38,6 +40,20 @@ class BadgedImageView(
     private var badgePadding: Int = 4.dp
     var colorPrimaryContainer: Int = Color.BLACK
     var colorOnPrimaryContainer: Int = Color.WHITE
+    var isAnimationEnabled: Boolean = true
+        set(value) {
+            if (field == value) return
+            field = value
+            val animation = imageAnimation() ?: return
+            if (value && isAttachedToWindow && isShown) animation.start() else animation.stop()
+        }
+
+    private fun imageAnimation(): Animatable? =
+        ((drawable as? CrossfadeDrawable)?.end ?: drawable) as? Animatable
+
+    fun pauseAnimationIfNeeded() {
+        if (!isAnimationEnabled) imageAnimation()?.stop()
+    }
 
     fun setBadge(text: String) {
         val drawable = BadgeDrawable(text, colorPrimaryContainer, colorOnPrimaryContainer)
@@ -62,6 +78,8 @@ class BadgedImageView(
     }
 
     override fun draw(canvas: Canvas) {
+        // Coil 加载完成或恢复生命周期时会自动播放，绘制前同步列表的暂停状态。
+        pauseAnimationIfNeeded()
         super.draw(canvas)
         if (!badgeBoundsSet && (badge != null || topStartBadge != null)) {
             layoutBadges()
