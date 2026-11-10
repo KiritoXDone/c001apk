@@ -1,5 +1,6 @@
 package com.example.c001apk.compose.ui.search
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -17,6 +18,18 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.platform.LocalWindowInfo
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
@@ -44,6 +57,23 @@ internal fun SearchResultHeader(
 ) {
     val focusManager = LocalFocusManager.current
     val keyboardController = LocalSoftwareKeyboardController.current
+    var editing by remember { mutableStateOf(false) }
+    val focusRequester = remember { FocusRequester() }
+    val lifecycle = LocalLifecycleOwner.current.lifecycle
+    val windowFocused = LocalWindowInfo.current.isWindowFocused
+    DisposableEffect(lifecycle) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_PAUSE) editing = false
+        }
+        lifecycle.addObserver(observer)
+        onDispose { lifecycle.removeObserver(observer) }
+    }
+    LaunchedEffect(windowFocused) {
+        if (!windowFocused) editing = false
+    }
+    LaunchedEffect(editing) {
+        if (editing) focusRequester.requestFocus()
+    }
     val titleStyle = MiuixTheme.textStyles.title3.copy(
         color = MiuixTheme.colorScheme.onSurface,
         fontWeight = FontWeight.Medium,
@@ -52,6 +82,7 @@ internal fun SearchResultHeader(
 
     fun submit(value: String) {
         if (value.isBlank()) return
+        editing = false
         focusManager.clearFocus()
         keyboardController?.hide()
         onSearch(value)
@@ -72,11 +103,22 @@ internal fun SearchResultHeader(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             BackButton(onBackClick)
-            // A decoration-free editor keeps the title appearance and native cursor/IME behavior.
-            BasicTextField(
+            // 普通标题不持有输入连接，只有显式点击后才挂载编辑器。
+            if (!editing) {
+                Box(
+                    Modifier.weight(1f)
+                        .heightIn(min = TopAppBarDefaults.SmallTopAppBarCenterHeight)
+                        .clickable { editing = true }
+                        .semantics { contentDescription = "搜索关键词，点击编辑" },
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(query.ifEmpty { "搜索" }, style = titleStyle, maxLines = 1)
+                }
+            } else BasicTextField(
                 value = query,
                 onValueChange = onQueryChange,
                 modifier = Modifier.weight(1f)
+                    .focusRequester(focusRequester)
                     .semantics { contentDescription = "搜索关键词，点击编辑" },
                 textStyle = titleStyle,
                 singleLine = true,
