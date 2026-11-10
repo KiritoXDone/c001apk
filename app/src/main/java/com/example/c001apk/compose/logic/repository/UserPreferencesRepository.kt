@@ -28,6 +28,8 @@ constructor(
 
     suspend fun setHideHomePublishButton(value: Boolean) = userPreferencesDataSource.setHideHomePublishButton(value)
 
+    suspend fun setDefaultSearchOrder(value: String) = userPreferencesDataSource.setDefaultSearchOrder(value)
+
     suspend fun setReadingMode(value: Int) = userPreferencesDataSource.setReadingMode(value)
 
     suspend fun setFloatingNavigationBar(value: Boolean) =

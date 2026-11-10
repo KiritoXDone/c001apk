@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import com.example.c001apk.compose.logic.providable.LocalUserPreferences
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
@@ -122,7 +123,11 @@ fun SearchResultScreen(
     var refreshState by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     var feedType by rememberSaveable { mutableStateOf(SearchFeedType.ALL) }
-    var orderType by rememberSaveable { mutableStateOf(SearchOrderType.COMPREHENSIVE) }
+    val defaultOrder = LocalUserPreferences.current.defaultSearchOrder
+    var orderType by rememberSaveable {
+        mutableStateOf(SearchOrderType.entries.firstOrNull { it.name == defaultOrder }
+            ?: SearchOrderType.COMPREHENSIVE)
+    }
     val filterMenu =
         remember(feedType, orderType) {
             DropdownEntry(

@@ -73,6 +73,7 @@ message UserPreferences {
   repeated int32 mainNavigationOrder = 65;
   bool digitalUnionRefreshPending = 66;
   bool protocolVersionCustomized = 67;
+  string defaultSearchOrder = 68;
 }
 
 enum ThemeType{

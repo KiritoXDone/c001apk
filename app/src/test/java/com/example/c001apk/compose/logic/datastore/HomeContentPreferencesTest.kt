@@ -7,6 +7,16 @@ import org.junit.Test
 
 class HomeContentPreferencesTest {
     @Test
+    fun defaultSearchOrderPersistsAndOldPreferencesKeepComprehensive() {
+        assertEquals("COMPREHENSIVE", UserPreferencesCompat(UserPreferences.getDefaultInstance()).defaultSearchOrder)
+        for (type in listOf("COMPREHENSIVE", "DATELINE", "HOT", "REPLY", "EXACT")) {
+            val bytes = UserPreferencesCompat.default().copy(defaultSearchOrder = type)
+                .copy(fontScale = 1.2f).toProto().toByteArray()
+            assertEquals(type, UserPreferencesCompat(UserPreferences.parseFrom(bytes)).defaultSearchOrder)
+        }
+    }
+
+    @Test
     fun oldPreferencesKeepBothExistingSectionsAndTheSquareChoice() {
         for (square in listOf(false, true)) {
             // These bytes contain the old field 10, without the new fields 58 and 59.

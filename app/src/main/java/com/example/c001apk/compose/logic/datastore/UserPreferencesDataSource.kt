@@ -32,6 +32,10 @@ constructor(
 
     suspend fun setHideHomePublishButton(value: Boolean) = userPreferences.updateData { it.copy(hideHomePublishButton = value) }
 
+    suspend fun setDefaultSearchOrder(value: String) = userPreferences.updateData {
+        it.copy(defaultSearchOrder = value)
+    }
+
     suspend fun setReadingMode(value: Int) = userPreferences.updateData {
         it.copy(readingMode = value.coerceIn(0, 2))
     }

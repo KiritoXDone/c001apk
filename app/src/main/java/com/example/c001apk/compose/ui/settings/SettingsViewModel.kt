@@ -55,6 +55,10 @@ constructor(
         viewModelScope.launch { userPreferencesRepository.setHideHomePublishButton(value) }
     }
 
+    fun setDefaultSearchOrder(value: String) {
+        viewModelScope.launch { userPreferencesRepository.setDefaultSearchOrder(value) }
+    }
+
     fun setReadingMode(value: Int) {
         viewModelScope.launch { userPreferencesRepository.setReadingMode(value) }
     }

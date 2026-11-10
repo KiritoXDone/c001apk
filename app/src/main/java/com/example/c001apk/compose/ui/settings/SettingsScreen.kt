@@ -404,6 +404,9 @@ fun SettingsScreen(
                                     onShowEmoji = viewModel::setShowEmoji,
                                 )
                             }
+                            item(key = "default_search") {
+                                SearchPreferences(prefs.defaultSearchOrder, viewModel::setDefaultSearchOrder)
+                            }
                             item(key = "publish") {
                                 PreferenceGroup(title = "发布") {
                                     SwitchListItem(prefs.hideHomePublishButton, MiuixIcons.Rename, "隐藏首页发布按钮",

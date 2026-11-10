@@ -66,6 +66,7 @@ data class UserPreferencesCompat(
     val localFollows: List<com.example.c001apk.compose.logic.follow.LocalFollowUser> = emptyList(),
     val quietFollow: Boolean = false,
     val followSelection: Int = 1,
+    val defaultSearchOrder: String = "COMPREHENSIVE",
     val readingMode: Int = 0,
     val floatingNavigationBar: Boolean = false,
     val blurBars: Boolean = false,
@@ -137,6 +138,7 @@ data class UserPreferencesCompat(
                 com.example.c001apk.compose.logic.follow.LocalFollowUser(it.uid, it.name, it.avatar)
             },
         quietFollow = original.quietFollow,
+        defaultSearchOrder = original.defaultSearchOrder.ifEmpty { "COMPREHENSIVE" },
         readingMode = original.readingMode.coerceIn(0, 2),
         floatingNavigationBar = original.floatingNavigationBar,
         blurBars = original.blurBars,
@@ -228,6 +230,7 @@ data class UserPreferencesCompat(
             .setQuietFollow(quietFollow)
             .setFollowSelection(followSelection)
             .setFollowSelectionConfigured(true)
+            .setDefaultSearchOrder(defaultSearchOrder)
             .setReadingMode(readingMode)
             .setFloatingNavigationBar(floatingNavigationBar)
             .setBlurBars(blurBars)
