@@ -333,6 +333,12 @@ class ReplyActivity :
         }
     }
 
+    override fun onPause() {
+        pendingShowKeyboard = false
+        imeRetryHandler.removeCallbacks(imeRetryRunnable)
+        super.onPause()
+    }
+
     override fun onPostResume() {
         super.onPostResume()
         if (pendingShowKeyboard) {
@@ -819,6 +825,8 @@ class ReplyActivity :
     }
 
     private fun showInput() {
+        if (isFinishing || isDestroyed || !hasWindowFocus() ||
+            !lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) return
         isEmojiPanelRequested = false
         animateEmojiInputDescent = false
         if (binding.main is SmoothInputLayout) (binding.main as? SmoothInputLayout)?.showKeyboard()
@@ -839,6 +847,8 @@ class ReplyActivity :
     }
 
     private fun retryShowIme() {
+        if (isFinishing || isDestroyed || !hasWindowFocus() ||
+            !lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) return
         val isImeVisible =
             ViewCompat.getRootWindowInsets(binding.editText)
                 ?.isVisible(WindowInsetsCompat.Type.ime()) == true
@@ -1057,6 +1067,8 @@ class ReplyActivity :
     }
 
     override fun finish() {
+        pendingShowKeyboard = false
+        imeRetryHandler.removeCallbacks(imeRetryRunnable)
         super.finish()
         if (SDK_INT >= 34) {
             overrideActivityTransition(
