@@ -53,6 +53,7 @@ fun LinkText(
             }
         },
         update = { textView ->
+            textView.setTextColor(color ?: contentColor.toArgb())
             textView.setParams(
                 isReply = isReply,
                 size = textSize,
