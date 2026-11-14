@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import com.example.c001apk.compose.logic.model.RecentAtUser
@@ -27,6 +28,29 @@ interface RecentAtUserDao {
 
     @Query("SELECT * FROM RecentAtUser ORDER BY id DESC")
     fun loadAllListFlow(): Flow<List<RecentAtUser>>
+
+    @Query("SELECT * FROM RecentAtUser WHERE username = :username LIMIT 1")
+    suspend fun findUser(username: String): RecentAtUser?
+
+    @Query("SELECT MAX(id) FROM RecentAtUser")
+    suspend fun latestId(): Long?
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun upsert(data: RecentAtUser)
+
+    @Transaction
+    suspend fun rememberUser(username: String, avatar: String, timestamp: Long) {
+        val previous = findUser(username)
+        val nextId = maxOf(timestamp, (latestId() ?: 0L) + 1L)
+        upsert(
+            RecentAtUser(
+                id = nextId,
+                group = previous?.group ?: "recent",
+                avatar = avatar.ifBlank { previous?.avatar.orEmpty() },
+                username = username,
+            ),
+        )
+    }
 
     @Query("SELECT 1 FROM RecentAtUser WHERE username = :username LIMIT 1")
     suspend fun isExist(username: String): Boolean

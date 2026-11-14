@@ -46,6 +46,7 @@ fun AppCard(
     onFollowUser: ((String, Int) -> Unit)? = null,
     onHandleRecent: ((String, String, String, Int) -> Unit)? = null,
 ) {
+    val canFollow = appCardType == AppCardType.USER && onFollowUser != null
 
     ConstraintLayout(
         modifier =
@@ -129,7 +130,7 @@ fun AppCard(
                         start.linkTo(logo.end)
                         top.linkTo(parent.top)
                         end.linkTo(
-                            if (appCardType == AppCardType.USER) follow.start else parent.end,
+                            if (canFollow) follow.start else parent.end,
                         )
                         width = Dimension.fillToConstraints
                     },
@@ -206,12 +207,10 @@ fun AppCard(
                 color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
             )
 
-            if (appCardType == AppCardType.USER) {
+            if (canFollow) {
                 TextButton(
                     onClick = {
-                        onFollowUser?.let {
-                            it(data.uid.orEmpty(), data.isFollow ?: 0)
-                        }
+                        onFollowUser(data.uid.orEmpty(), data.isFollow ?: 0)
                     },
                     modifier =
                         Modifier.constrainAs(follow) {

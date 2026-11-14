@@ -7,6 +7,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.isVisible
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.c001apk.compose.logic.model.HomeFeedResponse
+import com.example.c001apk.compose.logic.state.LoadingState
 import com.example.c001apk.compose.ui.component.CommonScreen
 import com.example.c001apk.compose.util.ReportType
 import com.example.c001apk.compose.util.makeToast
@@ -29,6 +31,7 @@ fun SearchContentScreen(
     onCopyText: (String?) -> Unit,
     updateInitPage: () -> Unit,
     onReport: (String, ReportType) -> Unit,
+    onSelectUser: ((HomeFeedResponse.Data) -> Unit)? = null,
 ) {
 
     val view = LocalView.current
@@ -68,9 +71,33 @@ fun SearchContentScreen(
         resetRefreshState = resetRefreshState,
         paddingValues = paddingValues,
         needTopPadding = true,
-        onViewUser = onViewUser,
+        onViewUser = { uid ->
+            val selected = if (searchType == SearchType.USER && onSelectUser != null && uid.isNotBlank()) {
+                (viewModel.loadingState as? LoadingState.Success)?.response?.firstOrNull {
+                    it.entityType == "contacts" &&
+                        (it.userInfo?.uid ?: it.fUserInfo?.uid.orEmpty()) == uid
+                }
+            } else null
+            if (searchType == SearchType.USER && onSelectUser != null && selected != null) {
+                onSelectUser(selected)
+            } else {
+                onViewUser(uid)
+            }
+        },
         onViewFeed = onViewFeed,
-        onOpenLink = onOpenLink,
+        onOpenLink = { url, title ->
+            val selected = if (searchType == SearchType.USER && onSelectUser != null) {
+                (viewModel.loadingState as? LoadingState.Success)?.response?.firstOrNull {
+                    it.entityType == "user" && it.url.orEmpty() == url &&
+                        (it.username ?: it.userInfo?.username ?: it.fUserInfo?.username) == title
+                }
+            } else null
+            if (searchType == SearchType.USER && onSelectUser != null && selected != null) {
+                onSelectUser(selected)
+            } else {
+                onOpenLink(url, title)
+            }
+        },
         onCopyText = onCopyText,
         onReport = onReport,
     )

@@ -3,21 +3,19 @@ package com.example.c001apk.compose.ui.feed.reply
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.Arrangement
+import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -25,15 +23,11 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.c001apk.compose.BuildConfig
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.lifecycleScope
 import com.example.c001apk.compose.ui.component.BackButton
 import com.example.c001apk.compose.ui.component.MiuixHeader as TopAppBar
 import com.example.c001apk.compose.ui.component.MiuixScaffold as Scaffold
-import com.example.c001apk.compose.ui.component.cards.AppCard
-import com.example.c001apk.compose.ui.component.cards.AppCardType
-import com.example.c001apk.compose.ui.component.cards.LoadingCard
-import com.example.c001apk.compose.ui.ffflist.FFFContentViewModel
 import com.example.c001apk.compose.ui.search.SearchContentScreen
 import com.example.c001apk.compose.ui.search.SearchFeedType
 import com.example.c001apk.compose.ui.search.SearchOrderType
@@ -41,6 +35,8 @@ import com.example.c001apk.compose.ui.search.SearchType
 import com.example.c001apk.compose.ui.theme.C001apkComposeTheme
 import com.example.c001apk.compose.util.CookieUtil
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TextField as OutlinedTextField
@@ -50,6 +46,8 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @AndroidEntryPoint
 class AtTopicActivity : ComponentActivity() {
+    private val viewModel: AtTopicViewModel by viewModels()
+    private var selectingUser = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -67,22 +65,44 @@ class AtTopicActivity : ComponentActivity() {
             ) {
                 AtTopicScreen(
                     type = type,
+                    viewModel = viewModel,
                     onBack = { finish() },
-                    onSelect = { selected ->
-                        setResult(RESULT_OK, Intent().putExtra("data", selected))
-                        finish()
-                    },
+                    onSelect = ::finishWithSelection,
+                    onSelectUser = ::selectUser,
                 )
             }
         }
+    }
+
+    private fun selectUser(user: AtUser) {
+        if (selectingUser) return
+        selectingUser = true
+        lifecycleScope.launch {
+            try {
+                viewModel.rememberUser(user.username, user.avatar)
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (error: Exception) {
+                Log.e("AtTopic", "Failed to save recent user", error)
+                Toast.makeText(this@AtTopicActivity, "无法保存最近 @ 用户", Toast.LENGTH_SHORT).show()
+            }
+            finishWithSelection("@${user.username} ")
+        }
+    }
+
+    private fun finishWithSelection(selected: String) {
+        setResult(RESULT_OK, Intent().putExtra("data", selected))
+        finish()
     }
 }
 
 @Composable
 private fun AtTopicScreen(
     type: String,
+    viewModel: AtTopicViewModel,
     onBack: () -> Unit,
     onSelect: (String) -> Unit,
+    onSelectUser: (AtUser) -> Unit,
 ) {
     val isTopic = type == "topic"
     var keyword by rememberSaveable { mutableStateOf("") }
@@ -109,29 +129,23 @@ private fun AtTopicScreen(
             AtTopicSearchField(keyword, title) { keyword = it }
 
             if (keyword.isBlank()) {
-                val sectionPadding = remember {
-                    PaddingValues(start = 0.dp, end = 0.dp, top = 0.dp, bottom = 0.dp)
-                }
-                Column(
-                    modifier = Modifier.fillMaxSize(),
-                ) {
+                if (isTopic) {
                     Text(
-                        text = if (isTopic) "热门话题" else "关注用户",
+                        text = "热门话题",
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
                         style =
                             MiuixTheme.textStyles.headline2.copy(
                                 fontWeight = FontWeight.Medium,
                             ),
                     )
-                    if (isTopic) {
-                        HotTopicList(onSelect = onSelect)
-                    } else {
-                        FollowUserList(
-                            uid = CookieUtil.uid,
-                            paddingValues = sectionPadding,
-                            onSelect = onSelect,
-                        )
-                    }
+                    HotTopicList(onSelect = onSelect)
+                } else {
+                    val recentUsers by viewModel.recentUsers.collectAsStateWithLifecycle(initialValue = emptyList())
+                    FollowUserList(
+                        uid = CookieUtil.uid,
+                        recentUsers = recentUsers,
+                        onSelectUser = onSelectUser,
+                    )
                 }
             } else {
                 SearchContentScreen(
@@ -149,13 +163,16 @@ private fun AtTopicScreen(
                     onOpenLink = { _, itemTitle ->
                         val targetTitle = itemTitle.orEmpty().trim()
                         if (targetTitle.isNotEmpty()) {
-                            val data = if (isTopic) "#$targetTitle# " else "@$targetTitle "
-                            onSelect(data)
+                            if (isTopic) onSelect("#$targetTitle# ")
+                            else onSelectUser(AtUser(targetTitle, ""))
                         }
                     },
                     onCopyText = {},
                     updateInitPage = {},
                     onReport = { _, _ -> },
+                    onSelectUser = if (isTopic) null else { item ->
+                        item.asAtUser()?.let(onSelectUser)
+                    },
                 )
             }
         }
@@ -184,102 +201,6 @@ internal fun AtTopicSearchField(keyword: String, title: String, onKeywordChange:
 }
 
 @Composable
-private fun FollowUserList(
-    uid: String?,
-    paddingValues: PaddingValues,
-    onSelect: (String) -> Unit,
-) {
-    val viewModel =
-        hiltViewModel<FFFContentViewModel, FFFContentViewModel.ViewModelFactory>(
-            key = "at_follow_user_$uid",
-        ) { factory ->
-            factory.create(
-                url = "/v6/user/followList",
-                uid = uid,
-                id = null,
-                showDefault = null,
-            )
-        }
-
-    val viewModelState = viewModel.loadingState
-    val dataList =
-        (viewModelState as? com.example.c001apk.compose.logic.state.LoadingState.Success)?.response
-            ?: emptyList()
-    if (dataList.isNotEmpty()) {
-        logDebug("follow list size=${dataList.size}")
-        dataList.forEach { item ->
-            val id = item.uid ?: item.userInfo?.uid ?: item.fUserInfo?.uid
-            val name = item.username ?: item.userInfo?.username ?: item.fUserInfo?.username
-            logDebug("item uid=$id name=$name")
-        }
-    }
-
-    when (val state = viewModel.loadingState) {
-        com.example.c001apk.compose.logic.state.LoadingState.Loading,
-        com.example.c001apk.compose.logic.state.LoadingState.Empty,
-        is com.example.c001apk.compose.logic.state.LoadingState.Error -> {
-            LoadingCard(
-                modifier = Modifier.padding(horizontal = 10.dp),
-                state = state,
-                onClick =
-                    if (state is com.example.c001apk.compose.logic.state.LoadingState.Loading) null
-                    else viewModel::loadMore,
-            )
-        }
-
-        is com.example.c001apk.compose.logic.state.LoadingState.Success -> {
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding =
-                    PaddingValues(
-                        top = 10.dp,
-                        bottom = 10.dp + paddingValues.calculateBottomPadding(),
-                    ),
-                verticalArrangement = Arrangement.spacedBy(10.dp),
-            ) {
-                itemsIndexed(state.response) { index, item ->
-                    val cardType =
-                        when (item.entityType) {
-                            "user" -> AppCardType.USER
-                            "contacts" -> AppCardType.CONTACTS
-                            else -> null
-                        }
-                    if (cardType != null) {
-                        AppCard(
-                            data = item,
-                            onOpenLink = { _, _ -> },
-                            appCardType = cardType,
-                            isHomeFeed = false,
-                            onViewUser = {
-                                val name =
-                                    if (item.entityType == "contacts") {
-                                        item.fUserInfo?.username
-                                            ?: item.userInfo?.username
-                                            ?: item.username
-                                    } else {
-                                        item.username
-                                            ?: item.userInfo?.username
-                                            ?: item.fUserInfo?.username
-                                    }
-                                logDebug("itemClick uid=$it name=$name")
-                                if (!name.isNullOrEmpty()) {
-                                    onSelect("@$name ")
-                                }
-                            },
-                            onFollowUser = null,
-                            onHandleRecent = null,
-                        )
-                    }
-                    if (index == state.response.lastIndex && !viewModel.isEnd) {
-                        viewModel.loadMore()
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
 private fun HotTopicList(
     onSelect: (String) -> Unit,
 ) {
@@ -305,10 +226,4 @@ private fun HotTopicList(
         updateInitPage = {},
         onReport = { _, _ -> },
     )
-}
-
-private fun logDebug(message: String) {
-    if (BuildConfig.DEBUG) {
-        Log.d("AtTopic", message)
-    }
 }

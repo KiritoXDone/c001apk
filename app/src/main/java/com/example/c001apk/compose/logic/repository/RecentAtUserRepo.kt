@@ -5,11 +5,18 @@ import com.example.c001apk.compose.logic.dao.RecentAtUserDao
 import com.example.c001apk.compose.logic.model.RecentAtUser
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.flow.Flow
 
 @Singleton
 class RecentAtUserRepo @Inject constructor(
     private val recentAtUserDao: RecentAtUserDao,
 ) {
+
+    fun loadAllListFlow(): Flow<List<RecentAtUser>> = recentAtUserDao.loadAllListFlow()
+
+    suspend fun rememberUser(username: String, avatar: String) {
+        recentAtUserDao.rememberUser(username, avatar, System.currentTimeMillis())
+    }
 
     fun loadAllListLive(): LiveData<List<RecentAtUser>> {
         return recentAtUserDao.loadAllListLive()
