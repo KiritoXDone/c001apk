@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.runtime.Composable
@@ -20,6 +21,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -104,15 +106,7 @@ private fun AtTopicScreen(
         Column(
             modifier = Modifier.fillMaxSize().padding(padding),
         ) {
-            OutlinedTextField(
-                value = keyword,
-                onValueChange = { keyword = it },
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp),
-                singleLine = true,
-                label = title,
-                useLabelAsPlaceholder = true,
-                leadingIcon = { Icon(MiuixIcons.Search, contentDescription = null) },
-            )
+            AtTopicSearchField(keyword, title) { keyword = it }
 
             if (keyword.isBlank()) {
                 val sectionPadding = remember {
@@ -166,6 +160,27 @@ private fun AtTopicScreen(
             }
         }
     }
+}
+
+@Composable
+internal fun AtTopicSearchField(keyword: String, title: String, onKeywordChange: (String) -> Unit) {
+    OutlinedTextField(
+        value = keyword,
+        onValueChange = onKeywordChange,
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp)
+            .testTag("at_search_field"),
+        singleLine = true,
+        label = title,
+        useLabelAsPlaceholder = true,
+        leadingIcon = {
+            Icon(
+                MiuixIcons.Search,
+                contentDescription = null,
+                modifier = Modifier.padding(start = 16.dp, end = 10.dp).size(20.dp)
+                    .testTag("at_search_icon"),
+            )
+        },
+    )
 }
 
 @Composable
