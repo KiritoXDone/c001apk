@@ -49,10 +49,7 @@ fun C001apkComposeTheme(
             ThemeController(
                 colorSchemeMode = mode,
                 keyColor = seed,
-                paletteStyle =
-                    ThemePaletteStyle.entries.getOrElse(paletteStyle) {
-                        ThemePaletteStyle.TonalSpot
-                    },
+                paletteStyle = paletteStyleOptions.getOrNull(paletteStyle)?.style ?: ThemePaletteStyle.TonalSpot,
             )
         }
     val base = controller.currentColors()

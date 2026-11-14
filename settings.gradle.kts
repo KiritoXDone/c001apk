@@ -32,3 +32,7 @@ dependencyResolutionManagement {
 
 rootProject.name = "c001apk-compose"
 include(":app", ":mojito", ":SketchImageViewLoader", ":media-support")
+listOf("core", "material", "squircle", "ui", "preference", "icons", "nav", "blur").forEach { module ->
+    include(":miuix:$module")
+    project(":miuix:$module").projectDir = file("miuix/miuix-$module")
+}

@@ -52,6 +52,7 @@ import com.example.c001apk.compose.ui.component.settings.SelectionItem
 import com.example.c001apk.compose.ui.component.settings.StateDropdownListItem
 import com.example.c001apk.compose.ui.component.settings.SwitchListItem
 import com.example.c001apk.compose.ui.component.TopBarScrollEffect
+import com.example.c001apk.compose.ui.theme.paletteStyleOptions
 import com.example.c001apk.compose.util.CacheDataManager.clearAllCache
 import com.example.c001apk.compose.util.CacheDataManager.getTotalCacheSize
 import java.util.Formatter
@@ -74,7 +75,6 @@ import top.yukonga.miuix.kmp.icon.extended.Sort
 import top.yukonga.miuix.kmp.icon.extended.Theme
 import top.yukonga.miuix.kmp.icon.extended.Update
 import top.yukonga.miuix.kmp.icon.extended.WorldClock
-import top.yukonga.miuix.kmp.theme.ThemePaletteStyle as PaletteStyle
 import top.yukonga.miuix.kmp.utils.scrollEndHaptic
 
 private enum class SettingsSection(val title: String, val summary: String) {
@@ -236,11 +236,9 @@ fun SettingsScreen(
                                         headlineText = "调色版风格",
                                         value = prefs.paletteStyle,
                                         selections =
-                                            PaletteStyle.entries.mapIndexed { index, label ->
+                                            paletteStyleOptions.mapIndexed { index, option ->
                                                 SelectionItem(
-                                                    stringResource(
-                                                        id = paletteStyleLabelRes(label),
-                                                    ),
+                                                    stringResource(id = option.label),
                                                     index,
                                                 )
                                             },
@@ -851,17 +849,4 @@ private fun themeTypeLabelRes(themeType: ThemeType): Int =
         ThemeType.Sakura -> R.string.theme_type_sakura
         ThemeType.Custom -> R.string.theme_type_custom
         ThemeType.UNRECOGNIZED -> R.string.theme_type_default
-    }
-
-private fun paletteStyleLabelRes(style: PaletteStyle): Int =
-    when (style) {
-        PaletteStyle.TonalSpot -> R.string.palette_style_tonal_spot
-        PaletteStyle.Neutral -> R.string.palette_style_neutral
-        PaletteStyle.Vibrant -> R.string.palette_style_vibrant
-        PaletteStyle.Expressive -> R.string.palette_style_expressive
-        PaletteStyle.Rainbow -> R.string.palette_style_rainbow
-        PaletteStyle.FruitSalad -> R.string.palette_style_fruit_salad
-        PaletteStyle.Monochrome -> R.string.palette_style_monochrome
-        PaletteStyle.Fidelity -> R.string.palette_style_fidelity
-        PaletteStyle.Content -> R.string.palette_style_content
     }

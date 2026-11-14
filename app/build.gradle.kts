@@ -174,11 +174,11 @@ configurations.matching {
 
 dependencies {
     coreLibraryDesugaring(libs.desugar.jdk)
-    implementation(libs.miuix.ui)
-    implementation(libs.miuix.blur)
-    implementation(libs.miuix.preference)
-    implementation(libs.miuix.icons)
-    implementation(libs.miuix.nav)
+    implementation(project(":miuix:ui"))
+    implementation(project(":miuix:blur"))
+    implementation(project(":miuix:preference"))
+    implementation(project(":miuix:icons"))
+    implementation(project(":miuix:nav"))
     implementation(libs.kotlinx.serialization.json)
 
     androidTestImplementation(libs.androidx.junit)

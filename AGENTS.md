@@ -10,10 +10,11 @@
 | `mojito/` | 图片浏览、缩放与转场基础组件 |
 | `SketchImageViewLoader/` | Sketch 图片加载实现与图片浏览适配 |
 | `media-support/` | Media3 播放与媒体浏览适配 |
+| `miuix/` | 固定上游版本的 Miuix Android 及公共源码模块 |
 | `tools/` | APK 身份、资源、签名与对齐校验 |
 | `scripts/` | 预构建、工具链检查、编译与产物收集 |
 
-依赖方向为 `app` → 三个库模块，`media-support` → `SketchImageViewLoader` 和 `mojito`，`SketchImageViewLoader` → `mojito`。禁止循环依赖，库模块不得引用应用业务。现有四模块结构不套用其他项目的 `core/*`、`feature/*` 分层。
+依赖方向为 `app` → 三个业务库模块和 Miuix 源码模块，`media-support` → `SketchImageViewLoader` 和 `mojito`，`SketchImageViewLoader` → `mojito`。Miuix 模块关系与源码来源见 `miuix/README.md`。禁止循环依赖，库模块不得引用应用业务。四个业务模块不套用其他项目的 `core/*`、`feature/*` 分层。
 
 ### 应用内分层
 
@@ -87,7 +88,7 @@ python -B -m unittest discover -s tools -p test_*.py
 - Gradle 的 `clean` 只清理模块输出，不清理工具链、安装包和本地记录。禁止为重新构建先删除整个 `build/`。
 - 保留应用包名 `com.example.c001apk.compose`、最低 API 24、目标 API 35、ARM64 ABI 与当前签名策略。
 - 编译 SDK 分别为应用的 37.0、媒体模块的 35、两个图片模块的 34；构建工具为 36.0.0。不要因为本机缺组件就改项目 SDK 版本。
-- 应用 Java/Kotlin 目标为 21，库模块为 17；当前显式关闭 AGP 内置 Kotlin 和新 DSL，继续使用已有插件，不照搬参考项目的插件配置。
+- 应用和 Miuix 源码模块 Java/Kotlin 目标为 21，三个业务库模块为 17；当前显式关闭 AGP 内置 Kotlin 和新 DSL，继续使用已有插件，不照搬参考项目的插件配置。
 - 本项目没有 `ktlintFormat`、`ktlintCheck`、`versionCatalogUpdate` 任务，不写不存在的检查命令。
 - 纯文档或技能调整无需编译，除非用户要求。构建、源码、资源或清单改动运行相关已有检查与编译；没有实际执行或没有测试用例，不能报告通过。
 - 不默认新增测试文件；优先使用现有测试。模拟器验收区分编译成功、安装成功、启动成功与功能验证。

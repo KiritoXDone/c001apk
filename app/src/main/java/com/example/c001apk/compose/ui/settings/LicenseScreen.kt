@@ -88,7 +88,7 @@ private val licenseList =
         ),
         LicenseItem(
             "YuKongA / compose-miuix-ui contributors",
-            "miuix (UI, Preference, Blur, Icons)",
+            "miuix (UI, Preference, Blur, Icons, Navigation)",
             "https://github.com/compose-miuix-ui/miuix",
             LicenseType.Apache2,
         ),

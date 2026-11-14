@@ -5,7 +5,7 @@
 - 上游：[frisk1127/c001apk-compose](https://github.com/frisk1127/c001apk-compose)，基线提交 `82ffea3c746955420c1d4f00380f5a6d7a6cad02`。
 - 实现采用 Kotlin 原生 Compose。
 - 设计规范参考：[Mishka UI guidelines](https://github.com/YuKongA/Mishka/blob/main/docs/ui-guidelines.md)。采用 squircle 圆角、12 dp 外边距、分段设置卡片、选中即生效的单选弹窗、窗口弹窗与毛玻璃背景采样。
-- 组件：[miuix v0.9.4](https://github.com/compose-miuix-ui/miuix/tree/v0.9.4)，使用 `miuix-ui`、`miuix-preference`、`miuix-icons`、`miuix-blur`。
+- 组件：[miuix 源码 `2855a36b`](https://github.com/compose-miuix-ui/miuix/tree/2855a36ba516cbf2b5ff46d722da38c94a59c07b)，使用 UI、Preference、Icons、Blur、Nav 及其必要基础模块；Android 接入和许可证见 [miuix/README.md](../miuix/README.md)。
 
 ## 实现
 
@@ -29,7 +29,7 @@
 - 首页快捷入口卡片的图标顶部留白为 16 dp；三点图标统一缩小 12.5%，按钮点击区域保留。
 - “关注与内容 → 首页内容”分别控制首页动态的轮播横幅、频道快捷入口、推荐话题与数码入口；切换直接更新已加载列表，重新开启无需刷新。横幅和频道入口默认开启，升级保留原“头条显示广场”的选择作为推荐话题与数码入口开关。设置文案使用当前页面名称，并明确酷安表情开关控制表情代码转图片。
 - 主要图标使用 MiuixIcons。点赞、表情、退格等少量社区动作保留独立 AOSP 矢量源码，附原始 Apache 2.0 许可头，不依赖 Material 图标库；Swatch 保留上游署名。机型名称使用本地绘制的现代手机轮廓，动态与评论操作菜单使用三点 More 图标。
-- 删除直接 Material 3、Material Components、Material 图标库及旧 MaterialKolor Compose 配色依赖。miuix 自身内部使用的颜色算法和窗口尺寸分类工具由 miuix 管理。折叠工具栏库未使用 Material API，已排除其发布时附带的 Material 和预览工具依赖。
+- 删除直接 Material 3、Material Components、Material 图标库及旧 MaterialKolor Compose 配色依赖。miuix 源码模块按上游使用 Material Color Utilities 配色算法。折叠工具栏库未使用 Material API，已排除其发布时附带的 Material 和预览工具依赖。
 
 - 启动页采用 Android 原生 AnimatedVectorDrawable，无穷符号展开后回到原图标。参考 TG-Twilight/c001apk 的系统启动画面形式，沿用本项目现有图标路径，自行实现展开、回弹和淡入动画；系统启动画面仅等待本地账号恢复，数盟 ID 在后台获取，不阻塞首页或深链导航；主地址和回退地址均失败时，前台仅提示一次 Toast，引导前往“设置 → 协议与设备 → 数字联盟 ID”手动填写。已有 ID 或用户已手动填写时不提示，不显示额外加载页面。
 
