@@ -119,7 +119,6 @@ fun ChatScreen(
     val context = LocalContext.current
     var dropdownMenuExpanded by remember { mutableStateOf(false) }
     var showDialog by remember { mutableStateOf(false) }
-    var showFeedPicker by remember { mutableStateOf(false) }
     var retryDelivery by remember { mutableStateOf<ChatViewModel.Delivery?>(null) }
     val lazyListState = rememberLazyListState()
     val scope = rememberCoroutineScope()
@@ -172,14 +171,6 @@ fun ChatScreen(
                 },
                 title = username,
                 actions = {
-                    com.example.c001apk.compose.ui.component.MiuixActionButton(
-                        onClick = {
-                            onClearFocus()
-                            showFeedPicker = true
-                        },
-                    ) {
-                        Text("发动态")
-                    }
                     Box {
                         MoreMenuButton { dropdownMenuExpanded = true }
                         DropdownMenu(
@@ -413,21 +404,6 @@ fun ChatScreen(
         }
     }
 
-    if (showFeedPicker)
-        ChatFeedPicker(
-            onDismiss = { showFeedPicker = false },
-            onSelected = { feedId ->
-                showFeedPicker = false
-                viewModel.onSendMessage(
-                    uid,
-                    com.example.c001apk.compose.util.ShareContent.link(
-                        com.example.c001apk.compose.util.ShareType.FEED,
-                        feedId,
-                    ),
-                    "",
-                )
-            },
-        )
     retryDelivery?.let { delivery ->
         com.example.c001apk.compose.ui.component.MiuixAlertDialog(
             onDismissRequest = { retryDelivery = null },
