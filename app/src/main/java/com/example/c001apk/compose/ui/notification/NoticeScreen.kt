@@ -1,14 +1,11 @@
 package com.example.c001apk.compose.ui.notification
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.only
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
@@ -20,8 +17,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.c001apk.compose.ui.component.BackButton
 import com.example.c001apk.compose.ui.component.CommonScreen
@@ -30,10 +25,7 @@ import com.example.c001apk.compose.ui.component.MiuixScaffold as Scaffold
 import com.example.c001apk.compose.ui.ffflist.FFFContentViewModel
 import com.example.c001apk.compose.util.ReportType
 import com.example.c001apk.compose.util.makeToast
-import top.yukonga.miuix.kmp.basic.Card as ElevatedCard
-import top.yukonga.miuix.kmp.basic.CardDefaults
 import top.yukonga.miuix.kmp.basic.Text
-import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @Composable
 fun NoticeScreen(
@@ -155,49 +147,34 @@ fun NoticeScreen(
         )
     }
 
-    when {
-        showMessageDialog -> {
-            Dialog(onDismissRequest = { showMessageDialog = false }) {
-                ElevatedCard(
-                    modifier = Modifier.fillMaxWidth(),
-                    cornerRadius = 28.dp,
-                    colors =
-                        CardDefaults.defaultColors()
-                            .copy(color = MiuixTheme.colorScheme.surfaceContainerHigh),
-                ) {
-                    Column(
-                        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
-                    ) {
-                        Text(
-                            text = if (viewModel.isTop == 1) "移除置顶" else "置顶",
-                            modifier =
-                                Modifier.fillMaxWidth()
-                                    .clickable {
-                                        showMessageDialog = false
-                                        viewModel.onHandleMessage(
-                                            FFFContentViewModel.ActionType.TOP,
-                                        )
-                                    }
-                                    .padding(horizontal = 24.dp, vertical = 14.dp),
-                            style = MiuixTheme.textStyles.headline2,
-                        )
-                        Text(
-                            text = "删除此对话",
-                            modifier =
-                                Modifier.fillMaxWidth()
-                                    .clickable {
-                                        showMessageDialog = false
-                                        viewModel.onHandleMessage(
-                                            FFFContentViewModel.ActionType.DELETE,
-                                        )
-                                    }
-                                    .padding(horizontal = 24.dp, vertical = 14.dp),
-                            style = MiuixTheme.textStyles.headline2,
-                        )
-                    }
+    if (showMessageDialog) {
+        com.example.c001apk.compose.ui.component.MiuixAlertDialog(
+            onDismissRequest = { showMessageDialog = false },
+            title = { Text("会话操作") },
+            text = {
+                Column {
+                    top.yukonga.miuix.kmp.basic.BasicComponent(
+                        title = if (viewModel.isTop == 1) "移除置顶" else "置顶",
+                        onClick = {
+                            showMessageDialog = false
+                            viewModel.onHandleMessage(FFFContentViewModel.ActionType.TOP)
+                        },
+                    )
+                    top.yukonga.miuix.kmp.basic.BasicComponent(
+                        title = "删除此对话",
+                        onClick = {
+                            showMessageDialog = false
+                            viewModel.onHandleMessage(FFFContentViewModel.ActionType.DELETE)
+                        },
+                    )
                 }
-            }
-        }
+            },
+            confirmButton = {
+                com.example.c001apk.compose.ui.component.MiuixDialogButton(
+                    onClick = { showMessageDialog = false },
+                ) { Text("取消") }
+            },
+        )
     }
 }
 

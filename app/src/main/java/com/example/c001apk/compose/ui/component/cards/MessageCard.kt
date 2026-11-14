@@ -4,29 +4,41 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.constraintlayout.compose.ConstraintLayout
-import androidx.constraintlayout.compose.Dimension
 import com.example.c001apk.compose.logic.model.HomeFeedResponse
 import com.example.c001apk.compose.ui.component.CoilLoader
 import com.example.c001apk.compose.ui.component.LinkText
 import com.example.c001apk.compose.ui.theme.cardBg
 import com.example.c001apk.compose.util.DateUtils.fromToday
 import top.yukonga.miuix.kmp.basic.Badge
+import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.Text
-import top.yukonga.miuix.kmp.squircle.squircleClip
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.extended.Contacts
+import top.yukonga.miuix.kmp.squircle.squircleSurface
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
-/** Created by bggRGjQaUbCoE on 2024/6/13 */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun MessageCard(
@@ -37,97 +49,87 @@ fun MessageCard(
     onHandleMessage: ((String, Int) -> Unit)? = null,
     onViewChat: ((String, String, String) -> Unit)? = null,
 ) {
+    val name = data.messageUsername?.takeIf(String::isNotBlank) ?: "用户"
+    val unreadCount = (data.unreadNum ?: 0).coerceAtLeast(0)
+    val preview = data.message?.takeIf(String::isNotBlank)
+        ?: if (!data.messagePic.isNullOrBlank()) "[图片]" else ""
 
-    ConstraintLayout(
-        modifier =
-            modifier
-                .fillMaxWidth()
-                .squircleClip(16.dp)
-                .background(
-                    if (data.isTop == 1) MiuixTheme.colorScheme.primaryContainer else cardBg(),
-                )
-                .combinedClickable(
-                    onClick = {
-                        onViewChat?.let {
-                            it(
-                                data.ukey.orEmpty(),
-                                data.messageUid.orEmpty(),
-                                data.messageUsername.orEmpty(),
-                            )
-                        }
-                    },
-                    onLongClick = {
-                        onHandleMessage?.let { it(data.ukey.orEmpty(), data.isTop ?: 0) }
-                    },
-                )
-                .padding(10.dp),
+    Row(
+        modifier = modifier.fillMaxWidth()
+            .squircleSurface(cardBg(), 20.dp)
+            .combinedClickable(
+                role = Role.Button,
+                onClick = {
+                    onViewChat?.invoke(data.ukey.orEmpty(), data.messageUid.orEmpty(), data.messageUsername.orEmpty())
+                },
+                onLongClickLabel = "会话操作",
+                onLongClick = onHandleMessage?.let { handle ->
+                    { handle(data.ukey.orEmpty(), data.isTop ?: 0) }
+                },
+            )
+            .padding(horizontal = 14.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        val (avatar, name, message, time, badge) = createRefs()
-
-        CoilLoader(
-            url = data.messageUserAvatar,
-            modifier =
-                Modifier.aspectRatio(1f)
-                    .clip(CircleShape)
-                    .constrainAs(avatar) {
-                        start.linkTo(parent.start)
-                        top.linkTo(parent.top)
-                        bottom.linkTo(parent.bottom)
-                        height = Dimension.fillToConstraints
-                    }
-                    .clickable {
-                        onViewUser(data.messageUid.orEmpty())
-                    },
-        )
-
-        Text(
-            text = data.messageUsername.orEmpty(),
-            modifier =
-                Modifier.padding(horizontal = 10.dp).constrainAs(name) {
-                    start.linkTo(avatar.end)
-                    top.linkTo(parent.top)
-                    end.linkTo(time.start)
-                    width = Dimension.fillToConstraints
-                },
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            style = MiuixTheme.textStyles.subtitle.copy(fontSize = 14.sp),
-        )
-
-        Text(
-            text = fromToday(data.dateline ?: 0),
-            modifier =
-                Modifier.constrainAs(time) {
-                    top.linkTo(parent.top)
-                    end.linkTo(parent.end)
-                },
-            color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
-            style = MiuixTheme.textStyles.headline2.copy(fontSize = 13.sp),
-        )
-
-        LinkText(
-            text = data.message.orEmpty(),
-            onOpenLink = onOpenLink,
-            maxLines = 1,
-            modifier =
-                Modifier.padding(start = 10.dp, end = if (data.unreadNum != 0) 10.dp else 0.dp)
-                    .constrainAs(message) {
-                        start.linkTo(avatar.end)
-                        top.linkTo(name.bottom)
-                        end.linkTo(if (data.unreadNum != 0) badge.start else parent.end)
-                        width = Dimension.fillToConstraints
-                    },
-        )
-
-        if (data.unreadNum != 0) {
-            Badge(
-                modifier =
-                    Modifier.constrainAs(badge) {
-                        top.linkTo(name.bottom)
-                        end.linkTo(parent.end)
-                    },
+        Box(
+            modifier = Modifier.size(48.dp).clip(CircleShape)
+                .background(MiuixTheme.colorScheme.surfaceContainerHigh)
+                .clickable { onViewUser(data.messageUid.orEmpty()) }
+                .semantics { contentDescription = "查看${name}的主页" },
+            contentAlignment = Alignment.Center,
+        ) {
+            if (!data.messageUserAvatar.isNullOrBlank()) {
+                CoilLoader(modifier = Modifier.fillMaxSize(), url = data.messageUserAvatar)
+            } else {
+                Icon(
+                    MiuixIcons.Contacts,
+                    contentDescription = null,
+                    modifier = Modifier.size(26.dp),
+                    tint = MiuixTheme.colorScheme.onSurfaceVariantSummary,
+                )
+            }
+        }
+        Column(modifier = Modifier.weight(1f).padding(start = 12.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = name,
+                    modifier = Modifier.weight(1f),
+                    style = MiuixTheme.textStyles.body1.copy(fontWeight = FontWeight.Medium),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                data.dateline?.let { timestamp ->
+                    Text(
+                        text = fromToday(timestamp),
+                        modifier = Modifier.padding(start = 8.dp),
+                        color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
+                        style = MiuixTheme.textStyles.body2,
+                        maxLines = 1,
+                    )
+                }
+            }
+            Spacer(Modifier.height(4.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text(text = data.unreadNum.toString())
+                LinkText(
+                    text = preview,
+                    onOpenLink = onOpenLink,
+                    maxLines = 1,
+                    color = MiuixTheme.colorScheme.onSurfaceVariantSummary.toArgb(),
+                    modifier = Modifier.weight(1f),
+                )
+                if (data.isTop == 1) {
+                    Text(
+                        text = "置顶",
+                        color = MiuixTheme.colorScheme.primary,
+                        style = MiuixTheme.textStyles.body2,
+                    )
+                }
+                if (unreadCount > 0) {
+                    Badge { Text(if (unreadCount > 99) "99+" else unreadCount.toString()) }
+                }
             }
         }
     }
