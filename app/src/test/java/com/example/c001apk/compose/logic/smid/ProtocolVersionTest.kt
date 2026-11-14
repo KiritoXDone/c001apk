@@ -10,6 +10,14 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class ProtocolVersionTest {
+    @Test fun requestIdentityChecksTheActualDeviceHeader() {
+        fun header(first: String) = java.util.Base64.getEncoder().withoutPadding()
+            .encodeToString("$first; ; ; ; maker; brand; model; build; null".toByteArray())
+            .reversed()
+        assertTrue(hasRequestDeviceIdentity(header("synthetic-id")))
+        assertFalse(hasRequestDeviceIdentity(header("")))
+        assertFalse(hasRequestDeviceIdentity("invalid"))
+    }
     @Test fun bundledDefaultsUpgradeWithoutReplacingExistingIdOrCustomVersions() = runBlocking {
         val old = UserPreferencesCompat.default().copy(versionName = "16.1.3", versionCode = "2604022",
             apiVersion = "16", szlmId = "existing-device-id", uid = "account", token = "secret",

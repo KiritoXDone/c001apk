@@ -5,6 +5,7 @@ import com.example.c001apk.compose.logic.filter.FilterScope
 import com.example.c001apk.compose.logic.filter.ContentFilterStore
 import com.example.c001apk.compose.logic.filter.ContentFilterEngine
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -18,6 +19,7 @@ import com.example.c001apk.compose.logic.network.ApiFailures
 import com.example.c001apk.compose.logic.repository.BlackListRepo
 import com.example.c001apk.compose.logic.repository.HistoryFavoriteRepo
 import com.example.c001apk.compose.logic.repository.NetworkRepo
+import com.example.c001apk.compose.logic.smid.hasRequestDeviceIdentity
 import com.example.c001apk.compose.logic.state.FeedDeletionEvents
 import com.example.c001apk.compose.logic.state.FooterState
 import com.example.c001apk.compose.logic.state.LoadingState
@@ -87,6 +89,11 @@ constructor(
 
     private var deleteJob: kotlinx.coroutines.Job? = null
     private var localFavoriteBusy = false
+    private val guestReplyGate = GuestReplyGate(
+        viewModelScope,
+        preferences.data.map { hasRequestDeviceIdentity(it.xAppDevice) },
+        awaitPublishedIdentity = { preferences.synchronizeDeviceIdentity() },
+    )
 
     fun dismissTradeLinkHint() {
         viewModelScope.launch { preferences.setHideTradeLinkHint(true) }
@@ -168,6 +175,7 @@ constructor(
 
     private fun fetchFeedData(verifyCaptcha: Boolean = false) {
         val requestedId = id
+        val revision = CookieUtil.accountSession.revision
         feedJob?.cancel()
         feedJob =
             viewModelScope.launch(Dispatchers.IO) {
@@ -250,7 +258,12 @@ constructor(
                                     }
                                 }
                             }
-                            fetchData()
+                            guestReplyGate.start(
+                                isGuest = !CookieUtil.isLogin,
+                                isCurrent = { requestedId == id && revision == CookieUtil.accountSession.revision },
+                                onWaiting = { loadingState = LoadingState.Error("设备标识尚未就绪，点击加载评论") },
+                                onReady = ::fetchData,
+                            )
 
                             if (CookieUtil.recordHistory && !historyFavoriteRepo.checkHistory(id)) {
                                 recordHistory(
@@ -277,6 +290,11 @@ constructor(
     lateinit var feedUid: String
     lateinit var feedUsername: String
     var feedTypeName by mutableStateOf(EMPTY_STRING)
+
+    override fun loadMore() {
+        guestReplyGate.cancel()
+        super.loadMore()
+    }
 
     override suspend fun customFetchData() =
         networkRepo.getFeedContentReply(
@@ -323,6 +341,7 @@ constructor(
     override fun refresh() {
         if (!isRefreshing && !isLoadMore) {
             if (feedState is LoadingState.Success) {
+                guestReplyGate.cancel()
                 resetParams()
                 isRefreshing = true
                 fetchData()
@@ -885,6 +904,7 @@ constructor(
     }
 
     fun resetState() {
+        guestReplyGate.cancel()
         collections.reset()
         deleteJob?.cancel()
         deletingFeed = false

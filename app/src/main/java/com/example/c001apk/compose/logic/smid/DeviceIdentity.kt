@@ -6,6 +6,11 @@ import com.example.c001apk.compose.logic.datastore.UserPreferencesCompat
 import com.example.c001apk.compose.util.TokenDeviceUtils.encode
 import java.util.Base64
 
+internal fun hasRequestDeviceIdentity(deviceHeader: String): Boolean = runCatching {
+    val fields = String(Base64.getDecoder().decode(deviceHeader.reversed()), Charsets.UTF_8).split(';')
+    fields.size == 9 && fields.first().isNotBlank()
+}.getOrDefault(false)
+
 /** Change only the DID in an existing device header; initialize missing fields from this device. */
 fun UserPreferencesCompat.withDigitalUnionId(id: String): UserPreferencesCompat {
     val maker = manufacturer.ifBlank { Build.MANUFACTURER.orEmpty() }

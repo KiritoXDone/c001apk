@@ -5,8 +5,10 @@ import com.example.c001apk.compose.ThemeMode
 import com.example.c001apk.compose.ThemeType
 import com.example.c001apk.compose.logic.datastore.UserPreferencesDataSource
 import com.example.c001apk.compose.logic.datastore.UserPreferencesCompat
+import com.example.c001apk.compose.logic.smid.hasRequestDeviceIdentity
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.flow.first
 import com.example.c001apk.compose.logic.model.HapticStrength
 import com.example.c001apk.compose.util.CookieUtil
 import javax.inject.Inject
@@ -65,6 +67,13 @@ constructor(
 
     suspend fun setSZLMId(value: String) = identityWrites.withLock {
         userPreferencesDataSource.setSZLMId(value).also(::publishIdentity)
+    }
+
+    suspend fun synchronizeDeviceIdentity(): Boolean = identityWrites.withLock {
+        val current = userPreferencesDataSource.data.first()
+        if (!hasRequestDeviceIdentity(current.xAppDevice)) return@withLock false
+        publishIdentity(current)
+        true
     }
 
     suspend fun saveGeneratedIdentity(
