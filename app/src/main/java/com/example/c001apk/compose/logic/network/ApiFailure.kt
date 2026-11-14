@@ -75,8 +75,16 @@ class ApiFailureInterceptor : Interceptor {
         )
             return response
         if (response.code !in 200..399) {
+            val accessFailure = if (response.code in listOf(400, 401, 403)) {
+                runCatching {
+                    val body = JsonParser.parseString(response.peekBody(1024 * 1024).string()).asJsonObject
+                    ApiFailures.fromBody(body)?.takeIf {
+                        it.kind == ApiFailureKind.CAPTCHA || it.kind == ApiFailureKind.AUTHENTICATION
+                    }
+                }.getOrNull()
+            } else null
             response.close()
-            throw ApiFailure(ApiFailureKind.HTTP, "请求失败（HTTP ${response.code}），请稍后重试")
+            throw accessFailure ?: ApiFailure(ApiFailureKind.HTTP, "请求失败（HTTP ${response.code}），请稍后重试")
         }
         // Binary image/download endpoints are intentionally outside JSON-envelope validation.
         val type = response.body?.contentType()?.subtype.orEmpty()
