@@ -10,18 +10,33 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.test.platform.app.InstrumentationRegistry
 import com.example.c001apk.compose.ui.component.settings.DropdownListItem
 import com.example.c001apk.compose.ui.component.settings.SelectionItem
 import com.example.c001apk.compose.ui.component.settings.SwitchListItem
 import com.example.c001apk.compose.ui.theme.C001apkComposeTheme
 import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.ExternalResource
+import org.junit.rules.RuleChain
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Theme
 
 class MiuixPreferencesTest {
-    @get:Rule val compose = createComposeRule()
+    private val compose = createComposeRule()
+    // HyperOS 可能拦截后台启动，先由 instrumentation shell 启动测试 Activity。
+    @get:Rule val rule: RuleChain = RuleChain.outerRule(object : ExternalResource() {
+        override fun before() {
+            val instrumentation = InstrumentationRegistry.getInstrumentation()
+            val appId = instrumentation.targetContext.packageName
+            instrumentation.uiAutomation.executeShellCommand(
+                "am start -W -n $appId/androidx.activity.ComponentActivity",
+            ).use { descriptor ->
+                android.os.ParcelFileDescriptor.AutoCloseInputStream(descriptor).use { it.readBytes() }
+            }
+        }
+    }).around(compose)
 
     @Test
     fun clickingSwitchRowSavesExactlyOnce() {
