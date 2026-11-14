@@ -1,6 +1,6 @@
 # 数盟 ID 注册
 
-注册有效执行路径采用 [People-11/shuzilm_id 的 DuClient.kt](https://github.com/People-11/shuzilm_id/blob/03118bc4dd2fbf4807f971c839391742c181da9b/sample/DuClient.kt)，参考提交 `03118bc4dd2fbf4807f971c839391742c181da9b`。仅调整包名并填入用户提供的注册配置，省略未调用的分析辅助函数与注释字段；有效字段、编码、网络调度、超时和返回判断与仓库一致。
+注册执行路径参考 [People-11/shuzilm_id 的 DuClient.kt](https://github.com/People-11/shuzilm_id/blob/03118bc4dd2fbf4807f971c839391742c181da9b/sample/DuClient.kt)，参考提交 `03118bc4dd2fbf4807f971c839391742c181da9b`。请求字段、编码、网络调度和返回判断沿用参考实现；响应解码兼容未压缩与 zlib 压缩两种格式，并限制响应大小。
 
 注册 API_KEY 使用用户提供的固定初始化值，不与旧 SDK 资源文件中的同名 RSA 公钥混用。
 
@@ -8,7 +8,7 @@
 
 - `DuClient` 使用 Android SDK / `org.json` 和 `HttpURLConnection` 构造一次 mdna 报告。
 - 使用同一份请求路径与载荷，并发请求 `https://auni.telecome.cn` 与 `https://global-auni.checktrustworthiness.com`，采用先成功返回的结果。
-- 每个连接的连接、读取超时均为 30 秒。JSON 请求按仓库执行 zlib 压缩和 XOR，响应按仓库执行 XOR 解码。
+- 每个连接的连接、读取超时均为 30 秒。JSON 请求按参考实现执行 zlib 压缩和 XOR；响应执行 XOR 解码后，按需解压 zlib。编码响应与解压结果均限制为 64 KiB。
 - 返回规则沿用仓库：`err` 为 0，优先读取 `n_a`，仅当它为空时读取 `cdd`，排除空值和全零字符串。未增加 ID 格式白名单、固定长度限制或额外报告字段。
 - 仅发送仓库启用的精简字段。未启用的环境检查、证书、hosts、周边网络、其他 SDK 标识与后续上报代码没有接入。
 

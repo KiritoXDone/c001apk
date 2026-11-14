@@ -1,5 +1,9 @@
 package com.example.c001apk.compose.logic.smid
 
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
+import java.io.IOException
+import java.util.zip.DeflaterOutputStream
 import org.junit.Assert.*
 import org.junit.Test
 
@@ -20,5 +24,28 @@ class DuCodecTest {
         assertEquals("abc", DuCodec.dropChar("abcd", 8))
         assertEquals("CFCD208", DuCodec.checksum("a", 0))
         assertEquals("123456:DEF012:789ABC", DuCodec.fakeMac("0123456789ABCDEF0123456789ABCDEF0123456789"))
+    }
+
+    @Test fun responseDecoderHandlesPlainAndCompressedJson() {
+        val json = """{"err":"0","n_a":"synthetic-id"}"""
+        val compressed = ByteArrayOutputStream().also { output ->
+            DeflaterOutputStream(output).use { it.write(json.toByteArray()) }
+        }.toByteArray()
+        for (plain in listOf(json.toByteArray(), compressed)) {
+            assertEquals(json, DuCodec.decodeResponse(ByteArrayInputStream(DuCodec.xor(plain))))
+        }
+    }
+
+    @Test fun responseDecoderRejectsOversizedDecodedData() {
+        val data = ByteArray(64 * 1024 + 1) { 'a'.code.toByte() }
+        val compressed = ByteArrayOutputStream().also { output ->
+            DeflaterOutputStream(output).use { it.write(data) }
+        }.toByteArray()
+        assertThrows(IOException::class.java) {
+            DuCodec.decodeResponse(ByteArrayInputStream(DuCodec.xor(compressed)))
+        }
+        assertThrows(IOException::class.java) {
+            DuCodec.decodeResponse(ByteArrayInputStream(DuCodec.xor(data)))
+        }
     }
 }

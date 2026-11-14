@@ -53,7 +53,7 @@ internal object DuClient {
         try {
             conn.outputStream.use { it.write(body) }
             if (conn.responseCode != 200) return null
-            val reply = JSONObject(String(DuCodec.xor(conn.inputStream.use { it.readBytes() })))
+            val reply = conn.inputStream.use { JSONObject(DuCodec.decodeResponse(it)) }
             if (reply.optString("err") != "0") return null
             return reply.optString("n_a").ifEmpty { reply.optString("cdd") }.takeIf { it.isNotEmpty() && !it.all { c -> c == '0' } }
         } finally {

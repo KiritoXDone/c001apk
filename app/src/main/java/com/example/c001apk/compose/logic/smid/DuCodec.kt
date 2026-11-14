@@ -1,6 +1,11 @@
 package com.example.c001apk.compose.logic.smid
 
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
+import java.io.IOException
+import java.io.InputStream
 import java.security.MessageDigest
+import java.util.zip.InflaterInputStream
 
 // Wire transforms from People-11/shuzilm_id, revision 03118bc4.
 internal object DuCodec {
@@ -9,6 +14,28 @@ internal object DuCodec {
 
     // Request/response stream cipher: repeating XOR with key-table entry 16.
     fun xor(data: ByteArray): ByteArray = ByteArray(data.size) { (data[it].toInt() xor KEY[it % KEY.size].toInt()).toByte() }
+
+    fun decodeResponse(input: InputStream): String {
+        val decoded = xor(readResponse(input))
+        val compressed = decoded.size >= 2 && (decoded[0].toInt() and 0xff) == 0x78 &&
+            (((decoded[0].toInt() and 0xff) shl 8) + (decoded[1].toInt() and 0xff)) % 31 == 0
+        val json = if (compressed) {
+            InflaterInputStream(ByteArrayInputStream(decoded)).use(::readResponse)
+        } else decoded
+        return json.toString(Charsets.UTF_8)
+    }
+
+    private fun readResponse(input: InputStream): ByteArray {
+        val output = ByteArrayOutputStream()
+        val buffer = ByteArray(4096)
+        while (true) {
+            val count = input.read(buffer)
+            if (count < 0) break
+            if (output.size() + count > 64 * 1024) throw IOException("数盟响应过大")
+            output.write(buffer, 0, count)
+        }
+        return output.toByteArray()
+    }
 
     // libdu sub_14acbc: the encoding parameter, atoi of the time string's last 3 chars with '.' dropped
     fun param(time: String): Int = time.takeLast(3).replace(".", "").toIntOrNull() ?: 0
