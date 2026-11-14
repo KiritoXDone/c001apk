@@ -5,6 +5,7 @@ import android.content.Context
 import android.graphics.Color
 import android.text.InputFilter
 import android.util.TypedValue
+import android.view.Gravity
 import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.inputmethod.InputMethodManager
@@ -52,6 +53,8 @@ fun ChatEditText(
                 setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f * DefaultFontScale)
                 setLineSpacing(0.0f, 1.2f)
                 setBackgroundColor(Color.TRANSPARENT)
+                setPadding(0, 0, 0, 0)
+                gravity = Gravity.CENTER_VERTICAL
                 filters = arrayOf(InputFilter.LengthFilter(500))
                 setOnTouchListener { _, event ->
                     when (event.action) {
