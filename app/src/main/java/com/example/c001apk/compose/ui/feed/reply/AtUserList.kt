@@ -73,15 +73,32 @@ internal fun FollowUserList(
                 showDefault = null,
             )
         }
-    val state = viewModel.loadingState
+    AtUserSuggestions(
+        recentUsers = recentUsers,
+        state = viewModel.loadingState,
+        footerState = viewModel.footerState,
+        stopAutomaticLoading = viewModel.stopAutomaticLoading,
+        onLoadMore = viewModel::loadMore,
+        onSelectUser = onSelectUser,
+    )
+}
+
+@Composable
+internal fun AtUserSuggestions(
+    recentUsers: List<RecentAtUser>,
+    state: LoadingState<List<HomeFeedResponse.Data>>,
+    footerState: FooterState,
+    stopAutomaticLoading: Boolean,
+    onLoadMore: () -> Unit,
+    onSelectUser: (AtUser) -> Unit,
+) {
     val recentNames = recentUsers.mapTo(mutableSetOf()) { it.username }
     val followedUsers = (state as? LoadingState.Success)?.response.orEmpty().filter {
         val user = it.asAtUser()
         it.entityType in listOf("user", "contacts") && user != null && user.username !in recentNames
     }
-    val footerState = viewModel.footerState
     val showFollowSection = recentUsers.isEmpty() || state !is LoadingState.Success ||
-        followedUsers.isNotEmpty() || !viewModel.stopAutomaticLoading || footerState is FooterState.Error
+        followedUsers.isNotEmpty() || !stopAutomaticLoading || footerState is FooterState.Error
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -108,24 +125,24 @@ internal fun FollowUserList(
                             onViewUser = { user?.let(onSelectUser) },
                             onFollowUser = null,
                         )
-                        if (index == followedUsers.lastIndex && !viewModel.stopAutomaticLoading) {
-                            LaunchedEffect(state.response.size) { viewModel.loadMore() }
+                        if (index == followedUsers.lastIndex && !stopAutomaticLoading) {
+                            LaunchedEffect(state.response.size) { onLoadMore() }
                         }
                     }
-                    if (followedUsers.isEmpty() && viewModel.stopAutomaticLoading && footerState !is FooterState.Error) {
+                    if (followedUsers.isEmpty() && stopAutomaticLoading && footerState !is FooterState.Error) {
                         item(key = "follow_empty") { LoadingCard(state = LoadingState.Empty) }
                     }
-                    if (followedUsers.isEmpty() && !viewModel.stopAutomaticLoading && footerState == FooterState.Success) {
+                    if (followedUsers.isEmpty() && !stopAutomaticLoading && footerState == FooterState.Success) {
                         item(key = "follow_more") {
                             Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                                MiuixActionButton(onClick = viewModel::loadMore) { Text("加载更多") }
+                                MiuixActionButton(onClick = onLoadMore) { Text("加载更多") }
                             }
                         }
                     }
                     item(key = "follow_footer") {
                         LoadingCard(
                             state = footerState,
-                            onClick = if (footerState is FooterState.Error) viewModel::loadMore else null,
+                            onClick = if (footerState is FooterState.Error) onLoadMore else null,
                         )
                     }
                 }
@@ -133,7 +150,7 @@ internal fun FollowUserList(
                     LoadingCard(
                         modifier = Modifier.padding(horizontal = 10.dp),
                         state = state,
-                        onClick = if (state is LoadingState.Loading) null else viewModel::loadMore,
+                        onClick = if (state is LoadingState.Loading) null else onLoadMore,
                     )
                 }
             }
