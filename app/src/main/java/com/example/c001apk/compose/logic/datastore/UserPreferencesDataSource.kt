@@ -4,8 +4,10 @@ import androidx.datastore.core.DataStore
 import com.example.c001apk.compose.FollowType
 import com.example.c001apk.compose.ThemeMode
 import com.example.c001apk.compose.ThemeType
+import com.example.c001apk.compose.logic.model.BottomBarStyle
 import com.example.c001apk.compose.logic.model.HapticStrength
 import com.example.c001apk.compose.logic.model.MainNavigationOrder
+import com.example.c001apk.compose.logic.model.TopBarStyle
 import com.example.c001apk.compose.logic.smid.protocolVersion
 import com.example.c001apk.compose.logic.smid.withProtocolVersion
 import com.example.c001apk.compose.logic.smid.withCurrentDevice
@@ -41,7 +43,18 @@ constructor(
     }
 
     suspend fun setFloatingNavigationBar(value: Boolean) = userPreferences.updateData {
-        it.copy(floatingNavigationBar = value)
+        it.copy(
+            floatingNavigationBar = value,
+            bottomBarStyle = if (value) BottomBarStyle.Floating else BottomBarStyle.Classic,
+        )
+    }
+
+    suspend fun setTopBarStyle(value: TopBarStyle) = userPreferences.updateData {
+        it.copy(topBarStyle = value)
+    }
+
+    suspend fun setBottomBarStyle(value: BottomBarStyle) = userPreferences.updateData {
+        it.copy(bottomBarStyle = value, floatingNavigationBar = value == BottomBarStyle.Floating)
     }
 
     suspend fun setBlurBars(value: Boolean) = userPreferences.updateData {

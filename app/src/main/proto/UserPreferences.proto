@@ -74,6 +74,8 @@ message UserPreferences {
   bool digitalUnionRefreshPending = 66;
   bool protocolVersionCustomized = 67;
   string defaultSearchOrder = 68;
+  string topBarStyle = 69;
+  string bottomBarStyle = 70;
 }
 
 enum ThemeType{

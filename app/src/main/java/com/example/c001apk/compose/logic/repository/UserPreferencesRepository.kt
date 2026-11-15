@@ -3,16 +3,18 @@ package com.example.c001apk.compose.logic.repository
 import com.example.c001apk.compose.FollowType
 import com.example.c001apk.compose.ThemeMode
 import com.example.c001apk.compose.ThemeType
-import com.example.c001apk.compose.logic.datastore.UserPreferencesDataSource
 import com.example.c001apk.compose.logic.datastore.UserPreferencesCompat
-import com.example.c001apk.compose.logic.smid.hasRequestDeviceIdentity
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
-import kotlinx.coroutines.flow.first
+import com.example.c001apk.compose.logic.datastore.UserPreferencesDataSource
+import com.example.c001apk.compose.logic.model.BottomBarStyle
 import com.example.c001apk.compose.logic.model.HapticStrength
+import com.example.c001apk.compose.logic.model.TopBarStyle
+import com.example.c001apk.compose.logic.smid.hasRequestDeviceIdentity
 import com.example.c001apk.compose.util.CookieUtil
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 @Singleton
 class UserPreferencesRepository
@@ -36,6 +38,10 @@ constructor(
 
     suspend fun setFloatingNavigationBar(value: Boolean) =
         userPreferencesDataSource.setFloatingNavigationBar(value)
+
+    suspend fun setTopBarStyle(value: TopBarStyle) = userPreferencesDataSource.setTopBarStyle(value)
+
+    suspend fun setBottomBarStyle(value: BottomBarStyle) = userPreferencesDataSource.setBottomBarStyle(value)
 
     suspend fun setBlurBars(value: Boolean) = userPreferencesDataSource.setBlurBars(value)
 

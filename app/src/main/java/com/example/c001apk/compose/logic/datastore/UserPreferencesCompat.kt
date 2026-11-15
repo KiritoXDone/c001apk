@@ -11,8 +11,10 @@ import com.example.c001apk.compose.constant.Constants.EMPTY_STRING
 import com.example.c001apk.compose.constant.Constants.VERSION_CODE
 import com.example.c001apk.compose.constant.Constants.VERSION_NAME
 import com.example.c001apk.compose.logic.accounts.SavedAccount
+import com.example.c001apk.compose.logic.model.BottomBarStyle
 import com.example.c001apk.compose.logic.model.HapticStrength
 import com.example.c001apk.compose.logic.model.MainNavigationOrder
+import com.example.c001apk.compose.logic.model.TopBarStyle
 
 data class UserPreferencesCompat(
     val themeMode: ThemeMode,
@@ -69,6 +71,8 @@ data class UserPreferencesCompat(
     val defaultSearchOrder: String = "COMPREHENSIVE",
     val readingMode: Int = 0,
     val floatingNavigationBar: Boolean = false,
+    val topBarStyle: TopBarStyle = TopBarStyle.ClassicContour,
+    val bottomBarStyle: BottomBarStyle? = null,
     val blurBars: Boolean = false,
     val collapseTabsOnScroll: Boolean = false,
     val hideTradeLinkHint: Boolean = false,
@@ -141,6 +145,8 @@ data class UserPreferencesCompat(
         defaultSearchOrder = original.defaultSearchOrder.ifEmpty { "COMPREHENSIVE" },
         readingMode = original.readingMode.coerceIn(0, 2),
         floatingNavigationBar = original.floatingNavigationBar,
+        topBarStyle = TopBarStyle.fromStoredId(original.topBarStyle),
+        bottomBarStyle = BottomBarStyle.fromStoredId(original.bottomBarStyle),
         blurBars = original.blurBars,
         collapseTabsOnScroll = original.collapseTabsOnScroll,
         hideTradeLinkHint = original.hideTradeLinkHint,
@@ -157,6 +163,9 @@ data class UserPreferencesCompat(
             if (original.followSelectionConfigured) original.followSelection.coerceIn(0, 5)
             else original.followTypeValue.takeIf { it in 1..4 } ?: 1,
     )
+
+    val effectiveBottomBarStyle: BottomBarStyle
+        get() = bottomBarStyle ?: if (floatingNavigationBar) BottomBarStyle.Floating else BottomBarStyle.Classic
 
     override fun toString() = "UserPreferencesCompat(credentials=redacted)"
 
@@ -233,6 +242,8 @@ data class UserPreferencesCompat(
             .setDefaultSearchOrder(defaultSearchOrder)
             .setReadingMode(readingMode)
             .setFloatingNavigationBar(floatingNavigationBar)
+            .setTopBarStyle(topBarStyle.storedId)
+            .setBottomBarStyle(bottomBarStyle?.storedId.orEmpty())
             .setBlurBars(blurBars)
             .setCollapseTabsOnScroll(collapseTabsOnScroll)
             .setHideTradeLinkHint(hideTradeLinkHint)
