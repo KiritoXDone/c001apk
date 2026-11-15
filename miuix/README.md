@@ -3,7 +3,7 @@
 固定来源：[compose-miuix-ui/miuix](https://github.com/compose-miuix-ui/miuix)，提交
 `2855a36ba516cbf2b5ff46d722da38c94a59c07b`，Apache-2.0 许可证见 [LICENSE](LICENSE)。
 
-保留应用使用的 core、material、squircle、ui、preference、icons、nav 和 blur 模块的
+保留应用使用的 core、material、squircle、ui、preference、icons、nav、blur、glass 和 glass-icons 模块的
 `commonMain`、`androidMain` 原始源码与基线配置；其他平台和示例不参与应用构建。每个模块的
 `build.gradle.kts` 是本项目的 Android 构建适配，并将上游性能基线目录映射给 Android 主源码集。
 `squircle` 的 SDF 生成任务沿用上游算法，
@@ -11,4 +11,11 @@
 
 模块依赖：`ui` 依赖 `core` 和 `squircle`，`preference` 依赖 `ui`，`icons` 依赖 `core`，
 `nav` 依赖 `squircle`，`squircle` 和 `blur` 依赖 `material`。应用直接使用 `ui`、
-`preference`、`icons`、`nav` 和 `blur`。
+`preference`、`icons`、`nav`、`blur`、`glass` 和 `glass-icons`。`glass` 依赖 `blur`、
+`material` 和 `ui`，`glass-icons` 依赖 `core`。
+
+本地兼容补丁：`SmallTopAppBar`、`BlurTopAppBar` 和 `GlassTopAppBar` 支持可组合标题、
+标题对齐、自定义 inset 和点击消费控制；`GlassIconButton` 支持禁用及保持状态，关闭继承时
+不回退父 backdrop；`GlassNavigationBar` 支持角标和回退底色；`GlassSegmentedTabRow` 允许
+空 backdrop；`GlassDropdownPopup` 支持关闭完成回调及未指定 valueAnchor 时的水平对齐。
+这些是本项目扩展，更新上游时需逐项复核。

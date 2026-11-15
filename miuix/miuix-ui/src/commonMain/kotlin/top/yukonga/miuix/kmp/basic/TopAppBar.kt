@@ -78,6 +78,8 @@ import top.yukonga.miuix.kmp.basic.TopAppBarState.Companion.Saver
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import kotlin.math.abs
 
+enum class TopAppBarTitleAlignment { Native, Center, Start }
+
 /**
  * A [TopAppBar] with Miuix style that can collapse and expand based on the
  * scroll position of the content below it.
@@ -194,6 +196,10 @@ fun BlurTopAppBar(
     navigationIconPadding: Dp = TopAppBarDefaults.NavigationIconPadding,
     actionIconPadding: Dp = TopAppBarDefaults.ActionIconPadding,
     titleAlpha: () -> Float = { 1f },
+    titleContent: (@Composable () -> Unit)? = null,
+    titleAlignment: TopAppBarTitleAlignment = TopAppBarTitleAlignment.Native,
+    windowInsets: WindowInsets? = null,
+    consumeBarTaps: Boolean = true,
     bottomContent: @Composable () -> Unit = {},
 ) {
     // Wrap the given actions in a Row.
@@ -228,6 +234,10 @@ fun BlurTopAppBar(
         scrollBehavior = scrollBehavior,
         modifier = modifier,
         defaultWindowInsetsPadding = defaultWindowInsetsPadding,
+        titleContent = titleContent,
+        titleAlignment = titleAlignment,
+        windowInsets = windowInsets,
+        consumeBarTaps = consumeBarTaps,
         bottomContent = bottomContent,
     )
 }
@@ -267,6 +277,10 @@ fun SmallTopAppBar(
     titlePadding: Dp = TopAppBarDefaults.TitlePadding,
     navigationIconPadding: Dp = TopAppBarDefaults.NavigationIconPadding,
     actionIconPadding: Dp = TopAppBarDefaults.ActionIconPadding,
+    titleContent: (@Composable () -> Unit)? = null,
+    titleAlignment: TopAppBarTitleAlignment = TopAppBarTitleAlignment.Native,
+    windowInsets: WindowInsets? = null,
+    consumeBarTaps: Boolean = true,
     bottomContent: @Composable () -> Unit = {},
 ) {
     SideEffect {
@@ -306,6 +320,10 @@ fun SmallTopAppBar(
         actionIconPadding = actionIconPadding,
         modifier = modifier,
         defaultWindowInsetsPadding = defaultWindowInsetsPadding,
+        titleContent = titleContent,
+        titleAlignment = titleAlignment,
+        windowInsets = windowInsets,
+        consumeBarTaps = consumeBarTaps,
         bottomContent = bottomContent,
     )
 }
@@ -735,6 +753,10 @@ private fun TopAppBarLayout(
     largeTitleBlurRadius: Dp = 0.dp,
     defaultWindowInsetsPadding: Boolean = true,
     titleAlpha: () -> Float = { 1f },
+    titleContent: (@Composable () -> Unit)? = null,
+    titleAlignment: TopAppBarTitleAlignment = TopAppBarTitleAlignment.Native,
+    windowInsets: WindowInsets? = null,
+    consumeBarTaps: Boolean = true,
     bottomContent: @Composable () -> Unit = {},
 ) {
     val titleClip = remember { TopAppBarTitleClip() }
@@ -833,7 +855,7 @@ private fun TopAppBarLayout(
                         translationY = smallTitleTranslationY.value
                     },
             ) {
-                Text(
+                if (titleContent != null) titleContent() else Text(
                     text = title,
                     color = animatedTitleColor,
                     fontSize = MiuixTheme.textStyles.title3.fontSize,
@@ -919,7 +941,9 @@ private fun TopAppBarLayout(
         modifier = modifier
             .background(color)
             .then(
-                if (defaultWindowInsetsPadding) {
+                if (windowInsets != null) {
+                    Modifier.windowInsetsPadding(windowInsets)
+                } else if (defaultWindowInsetsPadding) {
                     Modifier
                         .windowInsetsPadding(WindowInsets.displayCutout.only(WindowInsetsSides.Horizontal))
                         .windowInsetsPadding(WindowInsets.navigationBars.only(WindowInsetsSides.Horizontal))
@@ -929,10 +953,10 @@ private fun TopAppBarLayout(
             )
             // Titles retain the viewport clip; controls can cast shadows beyond the bar.
             .onSizeChanged { titleClip.viewportSize = it }
-            .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Top))
-            .pointerInput(Unit) {
+            .then(if (windowInsets == null) Modifier.windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Top)) else Modifier)
+            .then(if (consumeBarTaps) Modifier.pointerInput(Unit) {
                 detectTapGestures { /* Consume click */ }
-            },
+            } else Modifier),
     ) { measurables, constraints ->
         val navigationIconPlaceable =
             measurables
@@ -948,20 +972,23 @@ private fun TopAppBarLayout(
             if (constraints.maxWidth == Constraints.Infinity) {
                 constraints.maxWidth
             } else {
-                (constraints.maxWidth - navigationIconPlaceable.width - actionIconsPlaceable.width)
+                (constraints.maxWidth - if (titleAlignment == TopAppBarTitleAlignment.Center)
+                    2 * maxOf(navigationIconPlaceable.width, actionIconsPlaceable.width)
+                else navigationIconPlaceable.width + actionIconsPlaceable.width)
                     .coerceAtLeast(0)
             }
         val titleMaxWidth =
             if (maxTitleWidth == Constraints.Infinity) {
                 maxTitleWidth
             } else {
-                (maxTitleWidth * TITLE_WIDTH_FRACTION).fastRoundToInt()
+                if (titleAlignment == TopAppBarTitleAlignment.Native)
+                    (maxTitleWidth * TITLE_WIDTH_FRACTION).fastRoundToInt() else maxTitleWidth
             }
 
         val titlePlaceable =
             measurables
                 .fastFirst { it.layoutId == "title" }
-                .measure(constraints.copy(minWidth = 0, maxWidth = titleMaxWidth, minHeight = 0))
+                .measure(constraints.copy(minWidth = if (titleContent != null && titleMaxWidth != Constraints.Infinity && titleAlignment != TopAppBarTitleAlignment.Native) titleMaxWidth else 0, maxWidth = titleMaxWidth, minHeight = 0))
 
         val largeTitlePlaceable =
             measurables
@@ -1023,11 +1050,14 @@ private fun TopAppBarLayout(
             )
 
             // Title
-            var baseX = (constraints.maxWidth - titlePlaceable.width) / 2
-            if (baseX < navigationIconPlaceable.width) {
-                baseX += (navigationIconPlaceable.width - baseX)
-            } else if (baseX + titlePlaceable.width > constraints.maxWidth - actionIconsPlaceable.width) {
-                baseX += ((constraints.maxWidth - actionIconsPlaceable.width) - (baseX + titlePlaceable.width))
+            var baseX = if (titleAlignment == TopAppBarTitleAlignment.Start) navigationIconPlaceable.width
+                else (constraints.maxWidth - titlePlaceable.width) / 2
+            if (titleAlignment == TopAppBarTitleAlignment.Native) {
+                if (baseX < navigationIconPlaceable.width) {
+                    baseX += (navigationIconPlaceable.width - baseX)
+                } else if (baseX + titlePlaceable.width > constraints.maxWidth - actionIconsPlaceable.width) {
+                    baseX += ((constraints.maxWidth - actionIconsPlaceable.width) - (baseX + titlePlaceable.width))
+                }
             }
             val titleY = verticalCenter - titlePlaceable.height / 2
             titleClip.titleOrigin = IntOffset(
@@ -1125,6 +1155,10 @@ private fun SmallTopAppBarLayout(
     actionIconPadding: Dp,
     modifier: Modifier = Modifier,
     defaultWindowInsetsPadding: Boolean = true,
+    titleContent: (@Composable () -> Unit)? = null,
+    titleAlignment: TopAppBarTitleAlignment = TopAppBarTitleAlignment.Native,
+    windowInsets: WindowInsets? = null,
+    consumeBarTaps: Boolean = true,
     bottomContent: @Composable () -> Unit = {},
 ) {
     val animatedTitleColor by animateColorAsState(
@@ -1150,7 +1184,7 @@ private fun SmallTopAppBarLayout(
                     .layoutId("title")
                     .padding(horizontal = titlePadding),
             ) {
-                Text(
+                if (titleContent != null) titleContent() else Text(
                     text = title,
                     color = animatedTitleColor,
                     maxLines = 1,
@@ -1183,7 +1217,9 @@ private fun SmallTopAppBarLayout(
         modifier = modifier
             .background(color)
             .then(
-                if (defaultWindowInsetsPadding) {
+                if (windowInsets != null) {
+                    Modifier.windowInsetsPadding(windowInsets)
+                } else if (defaultWindowInsetsPadding) {
                     Modifier
                         .windowInsetsPadding(WindowInsets.displayCutout.only(WindowInsetsSides.Horizontal))
                         .windowInsetsPadding(WindowInsets.navigationBars.only(WindowInsetsSides.Horizontal))
@@ -1192,10 +1228,10 @@ private fun SmallTopAppBarLayout(
                 },
             )
             .clipToBounds()
-            .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Top))
-            .pointerInput(Unit) {
+            .then(if (windowInsets == null) Modifier.windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Top)) else Modifier)
+            .then(if (consumeBarTaps) Modifier.pointerInput(Unit) {
                 detectTapGestures { /* Consume click */ }
-            },
+            } else Modifier),
     ) { measurables, constraints ->
         val navigationIconPlaceable =
             measurables
@@ -1211,20 +1247,23 @@ private fun SmallTopAppBarLayout(
             if (constraints.maxWidth == Constraints.Infinity) {
                 constraints.maxWidth
             } else {
-                (constraints.maxWidth - navigationIconPlaceable.width - actionIconsPlaceable.width)
+                (constraints.maxWidth - if (titleAlignment == TopAppBarTitleAlignment.Center)
+                    2 * maxOf(navigationIconPlaceable.width, actionIconsPlaceable.width)
+                else navigationIconPlaceable.width + actionIconsPlaceable.width)
                     .coerceAtLeast(0)
             }
         val titleMaxWidth =
             if (maxTitleWidth == Constraints.Infinity) {
                 maxTitleWidth
             } else {
-                (maxTitleWidth * TITLE_WIDTH_FRACTION).fastRoundToInt()
+                if (titleAlignment == TopAppBarTitleAlignment.Native)
+                    (maxTitleWidth * TITLE_WIDTH_FRACTION).fastRoundToInt() else maxTitleWidth
             }
 
         val titlePlaceable =
             measurables
                 .fastFirst { it.layoutId == "title" }
-                .measure(constraints.copy(minWidth = 0, maxWidth = titleMaxWidth, minHeight = 0))
+                .measure(constraints.copy(minWidth = if (titleContent != null && titleMaxWidth != Constraints.Infinity && titleAlignment != TopAppBarTitleAlignment.Native) titleMaxWidth else 0, maxWidth = titleMaxWidth, minHeight = 0))
 
         val subtitlePlaceable =
             measurables
@@ -1238,10 +1277,16 @@ private fun SmallTopAppBarLayout(
 
         val subtitleHeight = subtitlePlaceable?.height ?: 0
         val collapsedHeight = TopAppBarDefaults.CollapsedHeight.roundToPx()
-        val verticalCenter = TopAppBarDefaults.SmallTopAppBarCenterHeight.roundToPx() / 2
+        val rowHeight = if (titleContent != null) {
+            maxOf(collapsedHeight, titlePlaceable.height, navigationIconPlaceable.height, actionIconsPlaceable.height)
+        } else {
+            collapsedHeight
+        }
+        val verticalCenter = if (titleContent != null) rowHeight / 2
+            else TopAppBarDefaults.SmallTopAppBarCenterHeight.roundToPx() / 2
         val subtitleY = verticalCenter + titlePlaceable.height / 2
         val subtitleBottomPadding = if (subtitlePlaceable != null) TopAppBarDefaults.SubtitleBottomPadding.roundToPx() else 0
-        val contentTop = maxOf(collapsedHeight, subtitleY + subtitleHeight + subtitleBottomPadding)
+        val contentTop = maxOf(rowHeight, subtitleY + subtitleHeight + subtitleBottomPadding)
         val layoutHeight = contentTop + bottomContentPlaceable.height
 
         layout(constraints.maxWidth, layoutHeight) {
@@ -1252,11 +1297,14 @@ private fun SmallTopAppBarLayout(
             )
 
             // Title
-            var baseX = (constraints.maxWidth - titlePlaceable.width) / 2
-            if (baseX < navigationIconPlaceable.width) {
-                baseX += (navigationIconPlaceable.width - baseX)
-            } else if (baseX + titlePlaceable.width > constraints.maxWidth - actionIconsPlaceable.width) {
-                baseX += ((constraints.maxWidth - actionIconsPlaceable.width) - (baseX + titlePlaceable.width))
+            var baseX = if (titleAlignment == TopAppBarTitleAlignment.Start) navigationIconPlaceable.width
+                else (constraints.maxWidth - titlePlaceable.width) / 2
+            if (titleAlignment == TopAppBarTitleAlignment.Native) {
+                if (baseX < navigationIconPlaceable.width) {
+                    baseX += (navigationIconPlaceable.width - baseX)
+                } else if (baseX + titlePlaceable.width > constraints.maxWidth - actionIconsPlaceable.width) {
+                    baseX += ((constraints.maxWidth - actionIconsPlaceable.width) - (baseX + titlePlaceable.width))
+                }
             }
             titlePlaceable.placeRelative(
                 x = baseX,

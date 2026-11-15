@@ -179,6 +179,8 @@ dependencies {
     implementation(project(":miuix:preference"))
     implementation(project(":miuix:icons"))
     implementation(project(":miuix:nav"))
+    implementation(project(":miuix:glass"))
+    implementation(project(":miuix:glass-icons"))
     implementation(libs.kotlinx.serialization.json)
 
     androidTestImplementation(libs.androidx.junit)
