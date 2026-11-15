@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -28,6 +27,7 @@ import androidx.lifecycle.lifecycleScope
 import com.example.c001apk.compose.ui.component.BackButton
 import com.example.c001apk.compose.ui.component.MiuixHeader as TopAppBar
 import com.example.c001apk.compose.ui.component.MiuixScaffold as Scaffold
+import com.example.c001apk.compose.ui.component.MiuixSearchTextField
 import com.example.c001apk.compose.ui.search.SearchContentScreen
 import com.example.c001apk.compose.ui.search.SearchFeedType
 import com.example.c001apk.compose.ui.search.SearchOrderType
@@ -37,11 +37,7 @@ import com.example.c001apk.compose.util.CookieUtil
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
-import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.Text
-import top.yukonga.miuix.kmp.basic.TextField as OutlinedTextField
-import top.yukonga.miuix.kmp.icon.MiuixIcons
-import top.yukonga.miuix.kmp.icon.extended.Search
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @AndroidEntryPoint
@@ -181,22 +177,12 @@ private fun AtTopicScreen(
 
 @Composable
 internal fun AtTopicSearchField(keyword: String, title: String, onKeywordChange: (String) -> Unit) {
-    OutlinedTextField(
+    MiuixSearchTextField(
         value = keyword,
         onValueChange = onKeywordChange,
         modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp)
             .testTag("at_search_field"),
-        singleLine = true,
         label = title,
-        useLabelAsPlaceholder = true,
-        leadingIcon = {
-            Icon(
-                MiuixIcons.Search,
-                contentDescription = null,
-                modifier = Modifier.padding(start = 16.dp, end = 10.dp).size(20.dp)
-                    .testTag("at_search_icon"),
-            )
-        },
     )
 }
 

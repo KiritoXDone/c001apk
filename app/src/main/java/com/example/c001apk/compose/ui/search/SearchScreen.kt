@@ -24,7 +24,6 @@ import com.example.c001apk.compose.ui.component.MiuixDialogButton as TextButton
 import com.example.c001apk.compose.ui.component.MiuixAlertDialog as AlertDialog
 import com.example.c001apk.compose.ui.component.cards.SearchHistoryCard
 import top.yukonga.miuix.kmp.basic.IconButton
-import top.yukonga.miuix.kmp.basic.InputField
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
@@ -74,7 +73,7 @@ fun SearchScreen(
                     Modifier.fillMaxWidth().padding(horizontal = 12.dp).padding(bottom = 8.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    InputField(
+                    MiuixSearchField(
                         query = query,
                         onQueryChange = onQueryChange,
                         onSearch = { onCheckSearch(it) },
@@ -138,6 +137,7 @@ fun SearchScreen(
                             showClearDialog = false
                             viewModel.clearAll()
                         },
+                        destructive = true,
                     ) {
                         Text("清空")
                     }

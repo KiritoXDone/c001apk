@@ -142,4 +142,18 @@ class SearchResultHeaderTest {
         compose.onNode(hasSetTextAction()).assertDoesNotExist()
         compose.runOnIdle { assertEquals(listOf("user_tag:%s%d + %20"), submitted) }
     }
+
+    @Test
+    fun clearKeepsTheEditorOpenForANewSearch() {
+        val submitted = mutableListOf<String>()
+        header(submitted::add)
+        compose.onNodeWithContentDescription("搜索关键词，点击编辑").performClick()
+        compose.onNodeWithContentDescription("清空搜索").performClick()
+        val field = compose.onNode(hasSetTextAction())
+        field.assertIsFocused().assertQuery("")
+        field.performTextInput("新关键词")
+        field.performImeAction()
+        compose.onNode(hasSetTextAction()).assertDoesNotExist()
+        compose.runOnIdle { assertEquals(listOf("新关键词"), submitted) }
+    }
 }

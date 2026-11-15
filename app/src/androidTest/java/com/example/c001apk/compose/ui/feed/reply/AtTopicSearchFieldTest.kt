@@ -1,10 +1,18 @@
 package com.example.c001apk.compose.ui.feed.reply
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.v2.createComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.unit.dp
 import com.example.c001apk.compose.ui.theme.C001apkComposeTheme
 import org.junit.Assert.assertTrue
+import org.junit.Assert.assertEquals
 import androidx.test.platform.app.InstrumentationRegistry
 import org.junit.Rule
 import org.junit.Test
@@ -33,10 +41,30 @@ class AtTopicSearchFieldTest {
         }
         val field = compose.onNodeWithTag("at_search_field", useUnmergedTree = true)
             .fetchSemanticsNode().boundsInRoot
-        val icon = compose.onNodeWithTag("at_search_icon", useUnmergedTree = true)
+        val icon = compose.onNodeWithTag("miuix_search_icon", useUnmergedTree = true)
             .fetchSemanticsNode().boundsInRoot
         val minimumInset = with(compose.density) { 12.dp.toPx() }
         assertTrue(icon.left - field.left >= minimumInset)
         assertTrue(icon.right < field.right)
+    }
+
+    @Test
+    fun searchInputAndClearUpdateKeyword() {
+        var keyword by mutableStateOf("")
+        val changes = mutableListOf<String>()
+        compose.setContent {
+            C001apkComposeTheme(materialYou = false) {
+                AtTopicSearchField(keyword = keyword, title = "搜索用户") {
+                    keyword = it
+                    changes.add(it)
+                }
+            }
+        }
+        compose.onNodeWithTag("at_search_field").performTextInput("C++")
+        compose.onNodeWithContentDescription("清空搜索").assertIsDisplayed().performClick()
+        compose.runOnIdle {
+            assertEquals("", keyword)
+            assertEquals(listOf("C++", ""), changes)
+        }
     }
 }

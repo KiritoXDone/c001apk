@@ -3,18 +3,10 @@ package com.example.c001apk.compose.ui.search
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBars
-import androidx.compose.foundation.layout.union
-import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.Composable
@@ -32,7 +24,6 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.semantics.contentDescription
@@ -41,7 +32,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import com.example.c001apk.compose.ui.component.BackButton
-import top.yukonga.miuix.kmp.basic.IconButtonDefaults
+import com.example.c001apk.compose.ui.component.MiuixHeader
+import com.example.c001apk.compose.ui.component.MiuixSearchTextField
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TopAppBarDefaults
 import top.yukonga.miuix.kmp.theme.MiuixTheme
@@ -88,60 +80,38 @@ internal fun SearchResultHeader(
         onSearch(value)
     }
 
-    Column(
-        Modifier.fillMaxWidth()
-            .windowInsetsPadding(WindowInsets.statusBars.union(WindowInsets.displayCutout)),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth()
-                .heightIn(min = TopAppBarDefaults.CollapsedHeight)
-                .padding(
-                    start = TopAppBarDefaults.NavigationIconPadding,
-                    end = TopAppBarDefaults.ActionIconPadding,
-                ),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            BackButton(onBackClick)
-            // 普通标题不持有输入连接，只有显式点击后才挂载编辑器。
-            if (!editing) {
-                Box(
-                    Modifier.weight(1f)
-                        .heightIn(min = TopAppBarDefaults.SmallTopAppBarCenterHeight)
-                        .clickable { editing = true }
-                        .semantics { contentDescription = "搜索关键词，点击编辑" },
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Text(query.ifEmpty { "搜索" }, style = titleStyle, maxLines = 1)
-                }
-            } else BasicTextField(
-                value = query,
-                onValueChange = onQueryChange,
-                modifier = Modifier.weight(1f)
-                    .focusRequester(focusRequester)
-                    .semantics { contentDescription = "搜索关键词，点击编辑" },
-                textStyle = titleStyle,
-                singleLine = true,
-                cursorBrush = SolidColor(MiuixTheme.colorScheme.primary),
-                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-                keyboardActions = KeyboardActions(onSearch = { submit(query) }),
-                decorationBox = { innerTextField ->
+    Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+        MiuixHeader(
+            navigationIcon = { BackButton(onBackClick) },
+            actions = actions,
+            centerTitle = true,
+            title = {
+                // 普通标题不持有输入连接，只有显式点击后才挂载编辑器。
+                if (!editing) {
                     Box(
                         modifier = Modifier.fillMaxWidth()
-                            .heightIn(min = TopAppBarDefaults.SmallTopAppBarCenterHeight),
+                            .heightIn(min = TopAppBarDefaults.SmallTopAppBarCenterHeight)
+                            .clickable { editing = true }
+                            .semantics { contentDescription = "搜索关键词，点击编辑" },
                         contentAlignment = Alignment.Center,
                     ) {
-                        if (query.isEmpty()) Text("搜索", style = titleStyle)
-                        innerTextField()
+                        Text(query.ifEmpty { "搜索" }, style = titleStyle, maxLines = 1)
                     }
-                },
-            )
-            Row(
-                modifier = Modifier.widthIn(min = IconButtonDefaults.MinWidth),
-                verticalAlignment = Alignment.CenterVertically,
-                content = actions,
-            )
-        }
+                } else {
+                    MiuixSearchTextField(
+                        value = query,
+                        onValueChange = onQueryChange,
+                        modifier = Modifier.fillMaxWidth()
+                            .focusRequester(focusRequester)
+                            .semantics { contentDescription = "搜索关键词，点击编辑" },
+                        label = "搜索",
+                        textStyle = titleStyle,
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                        keyboardActions = KeyboardActions(onSearch = { submit(query) }),
+                    )
+                }
+            },
+        )
         if (subtitle.isNotEmpty()) {
             Text(
                 text = subtitle,
