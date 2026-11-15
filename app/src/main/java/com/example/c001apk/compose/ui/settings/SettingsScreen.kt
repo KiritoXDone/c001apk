@@ -272,14 +272,12 @@ fun SettingsScreen(
                             }
                             item(key = "Appearance_1") {
                                 PreferenceGroup(title = "显示") {
-                                    SwitchListItem(
-                                        value = prefs.floatingNavigationBar,
-                                        leadingImageVector = MiuixIcons.ScreenMirroring,
-                                        headlineText = "悬浮底栏",
-                                        supportingText = "在手机布局中使用悬浮导航栏",
-                                    ) {
-                                        viewModel.setFloatingNavigationBar(it)
-                                    }
+                                    BarStylePreferences(
+                                        topBarStyle = prefs.topBarStyle,
+                                        bottomBarStyle = prefs.effectiveBottomBarStyle,
+                                        onTopBarStyleChange = viewModel::setTopBarStyle,
+                                        onBottomBarStyleChange = viewModel::setBottomBarStyle,
+                                    )
                                     BasicListItem(
                                         leadingImageVector = MiuixIcons.Sort,
                                         headlineText = "底栏排序",

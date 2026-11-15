@@ -7,7 +7,9 @@ import androidx.lifecycle.viewModelScope
 import com.example.c001apk.compose.FollowType
 import com.example.c001apk.compose.ThemeMode
 import com.example.c001apk.compose.ThemeType
+import com.example.c001apk.compose.logic.model.BottomBarStyle
 import com.example.c001apk.compose.logic.model.HapticStrength
+import com.example.c001apk.compose.logic.model.TopBarStyle
 import com.example.c001apk.compose.logic.repository.UserPreferencesRepository
 import com.example.c001apk.compose.logic.smid.DigitalUnionRepository
 import com.example.c001apk.compose.ui.base.PrefsViewModel
@@ -65,6 +67,14 @@ constructor(
 
     fun setFloatingNavigationBar(value: Boolean) {
         viewModelScope.launch { userPreferencesRepository.setFloatingNavigationBar(value) }
+    }
+
+    fun setTopBarStyle(value: TopBarStyle) {
+        viewModelScope.launch { userPreferencesRepository.setTopBarStyle(value) }
+    }
+
+    fun setBottomBarStyle(value: BottomBarStyle) {
+        viewModelScope.launch { userPreferencesRepository.setBottomBarStyle(value) }
     }
 
     fun setBlurBars(value: Boolean) {
