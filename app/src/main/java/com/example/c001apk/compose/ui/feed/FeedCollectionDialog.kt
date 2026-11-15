@@ -10,12 +10,14 @@ import androidx.compose.ui.unit.dp
 import com.example.c001apk.compose.ui.component.MiuixAlertDialog
 import com.example.c001apk.compose.ui.component.MiuixDialogButton
 import top.yukonga.miuix.kmp.basic.*
+import top.yukonga.miuix.kmp.glass.GlassDialog
+import top.yukonga.miuix.kmp.glass.GlassDialogButton
+import top.yukonga.miuix.kmp.glass.GlassDialogButtonRole
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Add
 import top.yukonga.miuix.kmp.preference.CheckboxPreference
 import top.yukonga.miuix.kmp.preference.SwitchPreference
 import top.yukonga.miuix.kmp.theme.MiuixTheme
-import top.yukonga.miuix.kmp.window.WindowDialog
 
 @Composable
 fun FeedCollectionDialog(collections: FeedCollections) {
@@ -23,9 +25,12 @@ fun FeedCollectionDialog(collections: FeedCollections) {
     var create by remember { mutableStateOf(false) }
     var title by remember { mutableStateOf("") }
     var isOpen by remember { mutableStateOf(false) }
-    WindowDialog(
+    GlassDialog(
         show = true,
         onDismissRequest = collections::dismiss,
+        backdrop = null,
+        stroke = null,
+        containerColor = MiuixTheme.colorScheme.surface.copy(alpha = 1f),
     ) {
         Column(Modifier.fillMaxWidth().heightIn(max = 420.dp)) {
             Row(
@@ -94,23 +99,23 @@ fun FeedCollectionDialog(collections: FeedCollections) {
             }
             Spacer(Modifier.height(12.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Button(
+                GlassDialogButton(
                     onClick = collections::dismiss,
                     enabled = !collections.saving && !collections.creating,
                     modifier = Modifier.weight(1f),
                 ) {
-                    Text("取消")
+                    Text("取消", style = MiuixTheme.textStyles.button)
                 }
-                Button(
+                GlassDialogButton(
                     onClick = collections::save,
                     enabled =
                         !collections.busy &&
                             collections.error == null &&
                             collections.items.isNotEmpty(),
                     modifier = Modifier.weight(1f),
-                    colors = ButtonDefaults.buttonColorsPrimary(),
+                    role = GlassDialogButtonRole.Primary,
                 ) {
-                    Text(if (collections.saving) "保存中…" else "保存")
+                    Text(if (collections.saving) "保存中…" else "保存", style = MiuixTheme.textStyles.button)
                 }
             }
         }

@@ -394,6 +394,7 @@ fun ChatScreen(
             confirmButton = {
                 com.example.c001apk.compose.ui.component.MiuixDialogButton(
                     onClick = { showDialog = false },
+                    primary = false,
                 ) { Text("取消") }
             },
         )

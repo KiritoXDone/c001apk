@@ -75,6 +75,7 @@ fun LocalFollowListScreen(onBack: () -> Unit, onUser: (String) -> Unit) {
             text = { Text("仅从本机名单移除，不会改变账号的关注关系。") },
             confirmButton = {
                 MiuixDialogButton(
+                    destructive = true,
                     onClick = {
                         remove = null
                         model.remove(user.uid)

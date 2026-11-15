@@ -142,7 +142,7 @@ fun BlackListScreen(
             title = { Text("确定清空全部${if (listType == BlackListType.USER) "用户" else "话题"}黑名单？",
                 Modifier.fillMaxWidth(), textAlign = TextAlign.Center) },
             confirmButton = {
-                MiuixDialogButton(onClick = { showClearDialog = false; viewModel.clearAll() }) { Text("清空") }
+                MiuixDialogButton(onClick = { showClearDialog = false; viewModel.clearAll() }, destructive = true) { Text("清空") }
             },
             dismissButton = { MiuixDialogButton(onClick = { showClearDialog = false }) { Text("取消") } },
         )

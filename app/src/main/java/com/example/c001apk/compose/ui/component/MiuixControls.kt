@@ -1,31 +1,63 @@
 package com.example.c001apk.compose.ui.component
 
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.snap
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.displayCutout
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.union
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.disabled
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.unit.DpSize
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
-import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
-import top.yukonga.miuix.kmp.basic.ListPopupColumn
-import top.yukonga.miuix.kmp.basic.ListPopupDefaults
 import top.yukonga.miuix.kmp.basic.PopupPositionProvider
+import top.yukonga.miuix.kmp.glass.GlassBottomSheet
+import top.yukonga.miuix.kmp.glass.GlassDropdownPopup
+import top.yukonga.miuix.kmp.glass.GlassMotion
+import top.yukonga.miuix.kmp.glass.GlassPopupDefaults
 import top.yukonga.miuix.kmp.icon.MiuixIcons
-import top.yukonga.miuix.kmp.icon.extended.More
+import top.yukonga.miuix.kmp.icon.glass.More
 import top.yukonga.miuix.kmp.theme.LocalContentColor
+import top.yukonga.miuix.kmp.theme.LocalDismissState
 import top.yukonga.miuix.kmp.theme.MiuixTheme
-import top.yukonga.miuix.kmp.window.WindowBottomSheet
-import top.yukonga.miuix.kmp.window.WindowListPopup
+import top.yukonga.miuix.kmp.utils.MiuixPopupUtils.Companion.PopupLayout
 
 @Composable
 fun MiuixMenu(
@@ -37,25 +69,67 @@ fun MiuixMenu(
     contentScale: Float = 0.9f,
     content: @Composable () -> Unit,
 ) {
-    WindowListPopup(
-        show = expanded,
-        onDismissRequest = onDismissRequest,
-        popupModifier = modifier,
-        alignment = alignment,
-        onDismissFinished = onDismissFinished,
-        minWidth = ListPopupDefaults.MinWidth * contentScale,
+    var anchorBounds by remember { mutableStateOf(Rect.Zero) }
+    Spacer(
+        Modifier.onGloballyPositioned { coordinates ->
+            val anchor = coordinates.parentLayoutCoordinates ?: coordinates
+            val position = anchor.positionInWindow()
+            anchorBounds = Rect(
+                left = position.x,
+                top = position.y,
+                right = position.x + anchor.size.width,
+                bottom = position.y + anchor.size.height,
+            )
+        },
+    )
+    val mounted = remember { mutableStateOf(false) }
+    val currentExpanded by rememberUpdatedState(expanded)
+    val currentFinished by rememberUpdatedState(onDismissFinished)
+    LaunchedEffect(expanded) {
+        if (expanded) mounted.value = true
+    }
+    if (!mounted.value) return
+
+    val density = LocalDensity.current
+    PopupLayout(
+        visible = mounted,
+        enableWindowDim = false,
+        enableBackHandler = false,
+        enterTransition = EnterTransition.None,
+        exitTransition = ExitTransition.None,
     ) {
-        // Scale inside the platform window, leaving anchor and window coordinates unchanged.
-        val density = LocalDensity.current
         CompositionLocalProvider(
             LocalDensity provides Density(density.density * contentScale, density.fontScale),
+            LocalDismissState provides onDismissRequest,
         ) {
-            ListPopupColumn(content)
+            Box(Modifier.fillMaxSize()) {
+                GlassDropdownPopup(
+                    show = expanded,
+                    onDismissRequest = onDismissRequest,
+                    anchorBounds = anchorBounds,
+                    backdrop = null,
+                    modifier = modifier,
+                    alignment = alignment,
+                    visuals = GlassPopupDefaults.visuals(
+                        stroke = null,
+                        shadow = null,
+                        material = null,
+                        containerColor = GlassPopupDefaults.containerColor().copy(alpha = 1f),
+                    ),
+                    onDismissFinished = {
+                        if (!currentExpanded) {
+                            mounted.value = false
+                            currentFinished?.invoke()
+                        }
+                    },
+                ) {
+                    content()
+                }
+            }
         }
     }
 }
 
-/** Transparent overflow button with miuix press feedback and an anchored native popup. */
 @Composable
 fun MiuixMoreMenu(
     expanded: Boolean,
@@ -64,7 +138,6 @@ fun MiuixMoreMenu(
     content: @Composable () -> Unit,
 ) {
     Box(modifier, contentAlignment = Alignment.Center) {
-        // The popup reads this parent's bounds, so its animation starts at the actual button.
         Box(Modifier.padding(4.dp)) {
             IconButton(
                 onClick = { onExpandedChange(true) },
@@ -73,7 +146,7 @@ fun MiuixMoreMenu(
                 backgroundColor = Color.Transparent,
             ) {
                 Icon(
-                    imageVector = MiuixIcons.More,
+                    imageVector = MiuixIcons.Glass.More,
                     contentDescription = "更多操作",
                     modifier = Modifier.size(17.5.dp),
                     tint = MiuixTheme.colorScheme.onSurfaceVariantSummary,
@@ -89,6 +162,8 @@ fun MiuixMoreMenu(
     }
 }
 
+// 菜单行参考 Miuix GlassPopupItem（Copyright 2026 compose-miuix-ui contributors，Apache-2.0）。
+// 单一交互层保留自定义内容和长按。
 @Composable
 fun MiuixMenuItem(
     text: @Composable () -> Unit,
@@ -100,43 +175,54 @@ fun MiuixMenuItem(
     leadingIcon: (@Composable () -> Unit)? = null,
     trailingIcon: (@Composable () -> Unit)? = null,
 ) {
-    CompositionLocalProvider(
-        LocalContentColor provides
-            if (enabled) MiuixTheme.colorScheme.onSurface
-            else MiuixTheme.colorScheme.disabledOnSurface,
-    ) {
-        BasicComponent(
-            modifier =
-                modifier.then(
-                    if (!enabled) Modifier.semantics(mergeDescendants = true) { disabled() }
-                    else Modifier,
-                ).then(
-                    if (onLongClick != null)
-                        Modifier.combinedClickable(
-                            enabled = enabled,
-                            role = Role.Button,
-                            onClick = onClick,
-                            onLongClick = onLongClick,
-                            onLongClickLabel = onLongClickLabel,
-                        )
-                    else Modifier,
-                ),
-            onClick = if (onLongClick == null) onClick else null,
-            enabled = enabled,
-            role = Role.Button,
-            insideMargin = PaddingValues(horizontal = 20.dp, vertical = 12.dp),
+    val interactionSource = remember { MutableInteractionSource() }
+    val pressed by interactionSource.collectIsPressedAsState()
+    val pressColor = GlassPopupDefaults.itemPressedColor()
+    val pressFill by animateColorAsState(
+        targetValue = if (pressed) pressColor else Color.Transparent,
+        animationSpec = if (pressed) snap() else GlassMotion.popupPressExit(),
+        label = "menuItemPress",
+    )
+    val color = MiuixTheme.colorScheme.onSurfaceContainer
+    CompositionLocalProvider(LocalContentColor provides if (enabled) color else color.copy(alpha = 0.4f)) {
+        MiuixTheme(
+            textStyles = MiuixTheme.textStyles.copy(
+                main = MiuixTheme.textStyles.body1.copy(fontWeight = FontWeight.Medium),
+            ),
         ) {
-            // ListPopupColumn queries intrinsic widths with an unbounded constraint.
-            // BasicComponent's action-slot layout in miuix 0.9.4 overflows in that pass.
-            // Keep its native interaction surface, with intrinsic-safe menu content.
-            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                modifier = modifier
+                    .fillMaxWidth()
+                    .heightIn(min = GlassPopupDefaults.ItemMinHeight)
+                    .padding(horizontal = GlassPopupDefaults.ItemPressInset)
+                    .drawBehind {
+                        drawRoundRect(
+                            color = pressFill,
+                            cornerRadius = CornerRadius(GlassPopupDefaults.ItemPressRadius.toPx()),
+                        )
+                    }
+                    .combinedClickable(
+                        interactionSource = interactionSource,
+                        indication = null,
+                        enabled = enabled,
+                        role = Role.Button,
+                        onClick = onClick,
+                        onLongClick = onLongClick,
+                        onLongClickLabel = onLongClickLabel,
+                    )
+                    .padding(
+                        horizontal = GlassPopupDefaults.ItemPaddingHorizontal - GlassPopupDefaults.ItemPressInset,
+                        vertical = GlassPopupDefaults.ItemPaddingVertical,
+                    ),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
                 leadingIcon?.let { icon ->
                     icon()
-                    Spacer(Modifier.width(8.dp))
+                    Spacer(Modifier.width(GlassPopupDefaults.ItemIconGap))
                 }
                 Box(Modifier.weight(1f)) { text() }
                 trailingIcon?.let { icon ->
-                    Spacer(Modifier.width(8.dp))
+                    Spacer(Modifier.width(GlassPopupDefaults.ItemIconGap))
                     icon()
                 }
             }
@@ -151,15 +237,16 @@ fun MiuixBottomSheet(
     content: @Composable () -> Unit,
 ) {
     val contentDensity = LocalDensity.current
-    WindowBottomSheet(
+    GlassBottomSheet(
         show = true,
         modifier = modifier,
         onDismissRequest = onDismissRequest,
-        backgroundColor = MiuixTheme.colorScheme.surface,
+        backdrop = null,
+        stroke = null,
+        containerColor = MiuixTheme.colorScheme.surface.copy(alpha = 1f),
         dragHandleColor = MiuixTheme.colorScheme.onSurfaceVariantSummary.copy(alpha = 0.2f),
         insideMargin = DpSize(0.dp, 0.dp),
     ) {
-        // The platform Dialog supplies a new density; preserve the page's component/font scale.
         CompositionLocalProvider(LocalDensity provides contentDensity) {
             Box(
                 Modifier.windowInsetsPadding(

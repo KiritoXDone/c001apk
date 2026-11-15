@@ -23,6 +23,7 @@ import top.yukonga.miuix.kmp.basic.*
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Search
 import top.yukonga.miuix.kmp.icon.extended.ChevronForward
+import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @Composable
 fun FollowScreen(
@@ -63,9 +64,19 @@ fun FollowScreen(
                             }
                             MiuixMenu(expanded = menu, onDismissRequest = { menu = false }, contentScale = 1f) {
                                 labels.forEach { (value, title) ->
-                                    BasicComponent(
-                                        title = title,
-                                        summary = if (prefs.followSelection == value) "当前分类" else null,
+                                    MiuixMenuItem(
+                                        text = {
+                                            Column {
+                                                Text(title)
+                                                if (prefs.followSelection == value) {
+                                                    Text(
+                                                        "当前分类",
+                                                        style = MiuixTheme.textStyles.body2,
+                                                        color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
+                                                    )
+                                                }
+                                            }
+                                        },
                                         onClick = {
                                             menu = false
                                             settings.select(value)

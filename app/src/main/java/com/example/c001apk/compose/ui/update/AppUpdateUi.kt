@@ -79,6 +79,7 @@ fun AppUpdateHost(navigator: AppNavigator, model: AppUpdateViewModel = hiltViewM
                     MiuixDialogButton(
                         onClick = { model.updates.dismiss(skip = true) },
                         modifier = Modifier.weight(1f),
+                        primary = false,
                     ) {
                         Text("跳过")
                     }

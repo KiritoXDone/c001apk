@@ -15,6 +15,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.example.c001apk.compose.ui.theme.C001apkViewTheme
 import top.yukonga.miuix.kmp.basic.*
+import top.yukonga.miuix.kmp.glass.GlassDialogButton
+import top.yukonga.miuix.kmp.glass.GlassDialogButtonRole
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 /** Native miuix dialog content for View-based media and rich-text editor entry points. */
@@ -99,7 +101,7 @@ class MiuixViewDialogBuilder(private val context: Context) {
                                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                                     ) {
                                         neutral?.let { (label, listener) ->
-                                            Button(
+                                            GlassDialogButton(
                                                 modifier = Modifier.weight(1f),
                                                 onClick = {
                                                     dialog.dismiss()
@@ -109,11 +111,11 @@ class MiuixViewDialogBuilder(private val context: Context) {
                                                     )
                                                 },
                                             ) {
-                                                Text(label.toString())
+                                                Text(label.toString(), style = MiuixTheme.textStyles.button)
                                             }
                                         }
                                         negative?.let { (label, listener) ->
-                                            Button(
+                                            GlassDialogButton(
                                                 modifier = Modifier.weight(1f),
                                                 onClick = {
                                                     dialog.dismiss()
@@ -123,13 +125,13 @@ class MiuixViewDialogBuilder(private val context: Context) {
                                                     )
                                                 },
                                             ) {
-                                                Text(label.toString())
+                                                Text(label.toString(), style = MiuixTheme.textStyles.button)
                                             }
                                         }
                                         positive?.let { (label, listener) ->
-                                            Button(
+                                            GlassDialogButton(
                                                 modifier = Modifier.weight(1f),
-                                                colors = ButtonDefaults.buttonColorsPrimary(),
+                                                role = GlassDialogButtonRole.Primary,
                                                 onClick = {
                                                     dialog.dismiss()
                                                     listener?.onClick(
@@ -138,7 +140,7 @@ class MiuixViewDialogBuilder(private val context: Context) {
                                                     )
                                                 },
                                             ) {
-                                                Text(label.toString())
+                                                Text(label.toString(), style = MiuixTheme.textStyles.button)
                                             }
                                         }
                                     }

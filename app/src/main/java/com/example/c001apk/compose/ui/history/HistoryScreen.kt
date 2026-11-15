@@ -176,6 +176,7 @@ fun HistoryScreen(
                 onDismissRequest = { showClearDialog = false },
                 confirmButton = {
                     MiuixDialogButton(
+                        destructive = true,
                         onClick = {
                             showClearDialog = false
                             viewModel.clearAll()

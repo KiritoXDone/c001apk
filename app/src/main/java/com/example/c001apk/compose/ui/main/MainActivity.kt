@@ -22,6 +22,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import com.example.c001apk.compose.logic.providable.LocalUserPreferences
 import com.example.c001apk.compose.logic.repository.UserPreferencesRepository
+import com.example.c001apk.compose.ui.component.MiuixRootPopupHost
 import com.example.c001apk.compose.ui.component.currentWindowWidthSizeClass
 import com.example.c001apk.compose.ui.search.SearchViewModel
 import com.example.c001apk.compose.ui.theme.C001apkComposeTheme
@@ -203,18 +204,20 @@ class MainActivity : ComponentActivity() {
                     fontScale = preferences.fontScale,
                     contentScale = preferences.contentScale,
                 ) {
-                    Surface(
-                        modifier =
-                            Modifier.fillMaxSize().background(MiuixTheme.colorScheme.background),
-                    ) {
-                        if (!viewModel.startup.preparingAccount) {
-                            com.example.c001apk.compose.ui.update.AppUpdateHost(navigator)
-                            MainNavigation(
-                                navigator = navigator,
-                                badge = viewModel.badge,
-                                resetBadge = viewModel::resetBadge,
-                                widthSizeClass = currentWindowWidthSizeClass(),
-                            )
+                    MiuixRootPopupHost {
+                        Surface(
+                            modifier =
+                                Modifier.fillMaxSize().background(MiuixTheme.colorScheme.background),
+                        ) {
+                            if (!viewModel.startup.preparingAccount) {
+                                com.example.c001apk.compose.ui.update.AppUpdateHost(navigator)
+                                MainNavigation(
+                                    navigator = navigator,
+                                    badge = viewModel.badge,
+                                    resetBadge = viewModel::resetBadge,
+                                    widthSizeClass = currentWindowWidthSizeClass(),
+                                )
+                            }
                         }
                     }
                 }

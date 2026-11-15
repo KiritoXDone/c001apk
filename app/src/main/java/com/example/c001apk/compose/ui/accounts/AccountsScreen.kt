@@ -76,6 +76,7 @@ fun AccountsScreen(onBack: () -> Unit, onLogin: () -> Unit) {
             text = { Text("删除后需要重新登录；本地收藏、历史和关注会保留。") },
             confirmButton = {
                 MiuixDialogButton(
+                    destructive = true,
                     onClick = {
                         deleting = null
                         model.remove(account.uid)

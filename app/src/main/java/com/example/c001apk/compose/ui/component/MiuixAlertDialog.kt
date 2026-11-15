@@ -7,10 +7,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import top.yukonga.miuix.kmp.glass.GlassDialog
 import top.yukonga.miuix.kmp.theme.MiuixTheme
-import top.yukonga.miuix.kmp.window.WindowDialog
 
-/** Native window presentation, with a bounded body and buttons kept outside the body. */
+/** 正文独立滚动，操作按钮保持可见。 */
 @Composable
 fun MiuixAlertDialog(
     onDismissRequest: () -> Unit,
@@ -21,7 +21,14 @@ fun MiuixAlertDialog(
     title: (@Composable () -> Unit)? = null,
     text: (@Composable () -> Unit)? = null,
 ) {
-    WindowDialog(show = true, modifier = modifier, onDismissRequest = onDismissRequest) {
+    GlassDialog(
+        show = true,
+        modifier = modifier,
+        onDismissRequest = onDismissRequest,
+        backdrop = null,
+        stroke = null,
+        containerColor = MiuixTheme.colorScheme.surface.copy(alpha = 1f),
+    ) {
         Column(Modifier.fillMaxWidth().heightIn(max = 500.dp)) {
             icon?.invoke()
             if (title != null) {
@@ -42,11 +49,13 @@ fun MiuixAlertDialog(
                 }
                 Spacer(Modifier.height(20.dp))
             }
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                if (dismissButton != null) Box(Modifier.weight(1f)) { dismissButton() }
-                Box(Modifier.weight(1f)) {
-                    CompositionLocalProvider(LocalDialogPrimaryAction provides true) {
-                        confirmButton()
+            CompositionLocalProvider(LocalDialogActions provides true) {
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    if (dismissButton != null) Box(Modifier.weight(1f)) { dismissButton() }
+                    Box(Modifier.weight(1f)) {
+                        CompositionLocalProvider(LocalDialogPrimaryAction provides true) {
+                            confirmButton()
+                        }
                     }
                 }
             }

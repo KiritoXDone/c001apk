@@ -127,6 +127,7 @@ fun NoticeScreen(
             onDismissRequest = { deleteNoticeId = null },
             confirmButton = {
                 com.example.c001apk.compose.ui.component.MiuixDialogButton(
+                    destructive = true,
                     onClick = {
                         deleteNoticeId = null
                         viewModel.deleteNotice(id)
@@ -172,6 +173,7 @@ fun NoticeScreen(
             confirmButton = {
                 com.example.c001apk.compose.ui.component.MiuixDialogButton(
                     onClick = { showMessageDialog = false },
+                    primary = false,
                 ) { Text("取消") }
             },
         )

@@ -41,7 +41,7 @@ internal fun LazyListScope.twilightRulesPreferences(
         }
         if (removing) MiuixAlertDialog(onDismissRequest = { removing = false }, title = { Text("移除秋风规则？") },
             text = { Text("将删除已导入的远程规则和相关停用选择，可随时重新导入。") },
-            confirmButton = { MiuixDialogButton(enabled = !busy, onClick = { removing = false; onRemove() }) { Text("移除") } },
+            confirmButton = { MiuixDialogButton(enabled = !busy, destructive = true, onClick = { removing = false; onRemove() }) { Text("移除") } },
             dismissButton = { MiuixDialogButton(onClick = { removing = false }) { Text("取消") } })
     }
 }

@@ -665,6 +665,7 @@ fun FeedScreen(
                 MiuixDialogButton(
                     onClick = viewModel::deleteOwnFeed,
                     enabled = !viewModel.deletingFeed,
+                    destructive = true,
                 ) {
                     Text(if (viewModel.deletingFeed) "删除中…" else "删除")
                 }

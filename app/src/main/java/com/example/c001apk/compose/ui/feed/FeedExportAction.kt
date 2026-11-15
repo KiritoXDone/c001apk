@@ -149,14 +149,14 @@ fun FeedExportAction(feed: HomeFeedResponse.Data, article: List<FeedArticleConte
                     )
                 }
             },
-            confirmButton = { MiuixDialogButton(onClick = { choose = false }) { Text("取消") } },
+            confirmButton = { MiuixDialogButton(onClick = { choose = false }, primary = false) { Text("取消") } },
         )
     if (model.busy)
         MiuixAlertDialog(
             onDismissRequest = model::cancel,
             title = { Text("正在准备文件") },
             text = { Text("正在整理正文、评论与图片…") },
-            confirmButton = { MiuixDialogButton(onClick = model::cancel) { Text("取消") } },
+            confirmButton = { MiuixDialogButton(onClick = model::cancel, primary = false) { Text("取消") } },
         )
     val prepared = model.prepared
     if (prepared != null && prepared.warnings.isNotEmpty() && !model.awaitingFile)

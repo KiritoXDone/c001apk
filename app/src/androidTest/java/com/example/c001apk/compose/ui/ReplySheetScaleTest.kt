@@ -14,6 +14,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.platform.app.InstrumentationRegistry
 import com.example.c001apk.compose.ui.component.MiuixBottomSheet
+import com.example.c001apk.compose.ui.component.MiuixRootPopupHost
 import org.junit.Assert.*
 import org.junit.Rule
 import org.junit.Test
@@ -33,18 +34,20 @@ class ReplySheetScaleTest {
         }
     }).around(compose)
 
-    @Test fun separateWindowPreservesPageScaleAndTracksChanges() {
+    @Test fun overlayPreservesPageScaleAndTracksChanges() {
         val density = mutableStateOf(Density(2f, 0.85f))
         val showing = mutableStateOf(true)
         var observed: Density? = null
         compose.setContent {
             MiuixTheme {
                 CompositionLocalProvider(LocalDensity provides density.value) {
-                    if (showing.value) MiuixBottomSheet(onDismissRequest = { showing.value = false }) {
-                        val inside = LocalDensity.current
-                        SideEffect { observed = inside }
-                        Box(Modifier.size(200.dp)) {
-                            TextButton(text = "关闭测试抽屉", onClick = { showing.value = false })
+                    MiuixRootPopupHost {
+                        if (showing.value) MiuixBottomSheet(onDismissRequest = { showing.value = false }) {
+                            val inside = LocalDensity.current
+                            SideEffect { observed = inside }
+                            Box(Modifier.size(200.dp)) {
+                                TextButton(text = "关闭测试抽屉", onClick = { showing.value = false })
+                            }
                         }
                     }
                 }

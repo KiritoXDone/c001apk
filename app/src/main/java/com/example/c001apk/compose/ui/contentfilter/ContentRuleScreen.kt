@@ -69,6 +69,6 @@ fun ContentRuleScreen(id: String?, onBack: () -> Unit) {
     }
     if (deleting) MiuixAlertDialog(onDismissRequest = { deleting = false }, title = { Text("删除规则？") },
         text = { Text("删除后，此规则过滤的内容将恢复显示。") },
-        confirmButton = { MiuixDialogButton(onClick = { model.removeRule(ruleId, onBack) }) { Text("删除") } },
+        confirmButton = { MiuixDialogButton(onClick = { model.removeRule(ruleId, onBack) }, destructive = true) { Text("删除") } },
         dismissButton = { MiuixDialogButton(onClick = { deleting = false }) { Text("取消") } })
 }

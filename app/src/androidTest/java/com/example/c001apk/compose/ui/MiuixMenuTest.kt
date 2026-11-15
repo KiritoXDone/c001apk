@@ -2,6 +2,7 @@ package com.example.c001apk.compose.ui
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
@@ -9,14 +10,17 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.click
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import androidx.test.platform.app.InstrumentationRegistry
 import org.junit.rules.ExternalResource
 import org.junit.rules.RuleChain
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.junit4.v2.createComposeRule
@@ -26,15 +30,18 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import com.example.c001apk.compose.ui.component.MiuixMenu
 import com.example.c001apk.compose.ui.component.MiuixMenuItem
+import com.example.c001apk.compose.ui.component.MiuixRootPopupHost
 import com.example.c001apk.compose.ui.component.MoreMenuButton
 import com.example.c001apk.compose.ui.theme.C001apkComposeTheme
 import org.junit.Rule
 import org.junit.Test
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.ListPopupColumn
+import top.yukonga.miuix.kmp.basic.PopupPositionProvider
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Forward
@@ -56,25 +63,27 @@ class MiuixMenuTest {
     fun overflowWithSubmenuArrowsOpensAndSelectsBothEntries() {
         compose.setContent {
             C001apkComposeTheme(materialYou = false) {
-                var expanded by remember { mutableStateOf(false) }
-                var selected by remember { mutableStateOf("") }
-                Column {
-                    Box {
-                        MoreMenuButton { expanded = true }
-                        MiuixMenu(expanded, onDismissRequest = { expanded = false }) {
-                            listOf("类型", "排序").forEach { label ->
-                                MiuixMenuItem(
-                                    text = { Text(label) },
-                                    onClick = {
-                                        selected = label
-                                        expanded = false
-                                    },
-                                    trailingIcon = { Icon(MiuixIcons.Forward, null) },
-                                )
+                MiuixRootPopupHost {
+                    var expanded by remember { mutableStateOf(false) }
+                    var selected by remember { mutableStateOf("") }
+                    Column {
+                        Box {
+                            MoreMenuButton { expanded = true }
+                            MiuixMenu(expanded, onDismissRequest = { expanded = false }) {
+                                listOf("类型", "排序").forEach { label ->
+                                    MiuixMenuItem(
+                                        text = { Text(label) },
+                                        onClick = {
+                                            selected = label
+                                            expanded = false
+                                        },
+                                        trailingIcon = { Icon(MiuixIcons.Forward, null) },
+                                    )
+                                }
                             }
                         }
+                        Text("已选择：$selected")
                     }
-                    Text("已选择：$selected")
                 }
             }
         }
@@ -129,14 +138,16 @@ class MiuixMenuTest {
         var clicks = 0
         compose.setContent {
             C001apkComposeTheme(materialYou = false) {
-                var expanded by remember { mutableStateOf(false) }
-                Box {
-                    MoreMenuButton { expanded = true }
-                    MiuixMenu(expanded, onDismissRequest = { expanded = false }, contentScale = scale.value) {
-                        MiuixMenuItem(text = { Text("复制") },
-                            modifier = Modifier.testTag("scaled-item"),
-                            onClick = { clicks++; expanded = false })
-                        MiuixMenuItem(text = { Text("其他操作") }, onClick = {})
+                MiuixRootPopupHost {
+                    var expanded by remember { mutableStateOf(false) }
+                    Box {
+                        MoreMenuButton { expanded = true }
+                        MiuixMenu(expanded, onDismissRequest = { expanded = false }, contentScale = scale.value) {
+                            MiuixMenuItem(text = { Text("复制") },
+                                modifier = Modifier.testTag("scaled-item"),
+                                onClick = { clicks++; expanded = false })
+                            MiuixMenuItem(text = { Text("其他操作") }, onClick = {})
+                        }
                     }
                 }
             }
@@ -155,5 +166,80 @@ class MiuixMenuTest {
         compose.onNodeWithTag("scaled-item").performTouchInput { click(center) }
         compose.runOnIdle { assertEquals(2, clicks) }
         assertEquals(anchor.width, compose.onNodeWithContentDescription("更多操作").fetchSemanticsNode().boundsInRoot.width, 0f)
+    }
+
+    @Test
+    fun dismissFinishedWaitsForPopupExit() {
+        var dismissRequests = 0
+        var dismissFinished = 0
+        compose.setContent {
+            C001apkComposeTheme(materialYou = false) {
+                MiuixRootPopupHost {
+                    var expanded by remember { mutableStateOf(false) }
+                    Box {
+                        MoreMenuButton { expanded = true }
+                        MiuixMenu(
+                            expanded = expanded,
+                            onDismissRequest = { dismissRequests++; expanded = false },
+                            onDismissFinished = { dismissFinished++ },
+                        ) {
+                            MiuixMenuItem(text = { Text("关闭菜单") }, onClick = { expanded = false })
+                        }
+                    }
+                }
+            }
+        }
+        compose.onNodeWithContentDescription("更多操作").performClick()
+        compose.waitForIdle()
+        compose.mainClock.autoAdvance = false
+        compose.onNodeWithText("关闭菜单").performClick()
+        compose.mainClock.advanceTimeByFrame()
+        compose.runOnIdle {
+            assertEquals(0, dismissFinished)
+            assertEquals(0, dismissRequests)
+        }
+        compose.mainClock.autoAdvance = true
+        compose.waitForIdle()
+        compose.runOnIdle { assertEquals(1, dismissFinished) }
+    }
+
+    @Test
+    fun startAndEndAlignmentUseTheSameAnchor() {
+        val alignment = mutableStateOf(PopupPositionProvider.Align.Start)
+        compose.setContent {
+            C001apkComposeTheme(materialYou = false) {
+                CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+                    MiuixRootPopupHost {
+                        var expanded by remember { mutableStateOf(false) }
+                        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            Box {
+                                MoreMenuButton { expanded = true }
+                                MiuixMenu(
+                                    expanded = expanded,
+                                    onDismissRequest = { expanded = false },
+                                    alignment = alignment.value,
+                                ) {
+                                    MiuixMenuItem(
+                                        text = { Text("对齐测试") },
+                                        modifier = Modifier.testTag("alignment-item"),
+                                        onClick = { expanded = false },
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        compose.onNodeWithContentDescription("更多操作").performClick()
+        compose.waitForIdle()
+        val start = compose.onNodeWithTag("alignment-item").fetchSemanticsNode().boundsInRoot
+        compose.onNodeWithTag("alignment-item").performClick()
+        compose.waitForIdle()
+        compose.runOnIdle { alignment.value = PopupPositionProvider.Align.End }
+        compose.onNodeWithContentDescription("更多操作").performClick()
+        compose.waitForIdle()
+        val end = compose.onNodeWithTag("alignment-item").fetchSemanticsNode().boundsInRoot
+        assertTrue(start.left > end.left)
     }
 }
