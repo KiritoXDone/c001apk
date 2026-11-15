@@ -204,6 +204,51 @@ class TopBarScrollTest {
         }
     }
 
+    @SdkSuppress(minSdkVersion = 33)
+    @Test fun os4ButtonShadowExtendsBelowTheTopBar() {
+        lateinit var actionDensity: Density
+        compose.setContent {
+            CompositionLocalProvider(
+                LocalUserPreferences provides UserPreferencesCompat.default().copy(topBarStyle = TopBarStyle.OS4),
+            ) {
+                MiuixTheme {
+                    MiuixScaffold(
+                        modifier = Modifier.fillMaxSize().testTag("scene"),
+                        containerColor = Color.White,
+                        blurBars = false,
+                        contentWindowInsets = WindowInsets(0, 0, 0, 0),
+                        topBar = {
+                            MiuixTopBar(
+                                title = "我的",
+                                modifier = Modifier.testTag("bar"),
+                                windowInsets = WindowInsets(0, 0, 0, 0),
+                                actions = {
+                                    val density = LocalDensity.current
+                                    SideEffect { actionDensity = density }
+                                    MiuixToolbarIconButton(onClick = {}) {
+                                        Icon(FlutterProfileIcons.Settings, contentDescription = "设置")
+                                    }
+                                },
+                            )
+                        },
+                    ) { Box(Modifier.fillMaxSize().background(Color.White)) }
+                }
+            }
+        }
+        compose.mainClock.advanceTimeBy(400)
+        val scene = compose.onNodeWithTag("scene").fetchSemanticsNode().boundsInRoot
+        val bar = compose.onNodeWithTag("bar").fetchSemanticsNode().boundsInRoot
+        val button = compose.onNode(hasContentDescription("设置") and hasClickAction()).fetchSemanticsNode().boundsInRoot
+        val pixels = compose.onNodeWithTag("scene").captureToImage().toPixelMap()
+        val below = (bar.bottom - scene.top).toInt() + with(actionDensity) { 2.dp.roundToPx() }
+        val shadowX = (button.center.x - scene.left).toInt()
+        val clearX = (bar.center.x - scene.left).toInt()
+        val shadow = pixels[shadowX, below]
+        val background = pixels[clearX, below]
+        assertEquals("Bar height must stay unchanged", with(actionDensity) { 52.dp.roundToPx().toFloat() }, bar.height, 1f)
+        assertTrue("Shadow must extend below the bar: shadow=$shadow background=$background", background.red - shadow.red > 0.01f)
+    }
+
     @Test fun multipleActionsUseBoxSpacingAndKeepBothActionsClickable() {
         val style = mutableStateOf(TopBarStyle.OS4)
         val calls = mutableListOf<String>()

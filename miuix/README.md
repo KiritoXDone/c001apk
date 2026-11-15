@@ -15,7 +15,8 @@
 `material` 和 `ui`，`glass-icons` 依赖 `core`。
 
 本地兼容补丁：`SmallTopAppBar`、`BlurTopAppBar` 和 `GlassTopAppBar` 支持可组合标题、
-标题对齐、自定义 inset 和点击消费控制；`GlassIconButton` 支持禁用及保持状态，关闭继承时
+标题对齐、自定义 inset 和点击消费控制；`SmallTopAppBar` 可选按大栏策略仅裁剪标题，
+允许控件阴影越过栏边（这是本项目对小栏的适配）；`GlassIconButton` 支持禁用及保持状态，关闭继承时
 不回退父 backdrop；`GlassNavigationBar` 支持角标和回退底色；`GlassSegmentedTabRow` 允许
 空 backdrop；`GlassDropdownPopup` 支持关闭完成回调及未指定 valueAnchor 时的水平对齐。
 `NavDisplay` 根据内容键判断顶层页面变化，避免同一页面的参数更新导致输入框失焦。

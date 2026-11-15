@@ -260,6 +260,7 @@ fun BlurTopAppBar(
  * @param titlePadding The horizontal padding of the [SmallTopAppBar]'s title.
  * @param navigationIconPadding The start padding of the navigation icon.
  * @param actionIconPadding The end padding of the action icons.
+ * @param clipControlsToBounds 是否将控件绘制裁剪在顶栏范围内。
  * @param bottomContent The [Composable] content displayed below the title bar area.
  */
 @Composable
@@ -281,6 +282,7 @@ fun SmallTopAppBar(
     titleAlignment: TopAppBarTitleAlignment = TopAppBarTitleAlignment.Native,
     windowInsets: WindowInsets? = null,
     consumeBarTaps: Boolean = true,
+    clipControlsToBounds: Boolean = true,
     bottomContent: @Composable () -> Unit = {},
 ) {
     SideEffect {
@@ -324,6 +326,7 @@ fun SmallTopAppBar(
         titleAlignment = titleAlignment,
         windowInsets = windowInsets,
         consumeBarTaps = consumeBarTaps,
+        clipControlsToBounds = clipControlsToBounds,
         bottomContent = bottomContent,
     )
 }
@@ -1159,8 +1162,10 @@ private fun SmallTopAppBarLayout(
     titleAlignment: TopAppBarTitleAlignment = TopAppBarTitleAlignment.Native,
     windowInsets: WindowInsets? = null,
     consumeBarTaps: Boolean = true,
+    clipControlsToBounds: Boolean = true,
     bottomContent: @Composable () -> Unit = {},
 ) {
+    val titleClip = remember { TopAppBarTitleClip() }
     val animatedTitleColor by animateColorAsState(
         targetValue = titleColor,
         animationSpec = tween(durationMillis = 50),
@@ -1182,6 +1187,7 @@ private fun SmallTopAppBarLayout(
             Box(
                 Modifier
                     .layoutId("title")
+                    .then(if (clipControlsToBounds) Modifier else Modifier.clipTopAppBarTitle(titleClip) { titleClip.titleOrigin })
                     .padding(horizontal = titlePadding),
             ) {
                 if (titleContent != null) titleContent() else Text(
@@ -1202,7 +1208,10 @@ private fun SmallTopAppBarLayout(
                 actions()
             }
             if (subtitle.isNotEmpty()) {
-                Box(Modifier.layoutId("subtitle")) {
+                Box(
+                    Modifier.layoutId("subtitle")
+                        .then(if (clipControlsToBounds) Modifier else Modifier.clipTopAppBarTitle(titleClip) { titleClip.subtitleOrigin }),
+                ) {
                     Text(
                         text = subtitle,
                         color = animatedSubtitleColor,
@@ -1227,7 +1236,10 @@ private fun SmallTopAppBarLayout(
                     Modifier
                 },
             )
-            .clipToBounds()
+            .then(
+                if (clipControlsToBounds) Modifier.clipToBounds()
+                else Modifier.onSizeChanged { titleClip.viewportSize = it },
+            )
             .then(if (windowInsets == null) Modifier.windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Top)) else Modifier)
             .then(if (consumeBarTaps) Modifier.pointerInput(Unit) {
                 detectTapGestures { /* Consume click */ }
@@ -1288,6 +1300,7 @@ private fun SmallTopAppBarLayout(
         val subtitleBottomPadding = if (subtitlePlaceable != null) TopAppBarDefaults.SubtitleBottomPadding.roundToPx() else 0
         val contentTop = maxOf(rowHeight, subtitleY + subtitleHeight + subtitleBottomPadding)
         val layoutHeight = contentTop + bottomContentPlaceable.height
+        if (!clipControlsToBounds) titleClip.contentHeight = layoutHeight
 
         layout(constraints.maxWidth, layoutHeight) {
             // Navigation icon
@@ -1306,10 +1319,14 @@ private fun SmallTopAppBarLayout(
                     baseX += ((constraints.maxWidth - actionIconsPlaceable.width) - (baseX + titlePlaceable.width))
                 }
             }
-            titlePlaceable.placeRelative(
-                x = baseX,
-                y = verticalCenter - titlePlaceable.height / 2,
-            )
+            val titleY = verticalCenter - titlePlaceable.height / 2
+            if (!clipControlsToBounds) {
+                titleClip.titleOrigin = IntOffset(
+                    if (layoutDirection == LayoutDirection.Ltr) baseX else constraints.maxWidth - baseX - titlePlaceable.width,
+                    titleY,
+                )
+            }
+            titlePlaceable.placeRelative(x = baseX, y = titleY)
 
             // Action icons
             actionIconsPlaceable.placeRelative(
@@ -1318,10 +1335,16 @@ private fun SmallTopAppBarLayout(
             )
 
             // Subtitle (centered, right below title)
-            subtitlePlaceable?.placeRelative(
-                x = (constraints.maxWidth - subtitlePlaceable.width) / 2,
-                y = subtitleY,
-            )
+            subtitlePlaceable?.let { subtitle ->
+                val subtitleX = (constraints.maxWidth - subtitle.width) / 2
+                if (!clipControlsToBounds) {
+                    titleClip.subtitleOrigin = IntOffset(
+                        if (layoutDirection == LayoutDirection.Ltr) subtitleX else constraints.maxWidth - subtitleX - subtitle.width,
+                        subtitleY,
+                    )
+                }
+                subtitle.placeRelative(x = subtitleX, y = subtitleY)
+            }
 
             // Bottom content (below subtitle)
             bottomContentPlaceable.placeRelative(x = 0, y = contentTop)

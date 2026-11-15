@@ -61,6 +61,7 @@ fun MiuixHeader(
         color = color,
         windowInsets = windowInsets,
         consumeBarTaps = false,
+        clipControlsToBounds = !isOs4,
         titlePadding = 8.dp,
         navigationIconPadding = GlassTopAppBarDefaults.HorizontalPadding,
         actionIconPadding = GlassTopAppBarDefaults.HorizontalPadding,
