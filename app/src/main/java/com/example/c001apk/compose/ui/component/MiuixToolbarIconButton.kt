@@ -11,6 +11,7 @@ import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.IconButtonDefaults
 import top.yukonga.miuix.kmp.glass.GlassIconButton
 import top.yukonga.miuix.kmp.glass.GlassTopAppBarDefaults
+import top.yukonga.miuix.kmp.glass.glassShadow
 import top.yukonga.miuix.kmp.material.GlassShape
 import top.yukonga.miuix.kmp.material.GlassShadows
 import top.yukonga.miuix.kmp.theme.MiuixTheme
@@ -43,19 +44,21 @@ fun MiuixToolbarIconButton(
     }
     val backdrop = LocalBarBackdrop.current?.rawBackdrop
     val size = maxOf(GlassTopAppBarDefaults.ButtonSize, minHeight, minWidth)
+    val shape = GlassShape(cornerRadius.coerceAtMost(size / 2))
+    // 按 BoxProxy bf0b1d5 在按钮外绘制阴影，阴影不依赖模糊开关。
     GlassIconButton(
         onClick = onClick,
-        modifier = modifier,
+        modifier = modifier.glassShadow(shape, GlassShadows.Regular, if (enabled) 1f else 0.38f),
         enabled = enabled,
         holdDownState = holdDownState,
         inheritTopBarMaterial = false,
         backdrop = backdrop,
         size = size,
-        shape = GlassShape(cornerRadius.coerceAtMost(size / 2)),
+        shape = shape,
         fill = if (backgroundColor.isSpecified && backgroundColor != Color.Transparent) backgroundColor
             else MiuixTheme.colorScheme.surfaceContainer.copy(alpha = 1f),
         stroke = if (backdrop != null) GlassTopAppBarDefaults.buttonStroke() else null,
-        shadow = if (backdrop != null) GlassShadows.Regular else null,
+        shadow = null,
         content = content,
     )
 }

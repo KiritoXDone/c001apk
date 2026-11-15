@@ -1,11 +1,13 @@
 package com.example.c001apk.compose.ui
 
 import android.os.ParcelFileDescriptor
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
@@ -13,12 +15,16 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -26,6 +32,7 @@ import androidx.compose.ui.test.click
 import androidx.compose.ui.test.doubleClick
 import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.assertTextEquals
+import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onNodeWithTag
@@ -33,16 +40,20 @@ import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.unit.dp
+import androidx.test.filters.SdkSuppress
 import androidx.test.platform.app.InstrumentationRegistry
 import com.example.c001apk.compose.logic.datastore.UserPreferencesCompat
 import com.example.c001apk.compose.logic.model.TopBarStyle
 import com.example.c001apk.compose.logic.providable.LocalUserPreferences
 import com.example.c001apk.compose.ui.component.CollapsingTabsState
 import com.example.c001apk.compose.ui.component.LocalCollapsingTabs
+import com.example.c001apk.compose.ui.component.LocalBarBackdrop
 import com.example.c001apk.compose.ui.component.MiuixScaffold
 import com.example.c001apk.compose.ui.component.MiuixHeader
 import com.example.c001apk.compose.ui.component.MiuixTabScaffold
 import com.example.c001apk.compose.ui.component.MiuixTopBar
+import com.example.c001apk.compose.ui.component.MiuixToolbarIconButton
+import com.example.c001apk.compose.ui.component.rememberBarBackdrop
 import com.example.c001apk.compose.ui.component.TopBarScrollEffect
 import com.example.c001apk.compose.ui.component.TopBarScrollPage
 import com.example.c001apk.compose.ui.component.topBarTap
@@ -54,6 +65,11 @@ import org.junit.Test
 import org.junit.rules.ExternalResource
 import org.junit.rules.RuleChain
 import top.yukonga.miuix.kmp.basic.Text
+import top.yukonga.miuix.kmp.glass.GlassIconButton
+import top.yukonga.miuix.kmp.glass.GlassTopAppBarDefaults
+import top.yukonga.miuix.kmp.glass.glassShadow
+import top.yukonga.miuix.kmp.material.GlassShape
+import top.yukonga.miuix.kmp.material.GlassShadows
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 class TopBarScrollTest {
@@ -106,6 +122,77 @@ class TopBarScrollTest {
                 compose.onNodeWithTag("titleInput").assertIsFocused().assertTextEquals("draft")
                 compose.onNodeWithText("页面内容").assertExists()
             }
+        }
+    }
+
+    @SdkSuppress(minSdkVersion = 33)
+    @Test fun os4ButtonShadowMatchesBoxWithBlurOnAndOff() {
+        val blur = mutableStateOf(false)
+        compose.setContent {
+            MiuixTheme {
+                val backdrop = rememberBarBackdrop(blur.value)
+                val shape = GlassShape(GlassTopAppBarDefaults.ButtonSize / 2)
+                val fill = MiuixTheme.colorScheme.surfaceContainer.copy(alpha = 1f)
+                val stroke = if (backdrop != null) GlassTopAppBarDefaults.buttonStroke() else null
+                CompositionLocalProvider(
+                    LocalUserPreferences provides UserPreferencesCompat.default().copy(topBarStyle = TopBarStyle.OS4),
+                    LocalBarBackdrop provides backdrop,
+                ) {
+                    Box(Modifier.fillMaxSize()) {
+                        Box(
+                            Modifier.matchParentSize()
+                                .then(backdrop?.recordModifier() ?: Modifier)
+                                .background(Color.White),
+                        )
+                        Row(Modifier.align(Alignment.Center)) {
+                            @Composable fun ShadowSample(tag: String, content: @Composable () -> Unit) {
+                                Box(
+                                    Modifier.size(90.dp).background(Color.White).testTag(tag),
+                                    contentAlignment = Alignment.Center,
+                                ) { content() }
+                            }
+                            ShadowSample("actual") { MiuixToolbarIconButton(onClick = {}) {} }
+                            ShadowSample("boxReference") {
+                                GlassIconButton(
+                                    onClick = {},
+                                    modifier = Modifier.glassShadow(shape, GlassShadows.Regular),
+                                    inheritTopBarMaterial = false,
+                                    backdrop = backdrop?.rawBackdrop,
+                                    shape = shape,
+                                    fill = fill,
+                                    stroke = stroke,
+                                    shadow = null,
+                                ) {}
+                            }
+                            ShadowSample("noShadow") {
+                                GlassIconButton(
+                                    onClick = {},
+                                    inheritTopBarMaterial = false,
+                                    backdrop = backdrop?.rawBackdrop,
+                                    shape = shape,
+                                    fill = fill,
+                                    stroke = stroke,
+                                    shadow = null,
+                                ) {}
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        fun edge(tag: String): Color {
+            val pixels = compose.onNodeWithTag(tag).captureToImage().toPixelMap()
+            val offset = with(compose.density) { 24.dp.roundToPx() }
+            return pixels[pixels.width / 2 + offset, pixels.height / 2]
+        }
+        for (blurred in listOf(false, true)) {
+            compose.runOnIdle { blur.value = blurred }
+            compose.mainClock.advanceTimeBy(400)
+            val actual = edge("actual")
+            val reference = edge("boxReference")
+            val noShadow = edge("noShadow")
+            assertTrue("Shadow must remain visible with blur=$blurred", noShadow.red - actual.red > 0.01f)
+            assertEquals("Only the Box reference shadow should be drawn with blur=$blurred", reference.red, actual.red, 0.004f)
         }
     }
 
