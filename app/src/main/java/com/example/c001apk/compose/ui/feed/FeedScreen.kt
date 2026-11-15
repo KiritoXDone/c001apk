@@ -271,16 +271,21 @@ fun FeedScreen(
                         actions = {
                             ReadingSidebarButton(sidebarHidden, onToggleSidebar)
                             if (viewModel.feedState is LoadingState.Success) {
-                                FeedExportAction(
-                                    (viewModel.feedState as LoadingState.Success).response,
-                                    articleList,
-                                )
+                                val feed = (viewModel.feedState as LoadingState.Success).response
+                                val exportModel = hiltViewModel<FeedExportViewModel>(key = "export-${feed.id}")
+                                var chooseExport by remember(feed.id) { mutableStateOf(false) }
+                                FeedExportDialogs(feed, articleList, exportModel, chooseExport) { chooseExport = it }
                                 Box(Modifier.wrapContentSize(Alignment.TopEnd)) {
                                     MoreMenuButton { dropdownMenuExpanded = true }
                                     DropdownMenu(
                                         expanded = dropdownMenuExpanded,
                                         onDismissRequest = { dropdownMenuExpanded = false },
                                     ) {
+                                        FeedExportMenuItem(
+                                            enabled = !exportModel.busy && !exportModel.awaitingFile,
+                                            onDismissMenu = { dropdownMenuExpanded = false },
+                                            onChoose = { chooseExport = true },
+                                        )
                                         DropdownMenuItem(
                                             text = { Text(if (rawMarkdown) "格式化正文" else "查看原文") },
                                             onClick = {

@@ -15,6 +15,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.click
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import androidx.test.platform.app.InstrumentationRegistry
 import org.junit.rules.ExternalResource
@@ -32,10 +33,13 @@ import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import com.example.c001apk.compose.logic.export.FeedExportService
 import com.example.c001apk.compose.ui.component.MiuixMenu
 import com.example.c001apk.compose.ui.component.MiuixMenuItem
 import com.example.c001apk.compose.ui.component.MiuixRootPopupHost
 import com.example.c001apk.compose.ui.component.MoreMenuButton
+import com.example.c001apk.compose.ui.feed.FeedExportFormatDialog
+import com.example.c001apk.compose.ui.feed.FeedExportMenuItem
 import com.example.c001apk.compose.ui.theme.C001apkComposeTheme
 import org.junit.Rule
 import org.junit.Test
@@ -93,6 +97,52 @@ class MiuixMenuTest {
             compose.onNodeWithText("已选择：$label").assertIsDisplayed()
             compose.waitForIdle()
         }
+    }
+
+    @Test
+    fun feedSaveMenuClosesBeforeFormatSelectionAndDisablesWhileBusy() {
+        val busy = mutableStateOf(false)
+        val expanded = mutableStateOf(false)
+        val choose = mutableStateOf(false)
+        val selected = mutableStateOf<FeedExportService.Format?>(null)
+        compose.setContent {
+            C001apkComposeTheme(materialYou = false) {
+                MiuixRootPopupHost {
+                    Box {
+                        MoreMenuButton { expanded.value = true }
+                        MiuixMenu(expanded.value, onDismissRequest = { expanded.value = false }) {
+                            FeedExportMenuItem(
+                                enabled = !busy.value,
+                                onDismissMenu = { expanded.value = false },
+                                onChoose = { choose.value = true },
+                            )
+                        }
+                    }
+                    if (choose.value) {
+                        FeedExportFormatDialog(
+                            onDismiss = { choose.value = false },
+                            onSelect = { selected.value = it; choose.value = false },
+                        )
+                    }
+                }
+            }
+        }
+        for ((label, format) in listOf(
+            "Markdown" to FeedExportService.Format.Markdown,
+            "离线 HTML" to FeedExportService.Format.Html,
+        )) {
+            compose.onNodeWithContentDescription("更多操作").performClick()
+            compose.onNodeWithText("保存内容").assertIsDisplayed().performClick()
+            compose.onNodeWithText(label).assertIsDisplayed().performClick()
+            compose.runOnIdle {
+                assertEquals(format, selected.value)
+                assertFalse(expanded.value)
+                assertFalse(choose.value)
+            }
+        }
+        compose.runOnIdle { busy.value = true }
+        compose.onNodeWithContentDescription("更多操作").performClick()
+        compose.onNodeWithText("保存内容").assertIsNotEnabled()
     }
 
     @Test

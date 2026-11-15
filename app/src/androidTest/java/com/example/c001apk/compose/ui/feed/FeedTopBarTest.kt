@@ -25,10 +25,6 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.ExternalResource
 import org.junit.rules.RuleChain
-import top.yukonga.miuix.kmp.basic.Icon
-import top.yukonga.miuix.kmp.basic.IconButton
-import top.yukonga.miuix.kmp.icon.MiuixIcons
-import top.yukonga.miuix.kmp.icon.extended.Download
 
 class FeedTopBarTest {
     private val compose = createComposeRule()
@@ -61,9 +57,6 @@ class FeedTopBarTest {
                         },
                         navigationIcon = { BackButton { calls += "back" } },
                         actions = {
-                            IconButton(onClick = { calls += "save" }) {
-                                Icon(MiuixIcons.Download, contentDescription = "保存内容")
-                            }
                             MoreMenuButton { calls += "menu" }
                         },
                     )
@@ -88,10 +81,10 @@ class FeedTopBarTest {
 
     @Test fun buttonsDoNotAlsoTriggerTitleNavigation() {
         header()
-        for (label in listOf("返回", "保存内容", "更多操作")) {
+        for (label in listOf("返回", "更多操作")) {
             compose.onNodeWithContentDescription(label).performTouchInput { click() }
         }
-        compose.runOnIdle { assertEquals(listOf("back", "save", "menu"), calls) }
+        compose.runOnIdle { assertEquals(listOf("back", "menu"), calls) }
     }
 
     @Test fun doubleTapReturnsToTopWithoutSingleTapNavigation() {

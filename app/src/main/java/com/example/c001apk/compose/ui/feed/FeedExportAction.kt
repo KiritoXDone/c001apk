@@ -7,21 +7,17 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.c001apk.compose.logic.export.FeedExportService
 import com.example.c001apk.compose.logic.model.FeedArticleContentBean
 import com.example.c001apk.compose.logic.model.HomeFeedResponse
-import com.example.c001apk.compose.ui.component.MiuixToolbarIconButton
 import com.example.c001apk.compose.ui.component.*
 import com.example.c001apk.compose.util.makeToast
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.*
 import top.yukonga.miuix.kmp.basic.*
-import top.yukonga.miuix.kmp.icon.MiuixIcons
-import top.yukonga.miuix.kmp.icon.extended.Download
 
 @HiltViewModel
 class FeedExportViewModel @Inject constructor(private val exporter: FeedExportService) :
@@ -100,10 +96,14 @@ class FeedExportViewModel @Inject constructor(private val exporter: FeedExportSe
 }
 
 @Composable
-fun FeedExportAction(feed: HomeFeedResponse.Data, article: List<FeedArticleContentBean>?) {
-    val model = hiltViewModel<FeedExportViewModel>(key = "export-${feed.id}")
+internal fun FeedExportDialogs(
+    feed: HomeFeedResponse.Data,
+    article: List<FeedArticleContentBean>?,
+    model: FeedExportViewModel,
+    choose: Boolean,
+    onChooseChange: (Boolean) -> Unit,
+) {
     val context = LocalContext.current
-    var choose by remember { mutableStateOf(false) }
     val markdown =
         rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("text/markdown")) {
             model.save(context, it)
@@ -122,35 +122,15 @@ fun FeedExportAction(feed: HomeFeedResponse.Data, article: List<FeedArticleConte
     LaunchedEffect(model.prepared) {
         if (model.prepared?.warnings?.isEmpty() == true && !model.awaitingFile) save()
     }
-    MiuixToolbarIconButton(onClick = { choose = true }, enabled = !model.busy && !model.awaitingFile) {
-        Icon(MiuixIcons.Download, contentDescription = "保存内容")
-    }
-    if (choose)
-        MiuixAlertDialog(
-            onDismissRequest = { choose = false },
-            title = { Text("保存内容") },
-            text = {
-                Column {
-                    BasicComponent(
-                        title = "Markdown",
-                        summary = "可编辑的正文，保留在线图片链接",
-                        onClick = {
-                            choose = false
-                            model.prepare(feed, article, FeedExportService.Format.Markdown)
-                        },
-                    )
-                    BasicComponent(
-                        title = "离线 HTML",
-                        summary = "正文与图片保存在一个文件中",
-                        onClick = {
-                            choose = false
-                            model.prepare(feed, article, FeedExportService.Format.Html)
-                        },
-                    )
-                }
+    if (choose) {
+        FeedExportFormatDialog(
+            onDismiss = { onChooseChange(false) },
+            onSelect = { format ->
+                onChooseChange(false)
+                model.prepare(feed, article, format)
             },
-            confirmButton = { MiuixDialogButton(onClick = { choose = false }, primary = false) { Text("取消") } },
         )
+    }
     if (model.busy)
         MiuixAlertDialog(
             onDismissRequest = model::cancel,
@@ -175,4 +155,39 @@ fun FeedExportAction(feed: HomeFeedResponse.Data, article: List<FeedArticleConte
             confirmButton = { MiuixDialogButton(onClick = { model.error = null }) { Text("知道了") } },
         )
     }
+}
+
+@Composable
+internal fun FeedExportMenuItem(enabled: Boolean, onDismissMenu: () -> Unit, onChoose: () -> Unit) {
+    MiuixMenuItem(
+        text = { Text("保存内容") },
+        enabled = enabled,
+        onClick = {
+            onDismissMenu()
+            onChoose()
+        },
+    )
+}
+
+@Composable
+internal fun FeedExportFormatDialog(onDismiss: () -> Unit, onSelect: (FeedExportService.Format) -> Unit) {
+    MiuixAlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("保存内容") },
+        text = {
+            Column {
+                BasicComponent(
+                    title = "Markdown",
+                    summary = "可编辑的正文，保留在线图片链接",
+                    onClick = { onSelect(FeedExportService.Format.Markdown) },
+                )
+                BasicComponent(
+                    title = "离线 HTML",
+                    summary = "正文与图片保存在一个文件中",
+                    onClick = { onSelect(FeedExportService.Format.Html) },
+                )
+            }
+        },
+        confirmButton = { MiuixDialogButton(onClick = onDismiss, primary = false) { Text("取消") } },
+    )
 }
