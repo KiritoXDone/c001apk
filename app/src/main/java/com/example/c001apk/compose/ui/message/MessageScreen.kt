@@ -55,7 +55,7 @@ fun MessageScreen(
             com.example.c001apk.compose.ui.component.MiuixTopBar(
                 title = "我的",
                 actions = {
-                    top.yukonga.miuix.kmp.basic.IconButton(
+                    com.example.c001apk.compose.ui.component.MiuixToolbarIconButton(
                         onClick = onAccountsClick,
                     ) {
                         top.yukonga.miuix.kmp.basic.Icon(
@@ -63,7 +63,7 @@ fun MessageScreen(
                             contentDescription = "账号",
                         )
                     }
-                    top.yukonga.miuix.kmp.basic.IconButton(onClick = onSettingsClick) {
+                    com.example.c001apk.compose.ui.component.MiuixToolbarIconButton(onClick = onSettingsClick) {
                         top.yukonga.miuix.kmp.basic.Icon(
                             FlutterProfileIcons.Settings,
                             contentDescription = "设置",

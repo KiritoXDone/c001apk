@@ -38,6 +38,7 @@ import com.example.c001apk.compose.ThemeType
 import com.example.c001apk.compose.logic.model.HapticStrength
 import com.example.c001apk.compose.logic.providable.LocalUserPreferences
 import com.example.c001apk.compose.ui.blacklist.BlackListType
+import com.example.c001apk.compose.ui.component.MiuixToolbarIconButton
 import com.example.c001apk.compose.ui.component.MiuixAlertDialog as AlertDialog
 import com.example.c001apk.compose.ui.component.MiuixDialogButton as TextButton
 import com.example.c001apk.compose.ui.component.MiuixScaffold as Scaffold
@@ -57,8 +58,7 @@ import com.example.c001apk.compose.util.CacheDataManager.clearAllCache
 import com.example.c001apk.compose.util.CacheDataManager.getTotalCacheSize
 import java.util.Formatter
 import top.yukonga.miuix.kmp.basic.Icon
-import top.yukonga.miuix.kmp.basic.IconButton
-import top.yukonga.miuix.kmp.basic.SmallTopAppBar as TopAppBar
+import com.example.c001apk.compose.ui.component.MiuixTopBar as TopAppBar
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TextField
 import top.yukonga.miuix.kmp.icon.MiuixIcons
@@ -137,7 +137,7 @@ fun SettingsScreen(
                 color = com.example.c001apk.compose.ui.component.LocalBarColor.current,
                 title = if (wide) "设置" else activeSection?.title ?: "设置",
                 navigationIcon = {
-                    IconButton(onClick = onBackClick) {
+                    MiuixToolbarIconButton(onClick = onBackClick) {
                         Icon(MiuixIcons.Back, contentDescription = "返回")
                     }
                 },

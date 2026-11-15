@@ -76,7 +76,7 @@ fun FollowScreen(
                         }
                     }
                 },
-                actions = { IconButton(onClick = onSearch) { Icon(MiuixIcons.Search, "搜索") } },
+                actions = { MiuixToolbarIconButton(onClick = onSearch) { Icon(MiuixIcons.Search, "搜索") } },
             )
         },
     ) { padding ->

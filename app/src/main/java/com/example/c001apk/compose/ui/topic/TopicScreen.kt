@@ -40,6 +40,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.c001apk.compose.R
 import com.example.c001apk.compose.constant.Constants.EMPTY_STRING
 import com.example.c001apk.compose.logic.state.LoadingState
+import com.example.c001apk.compose.ui.component.MiuixToolbarIconButton
 import com.example.c001apk.compose.ui.component.BackButton
 import com.example.c001apk.compose.ui.component.ContentShareMenuItems
 import com.example.c001apk.compose.ui.component.MiuixHeader as TopAppBar
@@ -60,7 +61,6 @@ import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.FloatingActionButton
 import top.yukonga.miuix.kmp.basic.Icon
-import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Search
@@ -136,7 +136,7 @@ fun TopicScreen(
                     actions = {
                         if (viewModel.topicState is LoadingState.Success) {
                             Row(Modifier.wrapContentSize(Alignment.TopEnd)) {
-                                IconButton(
+                                MiuixToolbarIconButton(
                                     onClick = {
                                         onSearch(
                                             viewModel.title,

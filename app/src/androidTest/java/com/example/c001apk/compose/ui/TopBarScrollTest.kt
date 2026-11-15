@@ -9,28 +9,38 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.click
 import androidx.compose.ui.test.doubleClick
+import androidx.compose.ui.test.assertIsFocused
+import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.unit.dp
 import androidx.test.platform.app.InstrumentationRegistry
 import com.example.c001apk.compose.logic.datastore.UserPreferencesCompat
+import com.example.c001apk.compose.logic.model.TopBarStyle
 import com.example.c001apk.compose.logic.providable.LocalUserPreferences
 import com.example.c001apk.compose.ui.component.CollapsingTabsState
 import com.example.c001apk.compose.ui.component.LocalCollapsingTabs
 import com.example.c001apk.compose.ui.component.MiuixScaffold
+import com.example.c001apk.compose.ui.component.MiuixHeader
 import com.example.c001apk.compose.ui.component.MiuixTabScaffold
 import com.example.c001apk.compose.ui.component.MiuixTopBar
 import com.example.c001apk.compose.ui.component.TopBarScrollEffect
@@ -63,6 +73,41 @@ class TopBarScrollTest {
     @Test fun opaqueBarBlocksTapsAndKeepsActions() = checkBar(blur = false)
 
     @Test fun blurredBarBlocksTapsAndKeepsActions() = checkBar(blur = true)
+
+    @Test fun switchingStyleAndBlurKeepsTitleInputFocusedAndDraft() {
+        val preferences = mutableStateOf(UserPreferencesCompat.default())
+        compose.setContent {
+            CompositionLocalProvider(LocalUserPreferences provides preferences.value) {
+                MiuixTheme {
+                    MiuixScaffold(
+                        topBar = {
+                            var draft by remember { mutableStateOf("") }
+                            MiuixHeader(
+                                title = {
+                                    BasicTextField(
+                                        value = draft,
+                                        onValueChange = { draft = it },
+                                        modifier = Modifier.fillMaxWidth().height(40.dp).testTag("titleInput"),
+                                        singleLine = true,
+                                    )
+                                },
+                                centerTitle = true,
+                                windowInsets = WindowInsets(0, 0, 0, 0),
+                            )
+                        },
+                    ) { Text("页面内容") }
+                }
+            }
+        }
+        compose.onNodeWithTag("titleInput").performClick().performTextInput("draft")
+        for (style in listOf(TopBarStyle.OS4, TopBarStyle.Classic, TopBarStyle.ClassicContour, TopBarStyle.OS4)) {
+            for (blur in listOf(false, true)) {
+                compose.runOnIdle { preferences.value = preferences.value.copy(topBarStyle = style, blurBars = blur) }
+                compose.onNodeWithTag("titleInput").assertIsFocused().assertTextEquals("draft")
+                compose.onNodeWithText("页面内容").assertExists()
+            }
+        }
+    }
 
     @Test fun titleStaysCenteredWithUnequalOrChangingButtons() {
         val widths = mutableStateOf(0.dp to 120.dp)

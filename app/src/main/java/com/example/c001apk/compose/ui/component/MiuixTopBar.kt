@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
@@ -12,6 +13,7 @@ fun MiuixTopBar(
     title: String,
     modifier: Modifier = Modifier,
     subtitle: String = "",
+    color: Color = LocalBarColor.current,
     windowInsets: WindowInsets = WindowInsets.statusBars.union(WindowInsets.displayCutout),
     navigationIcon: @Composable () -> Unit = {},
     actions: @Composable RowScope.() -> Unit = {},
@@ -28,6 +30,7 @@ fun MiuixTopBar(
             }
         },
         modifier = modifier,
+        color = color,
         windowInsets = windowInsets,
         navigationIcon = navigationIcon,
         actions = actions,

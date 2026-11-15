@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.c001apk.compose.R
 import com.example.c001apk.compose.logic.state.LoadingState
+import com.example.c001apk.compose.ui.component.MiuixToolbarIconButton
 import com.example.c001apk.compose.ui.component.BackButton
 import com.example.c001apk.compose.ui.component.FooterCard
 import com.example.c001apk.compose.ui.component.ItemCard
@@ -52,7 +53,6 @@ import com.example.c001apk.compose.util.getShareText
 import com.example.c001apk.compose.util.makeToast
 import com.example.c001apk.compose.util.shareText
 import top.yukonga.miuix.kmp.basic.Icon
-import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Search
@@ -100,7 +100,7 @@ fun UserScreen(
                 actions = {
                     if (viewModel.userState is LoadingState.Success) {
                         Row(Modifier.wrapContentSize(Alignment.TopEnd)) {
-                            IconButton(
+                            MiuixToolbarIconButton(
                                 onClick = {
                                     onSearch(viewModel.username, "user", viewModel.uid)
                                 },

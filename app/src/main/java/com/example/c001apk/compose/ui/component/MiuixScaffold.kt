@@ -11,6 +11,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import com.example.c001apk.compose.logic.providable.LocalUserPreferences
+import com.example.c001apk.compose.logic.model.TopBarStyle
 import kotlinx.coroutines.flow.MutableSharedFlow
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.theme.MiuixTheme
@@ -32,6 +33,7 @@ fun MiuixScaffold(
 ) {
     // WebView's hardware compositor must draw once, outside the backdrop recording pass.
     val backdrop = rememberBarBackdrop(blurBars)
+    val topBarStyle = LocalUserPreferences.current.topBarStyle
     val collapseTabs = LocalUserPreferences.current.collapseTabsOnScroll
     val tabScrollThreshold = with(LocalDensity.current) { 12.dp.toPx() }
     val tabState =
@@ -56,49 +58,38 @@ fun MiuixScaffold(
             topBar = {
                 if (topBar != null) {
                     Box(Modifier.topBarTap()) {
-                        if (backdrop != null)
-                            BlurredBar(backdrop) {
-                                CompositionLocalProvider(
-                                    LocalBarColor provides Color.Transparent,
-                                    LocalBarBackdrop provides backdrop,
-                                ) {
-                                    CompactBar { topBar() }
-                                }
-                            }
-                        else
-                            CompositionLocalProvider(
-                                LocalBarColor provides containerColor,
-                                LocalBarBackdrop provides null,
-                            ) {
-                                Box(Modifier.background(containerColor)) { CompactBar { topBar() } }
-                            }
+                        val background = when {
+                            backdrop == null -> Modifier.background(containerColor)
+                            topBarStyle == TopBarStyle.OS4 -> Modifier.progressiveBarBlur(backdrop)
+                            else -> Modifier.barBlur(backdrop)
+                        }
+                        Box(Modifier.matchParentSize().then(background))
+                        CompositionLocalProvider(
+                            LocalBarColor provides if (backdrop != null) Color.Transparent else containerColor,
+                            LocalBarBackdrop provides backdrop,
+                        ) {
+                            CompactBar { topBar() }
+                        }
                     }
                 }
             },
             bottomBar = {
                 if (bottomBar != null) {
-                    if (floatingBottomBar)
-                        // The floating bar draws its own rounded surface; keep the outer gaps
-                        // clear.
-                        CompositionLocalProvider(LocalBarBackdrop provides backdrop) {
+                    Box {
+                        val background = when {
+                            floatingBottomBar -> Modifier
+                            backdrop != null -> Modifier.barBlur(backdrop)
+                            else -> Modifier.background(containerColor)
+                        }
+                        Box(Modifier.matchParentSize().then(background))
+                        CompositionLocalProvider(
+                            LocalBarColor provides if (backdrop != null && !floatingBottomBar)
+                                Color.Transparent else containerColor,
+                            LocalBarBackdrop provides backdrop,
+                        ) {
                             CompactBar { bottomBar() }
                         }
-                    else if (backdrop != null)
-                        BlurredBar(backdrop) {
-                            CompositionLocalProvider(
-                                LocalBarColor provides Color.Transparent,
-                                LocalBarBackdrop provides backdrop,
-                            ) {
-                                CompactBar { bottomBar() }
-                            }
-                        }
-                    else
-                        CompositionLocalProvider(
-                            LocalBarColor provides containerColor,
-                            LocalBarBackdrop provides null,
-                        ) {
-                            Box(Modifier.background(containerColor)) { CompactBar { bottomBar() } }
-                        }
+                    }
                 }
             },
             floatingActionButton = floatingActionButton,

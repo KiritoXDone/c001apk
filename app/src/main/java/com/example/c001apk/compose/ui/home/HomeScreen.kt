@@ -39,6 +39,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.c001apk.compose.R
 import com.example.c001apk.compose.logic.model.HomeMenu
 import com.example.c001apk.compose.logic.model.UpdateCheckItem
+import com.example.c001apk.compose.ui.component.MiuixToolbarIconButton
 import com.example.c001apk.compose.ui.component.MiuixActionButton as TextButton
 import com.example.c001apk.compose.ui.component.MiuixScaffold as Scaffold
 import com.example.c001apk.compose.ui.component.MiuixScaffoldDefaults as ScaffoldDefaults
@@ -57,7 +58,6 @@ import com.example.c001apk.compose.util.ReportType
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.FloatingActionButton
 import top.yukonga.miuix.kmp.basic.Icon
-import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Add
@@ -122,7 +122,7 @@ fun HomeTabEditorScreen(
             TopAppBar(
                 title = "首页板块",
                 navigationIcon = {
-                    IconButton(onClick = { if (!saving) onBackClick() }, enabled = !saving) {
+                    MiuixToolbarIconButton(onClick = { if (!saving) onBackClick() }, enabled = !saving) {
                         Icon(MiuixIcons.Back, contentDescription = "返回")
                     }
                 },
@@ -298,7 +298,7 @@ fun HomeScreen(
                 TopAppBar(
                     title = "主页",
                     actions = {
-                        IconButton(onClick = onSearch) {
+                        MiuixToolbarIconButton(onClick = onSearch) {
                             Icon(MiuixIcons.Search, contentDescription = "搜索")
                         }
                     },

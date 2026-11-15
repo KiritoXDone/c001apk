@@ -87,6 +87,12 @@ private val licenseList =
             LicenseType.Apache2,
         ),
         LicenseItem(
+            "BoxProxy contributors",
+            "BoxProxy UI adaptations",
+            "https://github.com/boxproxy/com.boxproxy.box/tree/bf0b1d502b52d5f6065cb1e37db94a081f810b4c",
+            LicenseType.GPL3,
+        ),
+        LicenseItem(
             "YuKongA / compose-miuix-ui contributors",
             "miuix (UI, Preference, Blur, Icons, Navigation)",
             "https://github.com/compose-miuix-ui/miuix",

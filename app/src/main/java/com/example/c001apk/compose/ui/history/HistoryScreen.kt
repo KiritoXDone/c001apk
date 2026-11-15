@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.c001apk.compose.logic.state.LoadingState
+import com.example.c001apk.compose.ui.component.MiuixToolbarIconButton
 import com.example.c001apk.compose.ui.component.MiuixMoreMenu
 import com.example.c001apk.compose.ui.component.MiuixMenuItem
 import com.example.c001apk.compose.ui.component.AdaptiveCardColumn
@@ -39,7 +40,6 @@ import com.example.c001apk.compose.ui.component.cards.HistoryCard
 import com.example.c001apk.compose.ui.component.cards.LoadingCard
 import com.example.c001apk.compose.util.ReportType
 import top.yukonga.miuix.kmp.basic.Icon
-import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Delete
@@ -90,7 +90,7 @@ fun HistoryScreen(
                         visible = !showCloud && (type == HistoryType.HISTORY.name || dataList.isNotEmpty()),
                         enter = fadeIn(), exit = fadeOut(),
                     ) {
-                        IconButton(onClick = { showClearDialog = true }, enabled = dataList.isNotEmpty()) {
+                        MiuixToolbarIconButton(onClick = { showClearDialog = true }, enabled = dataList.isNotEmpty()) {
                             Icon(MiuixIcons.Delete, contentDescription = "清除本地记录")
                         }
                     }

@@ -9,11 +9,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import com.example.c001apk.compose.logic.model.HapticStrength
+import com.example.c001apk.compose.logic.model.TopBarStyle
 import com.example.c001apk.compose.logic.providable.LocalUserPreferences
 import com.example.c001apk.compose.util.performConfiguredHapticFeedback
 import top.yukonga.miuix.kmp.basic.Icon
-import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.glass.More as GlassMore
 import top.yukonga.miuix.kmp.icon.extended.More
 
 @Composable
@@ -53,9 +54,10 @@ fun rememberHapticClick(
 
 @Composable
 fun MoreMenuButton(onClick: () -> Unit) {
-    IconButton(onClick = rememberHapticClick(onClick = onClick)) {
+    MiuixToolbarIconButton(onClick = rememberHapticClick(onClick = onClick)) {
         Icon(
-            imageVector = MiuixIcons.More,
+            imageVector = if (LocalUserPreferences.current.topBarStyle == TopBarStyle.OS4)
+                MiuixIcons.Glass.GlassMore else MiuixIcons.More,
             contentDescription = "更多操作",
             modifier = Modifier.size(21.dp),
         )

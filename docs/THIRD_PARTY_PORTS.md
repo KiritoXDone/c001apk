@@ -24,6 +24,10 @@ CommonMark 0.30.0 与 GFM 表格、删除线、任务列表扩展遵循 BSD 3-Cl
 
 Miuix 的公共和 Android 源码来自 [compose-miuix-ui/miuix](https://github.com/compose-miuix-ui/miuix/tree/2855a36ba516cbf2b5ff46d722da38c94a59c07b) 的提交 `2855a36ba516cbf2b5ff46d722da38c94a59c07b`，遵循 Apache-2.0；原始许可保存在 `miuix/LICENSE`，应用内附带 `app/src/main/assets/licenses/Miuix-Apache-2.0.txt`。模块范围与构建适配见 `miuix/README.md`。
 
+## BoxProxy 界面适配
+
+分段标签轨道的尺寸、选中项居中与玻璃材质组合，以及顶栏渐进模糊参考并改编自 [BoxProxy 的固定提交 `bf0b1d5`](https://github.com/boxproxy/com.boxproxy.box/tree/bf0b1d502b52d5f6065cb1e37db94a081f810b4c)，对应上游 `MiuixSegmentedTabRow.kt`、`MiuixGlassTopBarBackground.kt` 和 `MiuixBlur.kt`。这些适配遵循 GPL-3.0；上游完整许可证随应用收录于 [BoxProxy-GPL-3.0.txt](../app/src/main/assets/licenses/BoxProxy-GPL-3.0.txt)。Miuix 自身源码与许可仍按上一节分别保留。
+
 ## 本版本更新渠道
 
 应用版本采用语义版本；可用 Gradle `-PappVersion=x.y.z` 设置版本，`-PupdateRepository=KiritoXDone/仓库名` 配置构建产物的发布源。应用内不提供自定义来源，也不读取旧来源配置。默认更新源为 `KiritoXDone/c001apk`，不请求 TG-Twilight 或 Compose 基线的 APK。自动检查默认开启，每进程冷启动仅检查一次；自动检查开关和手动检查入口统一位于“设置 → 关于 → 应用更新”。

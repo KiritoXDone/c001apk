@@ -9,26 +9,52 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.PagerState
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.junit4.v2.createComposeRule
+import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsSelected
+import androidx.compose.ui.test.captureToImage
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.dp
 import androidx.test.filters.SdkSuppress
 import androidx.test.platform.app.InstrumentationRegistry
+import com.example.c001apk.compose.logic.datastore.UserPreferencesCompat
+import com.example.c001apk.compose.logic.model.TopBarStyle
+import com.example.c001apk.compose.logic.providable.LocalUserPreferences
 import com.example.c001apk.compose.ui.component.MiuixScaffold
 import com.example.c001apk.compose.ui.component.MiuixTabRow
 import com.example.c001apk.compose.ui.component.MiuixTopBar
 import com.example.c001apk.compose.ui.theme.C001apkComposeTheme
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertArrayEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.ExternalResource
 import org.junit.rules.RuleChain
+import kotlinx.coroutines.launch
+import top.yukonga.miuix.kmp.basic.Text
 
 @SdkSuppress(minSdkVersion = 33)
 class TabRowBlurTest {
@@ -48,32 +74,149 @@ class TabRowBlurTest {
     @Test fun standardRowExposesBackdropButKeepsSelectedTabSolid() = verifyBackdrop(false)
     @Test fun contourRowExposesBackdropButKeepsSelectedTabSolid() = verifyBackdrop(true)
 
+    @Test fun enlargedTextFitsInsideTheSegmentedTrack() {
+        val selected = mutableStateOf(0)
+        compose.setContent {
+            CompositionLocalProvider(
+                LocalUserPreferences provides UserPreferencesCompat.default().copy(topBarStyle = TopBarStyle.OS4),
+            ) {
+                C001apkComposeTheme(materialYou = false, fontScale = 2f) {
+                    MiuixTabRow(
+                        tabs = listOf("动态", "长标签内容"),
+                        selectedTabIndex = selected.value,
+                        onTabSelected = { selected.value = it },
+                        modifier = Modifier.fillMaxWidth().testTag("tabs"),
+                    )
+                }
+            }
+        }
+        for (label in listOf("动态", "长标签内容")) {
+            compose.onNodeWithText(label).performClick()
+            val track = compose.onNodeWithTag("tabs").fetchSemanticsNode().boundsInRoot
+            val text = compose.onNodeWithText(label).fetchSemanticsNode().boundsInRoot
+            assertTrue(text.top >= track.top && text.bottom <= track.bottom)
+        }
+    }
+
+    @Test fun classicStyleOverridesTheLegacyContourHint() {
+        val style = mutableStateOf(TopBarStyle.Classic)
+        val hint = mutableStateOf(false)
+        val selected = mutableStateOf(0)
+        compose.setContent {
+            CompositionLocalProvider(
+                LocalUserPreferences provides UserPreferencesCompat.default().copy(topBarStyle = style.value),
+            ) {
+                C001apkComposeTheme(materialYou = false) {
+                    MiuixTabRow(
+                        tabs = listOf("One", "Two"),
+                        selectedTabIndex = selected.value,
+                        onTabSelected = { selected.value = it },
+                        modifier = Modifier.width(240.dp).testTag("tabs"),
+                        withContour = hint.value,
+                    )
+                }
+            }
+        }
+        fun snapshot(): IntArray {
+            compose.mainClock.advanceTimeBy(500)
+            val pixels = compose.onNodeWithTag("tabs").captureToImage().toPixelMap()
+            return IntArray(pixels.width * pixels.height) { index ->
+                pixels[index % pixels.width, index / pixels.width].toArgb()
+            }
+        }
+        val classic = snapshot()
+        compose.runOnIdle { hint.value = true }
+        assertArrayEquals(classic, snapshot())
+        compose.runOnIdle { style.value = TopBarStyle.ClassicContour; hint.value = false }
+        val contour = snapshot()
+        compose.runOnIdle { hint.value = true }
+        assertArrayEquals(contour, snapshot())
+        assertFalse("The two classic styles should render differently", classic.contentEquals(contour))
+        compose.onNodeWithText("Two").performClick().assertIsSelected()
+        compose.runOnIdle { assertEquals(1, selected.value) }
+    }
+
+    @Test fun longTabsKeepPagerSelectionAcrossStyleAndDirectionChanges() {
+        val style = mutableStateOf(TopBarStyle.OS4)
+        val direction = mutableStateOf(LayoutDirection.Ltr)
+        val labels = listOf("第一个较长的标签", "第二个较长的标签", "第三个较长的标签")
+        var callbacks = 0
+        var pagerInstances = 0
+        lateinit var pager: PagerState
+        lateinit var jumpToFirst: () -> Unit
+        compose.setContent {
+            CompositionLocalProvider(
+                LocalUserPreferences provides UserPreferencesCompat.default().copy(topBarStyle = style.value),
+                LocalLayoutDirection provides direction.value,
+            ) {
+                C001apkComposeTheme(materialYou = false) {
+                    val state = rememberPagerState(initialPage = 2, pageCount = { labels.size })
+                    val scope = rememberCoroutineScope()
+                    remember(state) { ++pagerInstances }
+                    pager = state
+                    jumpToFirst = { scope.launch { state.scrollToPage(0) } }
+                    Column {
+                        MiuixTabRow(
+                            tabs = labels,
+                            selectedTabIndex = state.currentPage,
+                            onTabSelected = { index -> callbacks++; scope.launch { state.scrollToPage(index) } },
+                            modifier = Modifier.width(240.dp).testTag("tabs"),
+                        )
+                        HorizontalPager(state, modifier = Modifier.width(240.dp).height(60.dp)) { page ->
+                            Text("页面 $page")
+                        }
+                    }
+                }
+            }
+        }
+        for (current in listOf(TopBarStyle.OS4, TopBarStyle.Classic, TopBarStyle.ClassicContour, TopBarStyle.OS4)) {
+            compose.runOnIdle { style.value = current }
+            compose.onNodeWithText(labels[2]).assertIsDisplayed().assertIsSelected()
+            compose.onNodeWithText(labels[2]).performClick()
+            compose.runOnIdle { assertEquals(2, pager.currentPage); assertEquals(1, pagerInstances) }
+        }
+        compose.runOnIdle { direction.value = LayoutDirection.Rtl }
+        compose.onNodeWithText(labels[2]).assertIsDisplayed().assertIsSelected()
+        compose.runOnIdle { jumpToFirst() }
+        compose.onNodeWithText(labels[0]).assertIsDisplayed().assertIsSelected().performClick()
+        compose.runOnIdle {
+            assertEquals(0, pager.currentPage)
+            assertEquals(1, pagerInstances)
+            assertEquals(5, callbacks)
+        }
+    }
+
     private fun verifyBackdrop(contour: Boolean) {
         val blur = mutableStateOf(false)
         val dark = mutableStateOf(false)
         val background = mutableStateOf(Color.Blue)
         val selected = mutableStateOf(0)
+        val style = mutableStateOf(TopBarStyle.Classic)
         lateinit var view: View
         compose.setContent {
             val localView = LocalView.current
             SideEffect { view = localView }
-            C001apkComposeTheme(materialYou = false, darkTheme = dark.value) {
-                MiuixScaffold(
-                    blurBars = blur.value,
-                    topBar = {
-                        Column {
-                            MiuixTopBar(title = "标签背景")
-                            MiuixTabRow(
-                                tabs = listOf("One", "Two"),
-                                selectedTabIndex = selected.value,
-                                onTabSelected = { selected.value = it },
-                                withContour = contour,
-                            )
-                        }
-                    },
-                ) {
-                    // Simulate content that has scrolled underneath the header.
-                    Box(Modifier.fillMaxSize().background(background.value))
+            CompositionLocalProvider(
+                LocalUserPreferences provides UserPreferencesCompat.default().copy(topBarStyle = style.value),
+            ) {
+                C001apkComposeTheme(materialYou = false, darkTheme = dark.value) {
+                    MiuixScaffold(
+                        blurBars = blur.value,
+                        topBar = {
+                            Column {
+                                MiuixTopBar(title = "标签背景")
+                                MiuixTabRow(
+                                    tabs = listOf("One", "Two"),
+                                    selectedTabIndex = selected.value,
+                                    onTabSelected = { selected.value = it },
+                                    withContour = contour,
+                                )
+                            }
+                        },
+                    ) {
+                        // Simulate content that has scrolled underneath the header.
+                        Box(Modifier.fillMaxSize().background(background.value))
+                    }
                 }
             }
         }
@@ -98,25 +241,32 @@ class TabRowBlurTest {
                 finally { bitmap.recycle() }
         }
 
-        for (night in listOf(false, true)) {
+        for (currentStyle in listOf(TopBarStyle.Classic, TopBarStyle.ClassicContour, TopBarStyle.OS4)) {
             compose.runOnIdle {
-                dark.value = night
-                blur.value = false
-                background.value = Color.Blue
+                style.value = currentStyle
+                if (currentStyle != TopBarStyle.Classic) assertEquals(1, selected.value)
+                selected.value = 0
             }
-            val opaque = sample()
-            compose.runOnIdle { blur.value = true }
-            val blue = sample()
-            compose.runOnIdle { background.value = Color.Red }
-            val red = sample()
-            assertEquals("Selected tab must keep its solid default color", opaque.first, blue.first)
-            assertEquals("Background changes must not tint the selected tab", blue.first, red.first)
-            assertTrue("Blue content must reach the row backdrop", AndroidColor.blue(blue.second) > AndroidColor.red(blue.second) + 15)
-            assertTrue("Backdrop must update with red content", AndroidColor.red(red.second) > AndroidColor.blue(red.second) + 15)
-            compose.runOnIdle { blur.value = false }
-            assertEquals("Disabling blur must restore the default surface", opaque, sample())
+            for (night in listOf(false, true)) {
+                compose.runOnIdle {
+                    dark.value = night
+                    blur.value = false
+                    background.value = Color.Blue
+                }
+                val opaque = sample()
+                compose.runOnIdle { blur.value = true }
+                val blue = sample()
+                compose.runOnIdle { background.value = Color.Red }
+                val red = sample()
+                assertEquals("Selected tab must keep its solid default color", opaque.first, blue.first)
+                assertEquals("Background changes must not tint the selected tab", blue.first, red.first)
+                assertTrue("Blue content must reach the row backdrop", AndroidColor.blue(blue.second) > AndroidColor.red(blue.second) + 15)
+                assertTrue("Backdrop must update with red content", AndroidColor.red(red.second) > AndroidColor.blue(red.second) + 15)
+                compose.runOnIdle { blur.value = false }
+                assertEquals("Disabling blur must restore the default surface", opaque, sample())
+            }
+            compose.onNodeWithText("Two").performClick()
+            compose.runOnIdle { assertEquals(1, selected.value) }
         }
-        compose.onNodeWithText("Two").performClick()
-        compose.runOnIdle { assertEquals(1, selected.value) }
     }
 }

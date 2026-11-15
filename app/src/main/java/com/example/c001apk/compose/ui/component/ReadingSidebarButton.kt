@@ -4,14 +4,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import top.yukonga.miuix.kmp.basic.Icon
-import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Back
 
 @Composable
 internal fun ReadingSidebarButton(hidden: Boolean, onToggle: (() -> Unit)?) {
     if (onToggle == null) return
-    IconButton(onClick = onToggle) {
+    MiuixToolbarIconButton(onClick = onToggle) {
         Icon(
             imageVector = MiuixIcons.Back,
             contentDescription = if (hidden) "显示信息流" else "收起信息流",

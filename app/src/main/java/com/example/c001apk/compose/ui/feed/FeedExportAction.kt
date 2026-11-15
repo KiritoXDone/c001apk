@@ -13,6 +13,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.c001apk.compose.logic.export.FeedExportService
 import com.example.c001apk.compose.logic.model.FeedArticleContentBean
 import com.example.c001apk.compose.logic.model.HomeFeedResponse
+import com.example.c001apk.compose.ui.component.MiuixToolbarIconButton
 import com.example.c001apk.compose.ui.component.*
 import com.example.c001apk.compose.util.makeToast
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -121,7 +122,7 @@ fun FeedExportAction(feed: HomeFeedResponse.Data, article: List<FeedArticleConte
     LaunchedEffect(model.prepared) {
         if (model.prepared?.warnings?.isEmpty() == true && !model.awaitingFile) save()
     }
-    IconButton(onClick = { choose = true }, enabled = !model.busy && !model.awaitingFile) {
+    MiuixToolbarIconButton(onClick = { choose = true }, enabled = !model.busy && !model.awaitingFile) {
         Icon(MiuixIcons.Download, contentDescription = "保存内容")
     }
     if (choose)
