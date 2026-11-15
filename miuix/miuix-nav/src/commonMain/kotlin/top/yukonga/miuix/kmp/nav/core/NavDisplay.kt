@@ -355,15 +355,15 @@ private fun NavDisplayLayout(
     // recover an index (no O(n^2)). Declared ahead of the gesture wiring: the settle physics
     // resolution below feeds the gesture callbacks.
     val currentKeyList = backStack.toList()
-    // Covered entries stay composed, so clear their focus when the top entry changes.
-    val previousTopKey = remember { arrayOfNulls<NavKey>(1) }
-    DisposableEffect(currentKeyList.lastOrNull()) {
-        val currentTopKey = currentKeyList.lastOrNull()
-        val previous = previousTopKey[0]
-        if (previous != null && previous != currentTopKey) {
+    // 被遮盖的页面仍会保留；仅在页面标识变化时清除焦点。
+    val currentTopContentKey = currentKeyList.lastOrNull()?.let { entryProvider(it).contentKey }
+    val previousTopContentKey = remember { arrayOfNulls<Any>(1) }
+    DisposableEffect(currentTopContentKey) {
+        val previous = previousTopContentKey[0]
+        if (previous != null && previous != currentTopContentKey) {
             focusManager.clearFocus()
         }
-        previousTopKey[0] = currentTopKey
+        previousTopContentKey[0] = currentTopContentKey
         onDispose { }
     }
     // Plain (non-snapshot) holder for the previous classification input; bookkeeping only, never read

@@ -18,4 +18,5 @@
 标题对齐、自定义 inset 和点击消费控制；`GlassIconButton` 支持禁用及保持状态，关闭继承时
 不回退父 backdrop；`GlassNavigationBar` 支持角标和回退底色；`GlassSegmentedTabRow` 允许
 空 backdrop；`GlassDropdownPopup` 支持关闭完成回调及未指定 valueAnchor 时的水平对齐。
+`NavDisplay` 根据内容键判断顶层页面变化，避免同一页面的参数更新导致输入框失焦。
 这些是本项目扩展，更新上游时需逐项复核。
