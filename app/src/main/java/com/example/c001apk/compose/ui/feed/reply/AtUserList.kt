@@ -92,12 +92,13 @@ internal fun AtUserSuggestions(
     onLoadMore: () -> Unit,
     onSelectUser: (AtUser) -> Unit,
 ) {
-    val recentNames = recentUsers.mapTo(mutableSetOf()) { it.username }
+    val visibleRecentUsers = recentUsers.take(5)
+    val recentNames = visibleRecentUsers.mapTo(mutableSetOf()) { it.username }
     val followedUsers = (state as? LoadingState.Success)?.response.orEmpty().filter {
         val user = it.asAtUser()
         it.entityType in listOf("user", "contacts") && user != null && user.username !in recentNames
     }
-    val showFollowSection = recentUsers.isEmpty() || state !is LoadingState.Success ||
+    val showFollowSection = visibleRecentUsers.isEmpty() || state !is LoadingState.Success ||
         followedUsers.isNotEmpty() || !stopAutomaticLoading || footerState is FooterState.Error
 
     LazyColumn(
@@ -105,9 +106,9 @@ internal fun AtUserSuggestions(
         contentPadding = PaddingValues(top = 6.dp, bottom = 10.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
-        if (recentUsers.isNotEmpty()) {
+        if (visibleRecentUsers.isNotEmpty()) {
             item(key = "recent_title") { UserSectionTitle("最近 @") }
-            items(recentUsers, key = { "recent_user:${it.username}" }) { user ->
+            items(visibleRecentUsers, key = { "recent_user:${it.username}" }) { user ->
                 RecentAtUserRow(user) { onSelectUser(AtUser(user.username, user.avatar)) }
             }
         }
