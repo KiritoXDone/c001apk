@@ -303,7 +303,7 @@ fun FeedScreen(
                                                 dismiss = { dropdownMenuExpanded = false },
                                             )
                                         DropdownMenuItem(
-                                            text = { Text("收藏") },
+                                            text = { Text(if (viewModel.isAccountCollected) "取消收藏" else "收藏") },
                                             onClick = {
                                                 dropdownMenuExpanded = false
                                                 viewModel.collections.open(id)
