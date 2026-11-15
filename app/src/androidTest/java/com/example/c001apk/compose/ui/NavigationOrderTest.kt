@@ -14,7 +14,9 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.test.platform.app.InstrumentationRegistry
 import com.example.c001apk.compose.logic.datastore.UserPreferencesCompat
+import com.example.c001apk.compose.logic.model.BottomBarStyle
 import com.example.c001apk.compose.logic.providable.LocalUserPreferences
 import com.example.c001apk.compose.ui.component.MiuixNavigationRail
 import com.example.c001apk.compose.ui.component.MiuixNavigationScaffold
@@ -23,16 +25,29 @@ import com.example.c001apk.compose.ui.main.mainNavigationItems
 import org.junit.Assert.*
 import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.ExternalResource
+import org.junit.rules.RuleChain
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 class NavigationOrderTest {
-    @get:Rule val compose = createComposeRule()
+    private val compose = createComposeRule()
+    @get:Rule val rule: RuleChain = RuleChain.outerRule(object : ExternalResource() {
+        override fun before() {
+            val instrumentation = InstrumentationRegistry.getInstrumentation()
+            instrumentation.uiAutomation.executeShellCommand(
+                "am start -W -n ${instrumentation.targetContext.packageName}/androidx.activity.ComponentActivity",
+            ).use { descriptor ->
+                android.os.ParcelFileDescriptor.AutoCloseInputStream(descriptor).use { it.readBytes() }
+            }
+        }
+    }).around(compose)
 
     @Test
     fun allOrdersKeepProfileBadgeAndStableSelectionAcrossBarStylesAndRail() {
         val order = mutableStateOf(listOf(0, 1, 2))
         val floating = mutableStateOf(false)
+        val bottomStyle = mutableStateOf<BottomBarStyle?>(null)
         val rail = mutableStateOf(false)
         val selected = mutableIntStateOf(0)
         val unread = mutableIntStateOf(3)
@@ -41,6 +56,7 @@ class NavigationOrderTest {
             CompositionLocalProvider(LocalUserPreferences provides UserPreferencesCompat.default().copy(
                 mainNavigationOrder = order.value,
                 floatingNavigationBar = floating.value,
+                bottomBarStyle = bottomStyle.value,
             )) {
                 MiuixTheme {
                     val items = mainNavigationItems(selected.intValue, order.value)
@@ -76,18 +92,19 @@ class NavigationOrderTest {
             listOf(1, 2, 0), listOf(2, 0, 1), listOf(2, 1, 0),
         )
         for (newOrder in orders) {
-            for (style in 0..2) {
+            for (style in 0..3) {
                 compose.runOnIdle {
                     order.value = newOrder
                     floating.value = style == 1
                     rail.value = style == 2
+                    bottomStyle.value = if (style == 3) BottomBarStyle.OS4 else null
                     unread.intValue = 3
                     state.homeRefreshing = false
                     state.followRefreshing = false
                 }
                 compose.onNodeWithText("3", useUnmergedTree = true).assertIsDisplayed()
                 val node: (String) -> androidx.compose.ui.test.SemanticsNodeInteraction = { label ->
-                    if (style == 1) compose.onNodeWithContentDescription(label)
+                    if (style == 1 || style == 3) compose.onNodeWithContentDescription(label, substring = style == 3)
                     else compose.onNodeWithText(label)
                 }
                 val home = node("主页").fetchSemanticsNode().boundsInRoot

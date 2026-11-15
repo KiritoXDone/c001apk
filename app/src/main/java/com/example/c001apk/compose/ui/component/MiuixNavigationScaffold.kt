@@ -5,7 +5,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.unit.dp
+import com.example.c001apk.compose.logic.model.BottomBarStyle
 import com.example.c001apk.compose.logic.providable.LocalUserPreferences
 import com.example.c001apk.compose.ui.component.MiuixScaffold as Scaffold
 import top.yukonga.miuix.kmp.basic.Badge
@@ -17,6 +20,10 @@ import top.yukonga.miuix.kmp.basic.NavigationBarItem
 import top.yukonga.miuix.kmp.basic.NavigationRail
 import top.yukonga.miuix.kmp.basic.NavigationRailItem
 import top.yukonga.miuix.kmp.basic.Text
+import top.yukonga.miuix.kmp.glass.GlassNavigationBar
+import top.yukonga.miuix.kmp.glass.GlassNavigationBarDefaults
+import top.yukonga.miuix.kmp.glass.GlassNavigationItem
+import top.yukonga.miuix.kmp.material.GlassShadows
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @Composable
@@ -30,7 +37,9 @@ fun MiuixNavigationScaffold(
     badgeIndex: Int = 2,
     content: @Composable (PaddingValues) -> Unit,
 ) {
-    val floating = !wide && LocalUserPreferences.current.floatingNavigationBar
+    val prefs = LocalUserPreferences.current
+    val bottomStyle = prefs.effectiveBottomBarStyle
+    val floating = !wide && bottomStyle != BottomBarStyle.Classic
     val badge: @Composable () -> Unit = {
         if (unreadCount > 0) Badge { Text(if (unreadCount > 99) "99+" else unreadCount.toString()) }
     }
@@ -42,7 +51,7 @@ fun MiuixNavigationScaffold(
             contentWindowInsets = WindowInsets(0, 0, 0, 0),
             floatingBottomBar = floating,
             bottomBar = {
-                if (floating) {
+                if (!wide && bottomStyle == BottomBarStyle.Floating) {
                     val backdrop = LocalBarBackdrop.current
                     FloatingNavigationBar(
                         color =
@@ -66,6 +75,30 @@ fun MiuixNavigationScaffold(
                             )
                         }
                     }
+                } else if (!wide && bottomStyle == BottomBarStyle.OS4) {
+                    val backdrop = LocalBarBackdrop.current?.rawBackdrop
+                    val bottomInset = WindowInsets.navigationBars.only(WindowInsetsSides.Bottom)
+                        .asPaddingValues().calculateBottomPadding()
+                    val bottomPadding = if (bottomInset == 0.dp) 32.dp else bottomInset + 16.dp
+                    val container = if (prefs.pureBlack && MiuixTheme.colorScheme.background.luminance() < 0.5f)
+                        MiuixTheme.colorScheme.surface else MiuixTheme.colorScheme.surfaceContainer
+                    GlassNavigationBar(
+                        items = items.mapIndexed { index, (icon, label) ->
+                            val description = if (index == badgeIndex && unreadCount > 0) {
+                                "$label，未读 ${if (unreadCount > 99) "99+" else unreadCount} 条"
+                            } else label
+                            GlassNavigationItem(icon, label, description)
+                        },
+                        selectedIndex = selectedIndex,
+                        onSelect = onSelect,
+                        backdrop = backdrop,
+                        modifier = Modifier.padding(horizontal = 12.dp).padding(bottom = bottomPadding),
+                        defaultWindowInsetsPadding = false,
+                        containerColor = container.copy(alpha = 1f),
+                        stroke = if (backdrop != null) GlassNavigationBarDefaults.stroke() else null,
+                        shadow = if (backdrop != null) GlassShadows.Float else null,
+                        badge = { index -> if (index == badgeIndex) badge() },
+                    )
                 } else if (!wide)
                     NavigationBar(color = LocalBarColor.current) {
                         items.forEachIndexed { index, item ->
