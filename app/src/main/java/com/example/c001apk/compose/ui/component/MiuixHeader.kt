@@ -1,15 +1,20 @@
 package com.example.c001apk.compose.ui.component
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.union
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.example.c001apk.compose.logic.model.TopBarStyle
+import com.example.c001apk.compose.logic.providable.LocalUserPreferences
 import top.yukonga.miuix.kmp.basic.Button
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.SmallTopAppBar
@@ -48,6 +53,8 @@ fun MiuixHeader(
     color: Color = LocalBarColor.current,
     centerTitle: Boolean = false,
 ) = CompactBar {
+    val isOs4 = LocalUserPreferences.current.topBarStyle == TopBarStyle.OS4
+    val spacing = if (isOs4) 8.dp else 0.dp
     SmallTopAppBar(
         title = "",
         modifier = modifier,
@@ -63,7 +70,21 @@ fun MiuixHeader(
                 title()
             }
         },
-        navigationIcon = navigationIcon,
-        actions = actions,
+        // 导航和操作槽的间距参考 BoxProxy bf0b1d5。
+        navigationIcon = {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(spacing),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                navigationIcon()
+            }
+        },
+        actions = {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(spacing),
+                verticalAlignment = Alignment.CenterVertically,
+                content = actions,
+            )
+        },
     )
 }

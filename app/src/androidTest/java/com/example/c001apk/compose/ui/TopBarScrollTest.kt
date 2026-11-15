@@ -17,6 +17,7 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -27,18 +28,23 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.click
+import androidx.compose.ui.test.hasClickAction
+import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.doubleClick
 import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import androidx.test.filters.SdkSuppress
 import androidx.test.platform.app.InstrumentationRegistry
@@ -57,6 +63,7 @@ import com.example.c001apk.compose.ui.component.rememberBarBackdrop
 import com.example.c001apk.compose.ui.component.TopBarScrollEffect
 import com.example.c001apk.compose.ui.component.TopBarScrollPage
 import com.example.c001apk.compose.ui.component.topBarTap
+import com.example.c001apk.compose.ui.component.icons.FlutterProfileIcons
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -64,6 +71,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.ExternalResource
 import org.junit.rules.RuleChain
+import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.glass.GlassIconButton
 import top.yukonga.miuix.kmp.glass.GlassTopAppBarDefaults
@@ -194,6 +202,44 @@ class TopBarScrollTest {
             assertTrue("Shadow must remain visible with blur=$blurred", noShadow.red - actual.red > 0.01f)
             assertEquals("Only the Box reference shadow should be drawn with blur=$blurred", reference.red, actual.red, 0.004f)
         }
+    }
+
+    @Test fun multipleActionsUseBoxSpacingAndKeepBothActionsClickable() {
+        val style = mutableStateOf(TopBarStyle.OS4)
+        val calls = mutableListOf<String>()
+        lateinit var actionDensity: Density
+        compose.setContent {
+            CompositionLocalProvider(
+                LocalUserPreferences provides UserPreferencesCompat.default().copy(topBarStyle = style.value),
+            ) {
+                MiuixTheme {
+                    MiuixTopBar(
+                        title = "我的",
+                        windowInsets = WindowInsets(0, 0, 0, 0),
+                        actions = {
+                            val density = LocalDensity.current
+                            SideEffect { actionDensity = density }
+                            MiuixToolbarIconButton(onClick = { calls += "账号" }) {
+                                Icon(FlutterProfileIcons.Account, contentDescription = "账号")
+                            }
+                            MiuixToolbarIconButton(onClick = { calls += "设置" }) {
+                                Icon(FlutterProfileIcons.Settings, contentDescription = "设置")
+                            }
+                        },
+                    )
+                }
+            }
+        }
+        for (current in listOf(TopBarStyle.Classic, TopBarStyle.ClassicContour, TopBarStyle.OS4)) {
+            compose.runOnIdle { style.value = current }
+            val account = compose.onNode(hasContentDescription("账号") and hasClickAction()).fetchSemanticsNode().boundsInRoot
+            val settings = compose.onNode(hasContentDescription("设置") and hasClickAction()).fetchSemanticsNode().boundsInRoot
+            val expected = if (current == TopBarStyle.OS4) with(actionDensity) { 8.dp.roundToPx().toFloat() } else 0f
+            assertEquals("Action gap for $current: account=$account settings=$settings", expected, settings.left - account.right, 1f)
+            compose.onNodeWithContentDescription("账号").performClick()
+            compose.onNodeWithContentDescription("设置").performClick()
+        }
+        compose.runOnIdle { assertEquals(listOf("账号", "设置", "账号", "设置", "账号", "设置"), calls) }
     }
 
     @Test fun titleStaysCenteredWithUnequalOrChangingButtons() {
