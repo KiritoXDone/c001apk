@@ -25,8 +25,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsSelected
@@ -34,6 +36,9 @@ import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performSemanticsAction
+import androidx.compose.ui.text.TextLayoutResult
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.test.filters.SdkSuppress
@@ -95,6 +100,47 @@ class TabRowBlurTest {
             val track = compose.onNodeWithTag("tabs").fetchSemanticsNode().boundsInRoot
             val text = compose.onNodeWithText(label).fetchSemanticsNode().boundsInRoot
             assertTrue(text.top >= track.top && text.bottom <= track.bottom)
+        }
+    }
+
+    @Test fun segmentedLabelsFitAtFractionalDensityWhenSelectionChanges() {
+        val selected = mutableStateOf(0)
+        val density = mutableStateOf(2.6f)
+        val fontScale = mutableStateOf(1f)
+        val labels = listOf("第一个较长的标签", "第二个较长的标签", "第三个较长的标签")
+        compose.setContent {
+            CompositionLocalProvider(
+                LocalDensity provides Density(density.value, fontScale.value),
+                LocalUserPreferences provides UserPreferencesCompat.default().copy(topBarStyle = TopBarStyle.OS4),
+            ) {
+                C001apkComposeTheme(materialYou = false) {
+                    MiuixTabRow(
+                        tabs = labels,
+                        selectedTabIndex = selected.value,
+                        onTabSelected = { selected.value = it },
+                        modifier = Modifier.width(120.dp),
+                    )
+                }
+            }
+        }
+        for ((currentDensity, currentFontScale) in listOf(2.6f to 1f, 2.625f to 1.5f)) {
+            compose.runOnIdle {
+                density.value = currentDensity
+                fontScale.value = currentFontScale
+            }
+            for (index in labels.indices) {
+                compose.runOnIdle { selected.value = index }
+                for (label in labels) {
+                    val layouts = mutableListOf<TextLayoutResult>()
+                    compose.onNodeWithText(label, useUnmergedTree = true)
+                        .performSemanticsAction(SemanticsActions.GetTextLayoutResult) { getLayouts ->
+                            assertTrue(getLayouts(layouts))
+                        }
+                    assertTrue(layouts.isNotEmpty())
+                    assertFalse("$label must not be ellipsized", layouts.last().isLineEllipsized(0))
+                    assertFalse("$label must not overflow", layouts.last().hasVisualOverflow)
+                }
+            }
         }
     }
 

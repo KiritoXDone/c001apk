@@ -115,12 +115,13 @@ private fun Os4TabRow(
         }.let { sizes -> sizes.maxOf { it.width } to sizes.maxOf { it.height } }
     }
     // 轨道尺寸与居中改编自 BoxProxy bf0b1d5（GPL-3.0），来源见 THIRD_PARTY_PORTS.md。
-    val trackInset = with(density) { GlassSegmentedTabRowDefaults.TrackPadding.toPx() }
-    val gap = with(density) { GlassSegmentedTabRowDefaults.TabGap.toPx() }
-    val labelPadding = with(density) { GlassSegmentedTabRowDefaults.TabPaddingHorizontal.toPx() }
+    // 与原生 padding 和间距逐项取整一致，避免标签少分配像素。
+    val trackInset = with(density) { GlassSegmentedTabRowDefaults.TrackPadding.roundToPx() }
+    val gap = with(density) { GlassSegmentedTabRowDefaults.TabGap.roundToPx() }
+    val labelPadding = with(density) { GlassSegmentedTabRowDefaults.TabPaddingHorizontal.roundToPx() }
     val naturalWidth = (labelSize.first + labelPadding * 2) * tabs.size + gap * (tabs.size - 1) + trackInset * 2
     val height = with(density) {
-        maxOf(GlassSegmentedTabRowDefaults.Height.toPx(), labelSize.second + trackInset * 2).toDp()
+        maxOf(GlassSegmentedTabRowDefaults.Height.roundToPx(), labelSize.second + trackInset * 2).toDp()
     }
     val shape = GlassSegmentedTabRowDefaults.shape(height)
     val trackBase = if (withContour) MiuixTheme.colorScheme.surfaceContainer else MiuixTheme.colorScheme.surface
@@ -128,9 +129,9 @@ private fun Os4TabRow(
     val backdrop = LocalBarBackdrop.current
     val surface = if (backdrop != null) backdrop.glassTabModifier(shape) else Modifier.background(trackBase, shape)
     BoxWithConstraints(modifier.fillMaxWidth().height(height)) {
-        val viewport = if (constraints.hasBoundedWidth) constraints.maxWidth else naturalWidth.roundToInt()
-        val contentWidth = maxOf(viewport, naturalWidth.roundToInt())
-        val slotWidth = (contentWidth - trackInset * 2 - gap * (tabs.size - 1)) / tabs.size
+        val viewport = if (constraints.hasBoundedWidth) constraints.maxWidth else naturalWidth
+        val contentWidth = maxOf(viewport, naturalWidth)
+        val slotWidth = (contentWidth - trackInset * 2 - gap * (tabs.size - 1)).toFloat() / tabs.size
         LaunchedEffect(selected, viewport, contentWidth, tabs, layoutDirection) {
             val center = trackInset + selected * (slotWidth + gap) + slotWidth / 2
             scroll.animateScrollTo((center - viewport / 2f).roundToInt().coerceIn(0, contentWidth - viewport))
