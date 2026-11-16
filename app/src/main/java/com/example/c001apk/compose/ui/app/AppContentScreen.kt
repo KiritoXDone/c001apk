@@ -29,7 +29,6 @@ fun AppContentScreen(
     onOpenLink: (String, String?) -> Unit,
     onCopyText: (String?) -> Unit,
     onReport: (String, ReportType) -> Unit,
-    isScrollingUp: ((Boolean) -> Unit)? = null,
     listHeader: @Composable () -> Unit,
     listModifier: Modifier = Modifier,
 ) {
@@ -57,7 +56,6 @@ fun AppContentScreen(
         onOpenLink = onOpenLink,
         onCopyText = onCopyText,
         onReport = onReport,
-        isScrollingUp = isScrollingUp,
         listModifier = listModifier,
     )
 

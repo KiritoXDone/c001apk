@@ -1,10 +1,12 @@
 package com.example.c001apk.compose.ui.component
 
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.isSpecified
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import com.example.c001apk.compose.logic.model.TopBarStyle
 import com.example.c001apk.compose.logic.providable.LocalUserPreferences
 import top.yukonga.miuix.kmp.basic.IconButton
@@ -15,6 +17,11 @@ import top.yukonga.miuix.kmp.glass.glassShadow
 import top.yukonga.miuix.kmp.material.GlassShape
 import top.yukonga.miuix.kmp.material.GlassShadows
 import top.yukonga.miuix.kmp.theme.MiuixTheme
+
+private object ToolbarButtonDefaults {
+    val HorizontalSpacing = 4.dp
+    val Shadow = GlassShadows.Float.copy(color = Color.Black.copy(alpha = 0.025f), offsetY = 1f)
+}
 
 @Composable
 fun MiuixToolbarIconButton(
@@ -28,10 +35,11 @@ fun MiuixToolbarIconButton(
     minWidth: Dp = IconButtonDefaults.MinWidth,
     content: @Composable () -> Unit,
 ) {
+    val spacedModifier = modifier.padding(horizontal = ToolbarButtonDefaults.HorizontalSpacing)
     if (LocalUserPreferences.current.topBarStyle != TopBarStyle.OS4) {
         IconButton(
             onClick = onClick,
-            modifier = modifier,
+            modifier = spacedModifier,
             enabled = enabled,
             holdDownState = holdDownState,
             backgroundColor = backgroundColor,
@@ -43,12 +51,11 @@ fun MiuixToolbarIconButton(
         return
     }
     val backdrop = LocalBarBackdrop.current?.rawBackdrop
-    val size = maxOf(GlassTopAppBarDefaults.ButtonSize, minHeight, minWidth)
+    val size = maxOf(minHeight, minWidth)
     val shape = GlassShape(cornerRadius.coerceAtMost(size / 2))
-    // 按 BoxProxy bf0b1d5 在按钮外绘制阴影，阴影不依赖模糊开关。
     GlassIconButton(
         onClick = onClick,
-        modifier = modifier.glassShadow(shape, GlassShadows.Regular, if (enabled) 1f else 0.38f),
+        modifier = spacedModifier.glassShadow(shape, ToolbarButtonDefaults.Shadow, if (enabled) 1f else 0.38f),
         enabled = enabled,
         holdDownState = holdDownState,
         inheritTopBarMaterial = false,

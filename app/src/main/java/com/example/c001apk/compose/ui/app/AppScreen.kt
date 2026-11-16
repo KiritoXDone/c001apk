@@ -1,10 +1,7 @@
 package com.example.c001apk.compose.ui.app
 
 import android.content.Intent
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animate
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,9 +9,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.wrapContentSize
@@ -38,18 +35,16 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityOptionsCompat
 import androidx.core.content.ContextCompat
-import androidx.core.content.res.ResourcesCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.c001apk.compose.R
 import com.example.c001apk.compose.constant.Constants.EMPTY_STRING
 import com.example.c001apk.compose.logic.state.LoadingState
-import com.example.c001apk.compose.ui.component.MiuixToolbarIconButton
 import com.example.c001apk.compose.ui.component.BackButton
 import com.example.c001apk.compose.ui.component.LocalTopBarScroll
+import com.example.c001apk.compose.ui.component.MiuixToolbarIconButton
 import com.example.c001apk.compose.ui.component.MiuixHeader as TopAppBar
 import com.example.c001apk.compose.ui.component.MiuixMenu as DropdownMenu
 import com.example.c001apk.compose.ui.component.MiuixMenuItem as DropdownMenuItem
-import com.example.c001apk.compose.ui.component.MoreMenuButton
 import com.example.c001apk.compose.ui.component.cards.AppInfoCard
 import com.example.c001apk.compose.ui.component.cards.LoadingCard
 import com.example.c001apk.compose.ui.component.rememberHapticClick
@@ -61,18 +56,18 @@ import com.example.c001apk.compose.util.CookieUtil.isLogin
 import com.example.c001apk.compose.util.ReportType
 import com.example.c001apk.compose.util.downloadApk
 import com.example.c001apk.compose.util.makeToast
-import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import me.onebone.toolbar.CollapsingToolbarScaffold
 import me.onebone.toolbar.ExperimentalToolbarApi
 import me.onebone.toolbar.ScrollStrategy
 import me.onebone.toolbar.rememberCollapsingToolbarScaffoldState
-import top.yukonga.miuix.kmp.basic.FloatingActionButton
 import top.yukonga.miuix.kmp.basic.HorizontalDivider
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.extended.Edit
+import top.yukonga.miuix.kmp.icon.extended.ExpandMore
 import top.yukonga.miuix.kmp.icon.extended.Search
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.springAnimateToPage
@@ -100,6 +95,7 @@ fun AppScreen(
 
     val tabList by lazy { listOf("最近回复", "最新发布", "热度排序") }
     var dropdownMenuExpanded by remember { mutableStateOf(false) }
+    var menuHeld by remember { mutableStateOf(false) }
 
     val pagerState =
         rememberPagerState(
@@ -115,7 +111,6 @@ fun AppScreen(
     val headerScrollConnection = rememberAppHeaderScrollConnection(state.toolbarState)
 
     val windowInsets = WindowInsets.systemBars
-    var isScrollingUp by remember { mutableStateOf(false) }
 
     val scrollRequests = remember { MutableSharedFlow<Unit>(extraBufferCapacity = 1) }
     CompositionLocalProvider(LocalTopBarScroll provides scrollRequests) {
@@ -157,13 +152,44 @@ fun AppScreen(
                                         onSearch(viewModel.title, "apk", viewModel.id)
                                     },
                                 ) {
-                                    Icon(MiuixIcons.Search, contentDescription = null)
+                                    Icon(MiuixIcons.Search, contentDescription = "搜索此应用的动态", modifier = Modifier.size(24.dp))
+                                }
+                                if (isLogin) {
+                                    MiuixToolbarIconButton(
+                                        onClick = rememberHapticClick {
+                                            val intent = Intent(context, ReplyActivity::class.java)
+                                            intent.putExtra("type", "createFeed")
+                                            intent.putExtra("targetType", "apk")
+                                            intent.putExtra(
+                                                "targetId",
+                                                "${1000000000 + (viewModel.id.toIntOrNull() ?: 4599)}",
+                                            )
+                                            val animationBundle =
+                                                ActivityOptionsCompat.makeCustomAnimation(
+                                                    context,
+                                                    R.anim.anim_bottom_sheet_slide_up,
+                                                    R.anim.anim_bottom_sheet_slide_down,
+                                                ).toBundle()
+                                            ContextCompat.startActivity(context, intent, animationBundle)
+                                        },
+                                    ) {
+                                        Icon(MiuixIcons.Edit, contentDescription = "发布动态", modifier = Modifier.size(24.dp))
+                                    }
                                 }
                                 Box {
-                                    MoreMenuButton { dropdownMenuExpanded = true }
+                                    MiuixToolbarIconButton(
+                                        onClick = {
+                                            menuHeld = true
+                                            dropdownMenuExpanded = true
+                                        },
+                                        holdDownState = menuHeld,
+                                    ) {
+                                        Icon(MiuixIcons.ExpandMore, contentDescription = "更多操作", modifier = Modifier.size(24.dp))
+                                    }
                                     DropdownMenu(
                                         expanded = dropdownMenuExpanded,
                                         onDismissRequest = { dropdownMenuExpanded = false },
+                                        onDismissFinished = { menuHeld = false },
                                     ) {
                                         com.example.c001apk.compose.ui.component.ContentShareMenuItems(
                                             type = com.example.c001apk.compose.util.ShareType.APP,
@@ -280,9 +306,6 @@ fun AppScreen(
                                         onOpenLink = onOpenLink,
                                         onCopyText = onCopyText,
                                         onReport = onReport,
-                                        isScrollingUp = {
-                                            isScrollingUp = it
-                                        },
                                         listHeader = {
                                             AppSortOptions(
                                                 options = tabList,
@@ -314,48 +337,6 @@ fun AppScreen(
                 }
             }
 
-            if (isLogin) {
-                AnimatedVisibility(
-                    visible = isScrollingUp,
-                    enter = slideInVertically { it * 2 },
-                    exit = slideOutVertically { it * 2 },
-                    modifier =
-                        Modifier.align(Alignment.BottomEnd).navigationBarsPadding().padding(20.dp),
-                ) {
-                    FloatingActionButton(
-                        onClick =
-                            rememberHapticClick {
-                                val intent = Intent(context, ReplyActivity::class.java)
-                                intent.putExtra("type", "createFeed")
-                                intent.putExtra("targetType", "apk")
-                                intent.putExtra(
-                                    "targetId",
-                                    "${1000000000 + (viewModel.id.toIntOrNull() ?: 4599)}",
-                                )
-                                val animationBundle =
-                                    ActivityOptionsCompat.makeCustomAnimation(
-                                            context,
-                                            R.anim.anim_bottom_sheet_slide_up,
-                                            R.anim.anim_bottom_sheet_slide_down,
-                                        )
-                                        .toBundle()
-                                ContextCompat.startActivity(context, intent, animationBundle)
-                            },
-                    ) {
-                        Icon(
-                            painter =
-                                rememberDrawablePainter(
-                                    ResourcesCompat.getDrawable(
-                                        context.resources,
-                                        R.drawable.outline_note_alt_24,
-                                        context.theme,
-                                    ),
-                                ),
-                            contentDescription = null,
-                        )
-                    }
-                }
-            }
         }
 
     }

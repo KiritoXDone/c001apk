@@ -1,6 +1,5 @@
 package com.example.c001apk.compose.ui.component
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
@@ -19,7 +18,6 @@ import top.yukonga.miuix.kmp.basic.Button
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.SmallTopAppBar
 import top.yukonga.miuix.kmp.basic.TopAppBarTitleAlignment
-import top.yukonga.miuix.kmp.glass.GlassTopAppBarDefaults
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @Composable
@@ -54,7 +52,6 @@ fun MiuixHeader(
     centerTitle: Boolean = false,
 ) = CompactBar {
     val isOs4 = LocalUserPreferences.current.topBarStyle == TopBarStyle.OS4
-    val spacing = if (isOs4) 8.dp else 0.dp
     SmallTopAppBar(
         title = "",
         modifier = modifier,
@@ -62,19 +59,14 @@ fun MiuixHeader(
         windowInsets = windowInsets,
         consumeBarTaps = false,
         clipControlsToBounds = !isOs4,
-        titlePadding = 8.dp,
-        navigationIconPadding = GlassTopAppBarDefaults.HorizontalPadding,
-        actionIconPadding = GlassTopAppBarDefaults.HorizontalPadding,
         titleAlignment = if (centerTitle) TopAppBarTitleAlignment.Center else TopAppBarTitleAlignment.Start,
         titleContent = {
             MiuixTheme(textStyles = MiuixTheme.textStyles.copy(main = MiuixTheme.textStyles.title3)) {
                 title()
             }
         },
-        // 导航和操作槽的间距参考 BoxProxy bf0b1d5。
         navigationIcon = {
             Row(
-                horizontalArrangement = Arrangement.spacedBy(spacing),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 navigationIcon()
@@ -82,7 +74,6 @@ fun MiuixHeader(
         },
         actions = {
             Row(
-                horizontalArrangement = Arrangement.spacedBy(spacing),
                 verticalAlignment = Alignment.CenterVertically,
                 content = actions,
             )

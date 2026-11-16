@@ -19,7 +19,6 @@ import com.example.c001apk.compose.logic.model.HomeFeedResponse
 import com.example.c001apk.compose.logic.state.LoadingState
 import com.example.c001apk.compose.ui.base.BaseViewModel
 import com.example.c001apk.compose.util.ReportType
-import com.example.c001apk.compose.util.isScrollingUp
 import top.yukonga.miuix.kmp.basic.PullToRefresh
 import top.yukonga.miuix.kmp.utils.scrollEndHaptic
 
@@ -44,7 +43,6 @@ fun CommonScreen(
     onHandleMessage: ((String, Int) -> Unit)? = null,
     onViewChat: ((String, String, String) -> Unit)? = null,
     onDeleteNotice: ((String) -> Unit)? = null,
-    isScrollingUp: ((Boolean) -> Unit)? = null,
     productConfigRows: List<HomeFeedResponse.ProductConfig> = emptyList(),
     selectedProductConfigIds: Set<String> = emptySet(),
     onViewProductConfig: ((HomeFeedResponse.ProductConfig) -> Unit)? = null,
@@ -74,10 +72,6 @@ fun CommonScreen(
                 lazyListState.scrollToItem(0)
             }
         }
-    }
-
-    isScrollingUp?.let {
-        it(lazyListState.isScrollingUp())
     }
 
     PullToRefresh(

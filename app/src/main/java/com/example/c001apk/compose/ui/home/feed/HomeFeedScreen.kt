@@ -27,7 +27,6 @@ fun HomeFeedScreen(
     onOpenLink: (String, String?) -> Unit,
     onCopyText: (String?) -> Unit,
     onReport: (String, ReportType) -> Unit,
-    isScrollingUp: ((Boolean) -> Unit)? = null,
     followType: FollowType? = null,
 ) {
 
@@ -114,7 +113,6 @@ fun HomeFeedScreen(
         onOpenLink = onOpenLink,
         onCopyText = onCopyText,
         onReport = onReport,
-        isScrollingUp = isScrollingUp,
     )
 
     viewModel.toastText?.let {
