@@ -17,162 +17,165 @@
         android:layout_height="0dp"
         android:layout_weight="1" />
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <LinearLayout
         android:id="@+id/inputLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp">
 
-        <TextView
-            android:id="@+id/title"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:padding="15.2dp"
-            android:textSize="15.2sp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            tools:text="回复" />
+        <View
+            android:id="@+id/dragHandle"
+            android:layout_width="36dp"
+            android:layout_height="4dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="6dp"
+            android:importantForAccessibility="no" />
 
-        <TextView
-            android:id="@+id/publish"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="end"
-            android:foreground="@drawable/selector_reply"
-            android:padding="15.2dp"
-            android:text="发布"
-            android:textColor="@android:color/darker_gray"
-            android:textSize="15.2sp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <com.example.c001apk.compose.view.MiuixInputLayout
-            android:id="@+id/textInputLayout"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="16dp"
-            android:layout_marginRight="16dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/title">
+            android:minHeight="40dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="4dp"
+            android:paddingBottom="10dp">
+
+            <TextView
+                android:id="@+id/title"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginEnd="8dp"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                tools:text="发布动态" />
+
+            <com.example.c001apk.compose.ui.feed.reply.ReplyVisibilityChipView
+                android:id="@+id/checkBox"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <com.example.c001apk.compose.ui.feed.reply.ReplyInputCardLayout
+            android:id="@+id/textInputLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
 
             <androidx.appcompat.widget.AppCompatEditText
                 android:id="@+id/editText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@null"
+                android:contentDescription="发布内容"
                 android:gravity="start"
+                android:hint="分享新鲜事…"
+                android:inputType="textCapSentences|textMultiLine"
                 android:lineSpacingMultiplier="1.2"
                 android:maxLength="500"
                 android:maxLines="8"
-                android:minLines="4"
-                android:textSize="14sp" />
+                android:minLines="3"
+                android:padding="0dp"
+                android:textSize="15sp" />
 
-        </com.example.c001apk.compose.view.MiuixInputLayout>
+            <HorizontalScrollView
+                android:id="@+id/imageScrollLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:scrollbars="none"
+                android:visibility="gone">
 
-        <com.example.c001apk.compose.view.MiuixCheckboxView
-            android:id="@+id/checkBox"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="10dp"
-            android:background="@null"
-            android:button="@null"
-            android:drawableStart="?android:attr/listChoiceIndicatorMultiple"
-            android:text="回复并转发"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/textInputLayout" />
-
-        <HorizontalScrollView
-            android:id="@+id/imageScrollLayout"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:scrollbars="none"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/checkBox">
+                <LinearLayout
+                    android:id="@+id/imageLayout"
+                    android:layout_width="wrap_content"
+                    android:layout_height="72dp"
+                    android:orientation="horizontal"
+                    android:visibility="gone" />
+            </HorizontalScrollView>
 
             <LinearLayout
-                android:id="@+id/imageLayout"
-                android:layout_width="wrap_content"
-                android:layout_height="65dp"
-                android:orientation="horizontal"
-                android:paddingStart="11dp"
-                android:paddingEnd="16dp"
-                android:visibility="gone" />
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
 
-        </HorizontalScrollView>
+                <!-- 与发布按钮同行居中，margin 只生效一半 -->
+                <TextView
+                    android:id="@+id/characterCount"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:layout_weight="1"
+                    android:text="0 / 500"
+                    android:textSize="12sp" />
 
-        <View
-            android:id="@+id/line"
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="@color/color_container"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/imageScrollLayout" />
+                <com.example.c001apk.compose.ui.feed.reply.ReplyPublishButtonView
+                    android:id="@+id/publish"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:enabled="false" />
+            </LinearLayout>
+        </com.example.c001apk.compose.ui.feed.reply.ReplyInputCardLayout>
 
-        <LinearLayout
+        <HorizontalScrollView
+            android:id="@+id/toolScrollLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center"
-            android:orientation="horizontal"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/line">
+            android:paddingTop="12dp"
+            android:paddingBottom="14dp"
+            android:scrollbars="none">
 
-            <ImageView
-                android:id="@+id/emojiBtn"
-                android:layout_width="0dp"
+            <LinearLayout
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:background="?attr/actionBarItemBackground"
-                android:padding="8dp"
-                android:stateListAnimator="@animator/reply_action_button_scale"
-                android:src="@drawable/outline_emoji_emotions_24" />
+                android:orientation="horizontal">
 
-            <ImageView
-                android:id="@+id/imageBtn"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:background="?attr/actionBarItemBackground"
-                android:padding="8dp"
-                android:stateListAnimator="@animator/reply_action_button_scale"
-                android:src="@drawable/outline_image_24" />
+                <com.example.c001apk.compose.ui.feed.reply.ReplyToolChipView
+                    android:id="@+id/emojiBtn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="8dp"
+                    android:text="表情"
+                    android:src="@drawable/outline_emoji_emotions_24" />
 
-            <ImageView
-                android:id="@+id/otherImageBtn"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:background="?attr/actionBarItemBackground"
-                android:padding="8dp"
-                android:stateListAnimator="@animator/reply_action_button_scale"
-                android:src="@drawable/outline_note_alt_24" />
+                <com.example.c001apk.compose.ui.feed.reply.ReplyToolChipView
+                    android:id="@+id/imageBtn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="8dp"
+                    android:text="相册"
+                    android:src="@drawable/outline_image_24" />
 
-            <ImageView
-                android:id="@+id/atBtn"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:background="?attr/actionBarItemBackground"
-                android:padding="8dp"
-                android:stateListAnimator="@animator/reply_action_button_scale"
-                android:src="@drawable/outline_alternate_email_24" />
+                <com.example.c001apk.compose.ui.feed.reply.ReplyToolChipView
+                    android:id="@+id/otherImageBtn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="8dp"
+                    android:text="文件"
+                    android:src="@drawable/outline_note_alt_24" />
 
-            <ImageView
-                android:id="@+id/tagBtn"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:background="?attr/actionBarItemBackground"
-                android:padding="8dp"
-                android:stateListAnimator="@animator/reply_action_button_scale"
-                android:src="@drawable/outline_tag_24" />
+                <com.example.c001apk.compose.ui.feed.reply.ReplyToolChipView
+                    android:id="@+id/atBtn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="8dp"
+                    android:text="提到"
+                    android:src="@drawable/outline_alternate_email_24" />
 
-        </LinearLayout>
+                <com.example.c001apk.compose.ui.feed.reply.ReplyToolChipView
+                    android:id="@+id/tagBtn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="话题"
+                    android:src="@drawable/outline_tag_24" />
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+            </LinearLayout>
+        </HorizontalScrollView>
+    </LinearLayout>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/emojiLayout"

@@ -12,18 +12,15 @@ import android.os.Parcelable
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
@@ -60,10 +57,10 @@ import com.example.c001apk.compose.ui.component.ItemCard
 import com.example.c001apk.compose.ui.component.LocalMarkdownRaw
 import com.example.c001apk.compose.ui.component.MiuixAlertDialog
 import com.example.c001apk.compose.ui.component.MiuixDialogButton
+import com.example.c001apk.compose.ui.component.MiuixToolbarIconButton
 import com.example.c001apk.compose.ui.component.MiuixMenu as DropdownMenu
 import com.example.c001apk.compose.ui.component.MiuixMenuItem as DropdownMenuItem
 import com.example.c001apk.compose.ui.component.MiuixScaffold as Scaffold
-import com.example.c001apk.compose.ui.component.MoreMenuButton
 import com.example.c001apk.compose.ui.component.cards.FeedCard
 import com.example.c001apk.compose.ui.component.cards.FeedReplyCard
 import com.example.c001apk.compose.ui.component.cards.FeedReplySortCard
@@ -75,13 +72,12 @@ import com.example.c001apk.compose.util.CookieUtil
 import com.example.c001apk.compose.util.CookieUtil.isLogin
 import com.example.c001apk.compose.util.ReportType
 import com.example.c001apk.compose.util.ShareType
-import com.example.c001apk.compose.util.isScrollingUp
 import com.example.c001apk.compose.util.makeToast
 import kotlinx.coroutines.launch
-import top.yukonga.miuix.kmp.basic.FloatingActionButton
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.extended.ExpandMore
 import top.yukonga.miuix.kmp.icon.extended.Reply
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
@@ -115,6 +111,7 @@ fun FeedScreen(
     val layoutDirection = LocalLayoutDirection.current
     val lazyListState = rememberLazyListState()
     var dropdownMenuExpanded by remember(id) { mutableStateOf(false) }
+    var menuHeld by remember(id) { mutableStateOf(false) }
     var confirmDelete by remember(id) { mutableStateOf(false) }
     val ownFeed =
         isLogin && (viewModel.feedState as? LoadingState.Success)?.response?.uid == CookieUtil.uid
@@ -271,15 +268,37 @@ fun FeedScreen(
                         actions = {
                             ReadingSidebarButton(sidebarHidden, onToggleSidebar)
                             if (viewModel.feedState is LoadingState.Success) {
+                                if (isLogin) {
+                                    MiuixToolbarIconButton(
+                                        onClick = rememberHapticClick {
+                                            viewModel.replyId = viewModel.id
+                                            viewModel.replyUid = viewModel.feedUid
+                                            viewModel.replyName = viewModel.feedUsername
+                                            viewModel.replyType = "feed"
+                                            launchReply()
+                                        },
+                                    ) {
+                                        Icon(MiuixIcons.Reply, contentDescription = "回复动态", modifier = Modifier.size(24.dp))
+                                    }
+                                }
                                 val feed = (viewModel.feedState as LoadingState.Success).response
                                 val exportModel = hiltViewModel<FeedExportViewModel>(key = "export-${feed.id}")
                                 var chooseExport by remember(feed.id) { mutableStateOf(false) }
                                 FeedExportDialogs(feed, articleList, exportModel, chooseExport) { chooseExport = it }
                                 Box(Modifier.wrapContentSize(Alignment.TopEnd)) {
-                                    MoreMenuButton { dropdownMenuExpanded = true }
+                                    MiuixToolbarIconButton(
+                                        onClick = {
+                                            menuHeld = true
+                                            dropdownMenuExpanded = true
+                                        },
+                                        holdDownState = menuHeld,
+                                    ) {
+                                        Icon(MiuixIcons.ExpandMore, contentDescription = "更多操作", modifier = Modifier.size(24.dp))
+                                    }
                                     DropdownMenu(
                                         expanded = dropdownMenuExpanded,
                                         onDismissRequest = { dropdownMenuExpanded = false },
+                                        onDismissFinished = { menuHeld = false },
                                     ) {
                                         FeedExportMenuItem(
                                             enabled = !exportModel.busy && !exportModel.awaitingFile,
@@ -370,33 +389,6 @@ fun FeedScreen(
                             }
                         },
                     )
-                },
-                floatingActionButton = {
-                    if (isLogin && viewModel.feedState is LoadingState.Success) {
-                        AnimatedVisibility(
-                            modifier =
-                                if (!isCompat) Modifier.navigationBarsPadding() else Modifier,
-                            visible = lazyListState.isScrollingUp(),
-                            enter = slideInVertically { it * 2 },
-                            exit = slideOutVertically { it * 2 },
-                        ) {
-                            FloatingActionButton(
-                                onClick =
-                                    rememberHapticClick {
-                                        viewModel.replyId = viewModel.id
-                                        viewModel.replyUid = viewModel.feedUid
-                                        viewModel.replyName = viewModel.feedUsername
-                                        viewModel.replyType = "feed"
-                                        launchReply()
-                                    },
-                            ) {
-                                Icon(
-                                    imageVector = MiuixIcons.Reply,
-                                    contentDescription = null,
-                                )
-                            }
-                        }
-                    }
                 },
             ) { paddingValues ->
                 top.yukonga.miuix.kmp.basic.PullToRefresh(

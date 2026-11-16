@@ -1,9 +1,6 @@
 package com.example.c001apk.compose.ui.topic
 
 import android.content.Intent
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -12,6 +9,7 @@ import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.pager.HorizontalPager
@@ -35,20 +33,18 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityOptionsCompat
 import androidx.core.content.ContextCompat
-import androidx.core.content.res.ResourcesCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.c001apk.compose.R
 import com.example.c001apk.compose.constant.Constants.EMPTY_STRING
 import com.example.c001apk.compose.logic.state.LoadingState
-import com.example.c001apk.compose.ui.component.MiuixToolbarIconButton
 import com.example.c001apk.compose.ui.component.BackButton
 import com.example.c001apk.compose.ui.component.ContentShareMenuItems
+import com.example.c001apk.compose.ui.component.MiuixToolbarIconButton
 import com.example.c001apk.compose.ui.component.MiuixHeader as TopAppBar
 import com.example.c001apk.compose.ui.component.MiuixMenu as DropdownMenu
 import com.example.c001apk.compose.ui.component.MiuixMenuItem as DropdownMenuItem
 import com.example.c001apk.compose.ui.component.MiuixScaffold as Scaffold
 import com.example.c001apk.compose.ui.component.MiuixTabRow
-import com.example.c001apk.compose.ui.component.MoreMenuButton
 import com.example.c001apk.compose.ui.component.cards.LoadingCard
 import com.example.c001apk.compose.ui.component.rememberHapticClick
 import com.example.c001apk.compose.ui.component.TopBarScrollPage
@@ -57,12 +53,12 @@ import com.example.c001apk.compose.util.CookieUtil.isLogin
 import com.example.c001apk.compose.util.ReportType
 import com.example.c001apk.compose.util.ShareType
 import com.example.c001apk.compose.util.makeToast
-import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import kotlinx.coroutines.launch
-import top.yukonga.miuix.kmp.basic.FloatingActionButton
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.extended.Edit
+import top.yukonga.miuix.kmp.icon.extended.ExpandMore
 import top.yukonga.miuix.kmp.icon.extended.Search
 import top.yukonga.miuix.kmp.utils.springAnimateToPage
 
@@ -98,6 +94,7 @@ fun TopicScreen(
     val density = LocalDensity.current
     var titleBarHeight by remember { mutableIntStateOf(0) }
     var dropdownMenuExpanded by remember { mutableStateOf(false) }
+    var menuHeld by remember { mutableStateOf(false) }
     val tabList = viewModel.tabList.orEmpty()
     val pagerState =
         if (viewModel.topicState is LoadingState.Success && tabList.isNotEmpty()) {
@@ -109,7 +106,6 @@ fun TopicScreen(
         } else null
     val scope = rememberCoroutineScope()
     var refreshState by remember { mutableStateOf(false) }
-    var isScrollingUp by remember { mutableStateOf(false) }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -147,13 +143,52 @@ fun TopicScreen(
                                         )
                                     },
                                 ) {
-                                    Icon(MiuixIcons.Search, contentDescription = null)
+                                    Icon(
+                                        MiuixIcons.Search,
+                                        contentDescription =
+                                            if (viewModel.entityType == "topic") "搜索此话题的动态"
+                                            else "搜索此产品的动态",
+                                        modifier = Modifier.size(24.dp),
+                                    )
+                                }
+                                if (isLogin) {
+                                    MiuixToolbarIconButton(
+                                        onClick = rememberHapticClick {
+                                            val intent = Intent(context, ReplyActivity::class.java)
+                                            intent.putExtra("type", "createFeed")
+                                            intent.putExtra(
+                                                "targetType",
+                                                if (viewModel.entityType == "topic") "tag" else "product_phone",
+                                            )
+                                            intent.putExtra("targetId", viewModel.id)
+                                            if (viewModel.entityType == "topic")
+                                                intent.putExtra("title", viewModel.title)
+                                            val animationBundle =
+                                                ActivityOptionsCompat.makeCustomAnimation(
+                                                    context,
+                                                    R.anim.anim_bottom_sheet_slide_up,
+                                                    R.anim.anim_bottom_sheet_slide_down,
+                                                ).toBundle()
+                                            ContextCompat.startActivity(context, intent, animationBundle)
+                                        },
+                                    ) {
+                                        Icon(MiuixIcons.Edit, contentDescription = "发布动态", modifier = Modifier.size(24.dp))
+                                    }
                                 }
                                 Box {
-                                    MoreMenuButton { dropdownMenuExpanded = true }
+                                    MiuixToolbarIconButton(
+                                        onClick = {
+                                            menuHeld = true
+                                            dropdownMenuExpanded = true
+                                        },
+                                        holdDownState = menuHeld,
+                                    ) {
+                                        Icon(MiuixIcons.ExpandMore, contentDescription = "更多操作", modifier = Modifier.size(24.dp))
+                                    }
                                     DropdownMenu(
                                         expanded = dropdownMenuExpanded,
                                         onDismissRequest = { dropdownMenuExpanded = false },
+                                        onDismissFinished = { menuHeld = false },
                                     ) {
                                         ContentShareMenuItems(
                                             type =
@@ -224,50 +259,6 @@ fun TopicScreen(
                 }
             }
         },
-        floatingActionButton = {
-            if (isLogin) {
-                AnimatedVisibility(
-                    visible = isScrollingUp,
-                    enter = slideInVertically { it * 2 },
-                    exit = slideOutVertically { it * 2 },
-                ) {
-                    FloatingActionButton(
-                        onClick =
-                            rememberHapticClick {
-                                val intent = Intent(context, ReplyActivity::class.java)
-                                intent.putExtra("type", "createFeed")
-                                intent.putExtra(
-                                    "targetType",
-                                    if (viewModel.entityType == "topic") "tag" else "product_phone",
-                                )
-                                intent.putExtra("targetId", viewModel.id)
-                                if (viewModel.entityType == "topic")
-                                    intent.putExtra("title", viewModel.title)
-                                val animationBundle =
-                                    ActivityOptionsCompat.makeCustomAnimation(
-                                            context,
-                                            R.anim.anim_bottom_sheet_slide_up,
-                                            R.anim.anim_bottom_sheet_slide_down,
-                                        )
-                                        .toBundle()
-                                ContextCompat.startActivity(context, intent, animationBundle)
-                            },
-                    ) {
-                        Icon(
-                            painter =
-                                rememberDrawablePainter(
-                                    ResourcesCompat.getDrawable(
-                                        context.resources,
-                                        R.drawable.outline_note_alt_24,
-                                        context.theme,
-                                    ),
-                                ),
-                            contentDescription = null,
-                        )
-                    }
-                }
-            }
-        },
     ) { paddingValues ->
         Box(Modifier.fillMaxSize()) {
             when (viewModel.topicState) {
@@ -306,7 +297,6 @@ fun TopicScreen(
                                     onOpenLink = onOpenLink,
                                     onCopyText = onCopyText,
                                     onReport = onReport,
-                                    isScrollingUp = { isScrollingUp = it },
                                 )
                             }
                         }

@@ -71,13 +71,13 @@ jobs:
           set -euo pipefail
           python3 -B -m unittest discover -s tools -p 'test_*.py'
           python3 scripts/prebuild.py
-          python3 scripts/build.py gradle :app:testDebugUnitTest :media-support:testDebugUnitTest :mojito:testDebugUnitTest :app:lintDebug --max-workers=2
+          python3 scripts/build.py gradle --jobs 2 :app:testDebugUnitTest :media-support:testDebugUnitTest :mojito:testDebugUnitTest :app:lintDebug
           case "$BUILD_VARIANT" in
             debug) extra=();;
             release|release-no-r8) extra=(--require-release-signing);;
             *) exit 1;;
           esac
-          python3 scripts/build.py build-apk --build-type "$BUILD_VARIANT" "${extra[@]}" --app-version "$APP_VERSION" --update-repository "$GITHUB_REPOSITORY" --max-workers 2
+          python3 scripts/build.py build-apk --build-type "$BUILD_VARIANT" "${extra[@]}" --app-version "$APP_VERSION" --update-repository "$GITHUB_REPOSITORY" --jobs 2
       - name: Verify APK identity and signature
         run: |
           set -euo pipefail

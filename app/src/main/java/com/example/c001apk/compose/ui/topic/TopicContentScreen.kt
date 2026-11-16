@@ -38,7 +38,6 @@ fun TopicContentScreen(
     onOpenLink: (String, String?) -> Unit,
     onCopyText: (String?) -> Unit,
     onReport: (String, ReportType) -> Unit,
-    isScrollingUp: ((Boolean) -> Unit)? = null,
 ) {
 
     val viewModel =
@@ -79,7 +78,6 @@ fun TopicContentScreen(
             onOpenLink = onOpenLink,
             onCopyText = onCopyText,
             onReport = onReport,
-            isScrollingUp = isScrollingUp,
             productConfigRows = productConfigRows,
             selectedProductConfigIds = selectedComparisonIds,
             onViewProductConfig = viewModel::showProductConfig,

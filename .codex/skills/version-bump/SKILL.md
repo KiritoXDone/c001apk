@@ -1,32 +1,60 @@
 ---
 name: version-bump
-description: Update the c001apk app version, maintain the changelog, and create a release commit. Use when the user requests a version bump or preparation for a new release.
+description: 更新 c001apk 应用版本、整理发布日志并创建版本提交。用户要求更新版本号、提升版本、整理发布日志或准备发布版本时使用。
 ---
 
-# Version Bump
+# 更新版本
 
-Read the root `AGENTS.md` and the adjacent [commit skill](../commit/SKILL.md) first. Use this skill for version changes, not ordinary documentation, project-rule, or script updates.
+先阅读根目录 `AGENTS.md` 和同级 [commit skill](../commit/SKILL.md)，按实际版本配置和发布范围执行；需要推送提交或标签时，阅读同级 [git-push skill](../git-push/SKILL.md)。
 
-## Version Sources
+必要验证使用实际构建、已有测试和 APK 校验。新增或修改测试代码以用户明确要求为前提。
 
-- The default version name is defined by `providers.gradleProperty("appVersion").orElse(...)` in `app/build.gradle.kts`.
-- `versionCode` comes from `git rev-list HEAD --count`. Do not replace it with a hardcoded integer, date encoding, or another counter.
-- Keep the default versions for manual inputs, reusable workflow inputs, and environment variables in `.github/workflows/android.yml` synchronized.
-- Preserve history in the root `CHANGELOG.md`. The release workflow extracts sections by `## <version>`; do not replace the entire file or use a heading-free list.
-- Version tags trigger `.github/workflows/release.yml`; pushing only the main branch does not publish a release.
+## 项目版本与发布配置
 
-## Workflow
+- 默认版本名来源为 `app/build.gradle.kts` 中的 `providers.gradleProperty("appVersion").orElse(...)`；`--app-version` 只覆盖对应构建，不代替仓库默认版本更新。
+- `versionCode` 由完整 Git 历史中的 `git rev-list HEAD --count` 派生；版本提交完成后重新构建最终 APK。
+- 版本使用三个非负整数，以点分隔；发布标签采用 `vMAJOR.MINOR.PATCH`，各段不带前导零。用户指定版本时沿用；未指定时递增补丁号，主版本提升需要明确授权。
+- 同步 `.github/workflows/android.yml` 的手动输入、可复用工作流输入和环境变量中的默认版本。
+- 更新日志保存在根目录 `CHANGELOG.md`，使用简体中文，在顶部追加 `## <version> — <date>` 小节并保留历史。`.github/workflows/release.yml` 按 `## <version>` 提取对应日志。
+- 正式发布由版本标签触发 `.github/workflows/release.yml`；手动重试使用已存在的标签并检出该标签源码。
+- 依赖版本沿用现有配置；版本整理不自动升级依赖，也不运行项目不存在的依赖更新或格式化任务。
+- 发布基线从实际发布版本、标签及其提交确认，并核对它位于当前历史中；首次发布或多个候选无法确定时，先确认比较范围。
 
-1. Read the current version, full Git history, existing tags, and previous release commit to determine the change range.
-2. Review uncommitted changes and include only authorized, completed application work. Commit application changes separately first when needed; keep unrelated files out of the release commit.
-3. Use the user's requested version when specified; otherwise increment the patch version by one. Use three nonnegative integers separated by dots, and do not raise the major version without authorization.
-4. Summarize the final effects by feature within the change range. Consolidate repeated fixes to the same feature, omit changes with no net effect, and do not present build or project-rule maintenance as user-facing features.
-5. Query open issues in the actual target repository, filter by feature, and read candidate issues. Add closing references only when their requirements are fully satisfied. If access fails, report that the issues remain unverified instead of guessing.
-6. Synchronize all default versions in the app and workflows. Add a `## <version> — <date>` section at the top of `CHANGELOG.md`, list user-visible changes in Simplified Chinese, and preserve older sections.
-7. Verify that release tag rules, version defaults, and the new section agree. Preserve dependency versions and do not run dependency-update or formatting tasks that this project does not have.
-8. Build the corresponding version through `scripts/build.py` and run existing checks appropriate to the affected areas. Follow the commit skill and use `chore(release): prepare v<version>` as the release commit subject.
-9. The release commit increases the commit count, so rebuild the final release APK from the source after that commit. Do not treat an APK built before the commit as the final release artifact.
+## 执行流程
 
-Report the release commit and validation results when finished. Do not automatically create or push tags or publish a release. A user request to push still follows the project's push-confirmation rules.
+1. 检查当前分支、HEAD、完整历史、工作区和暂存区，确定已授权的发布范围与目标版本。
+2. 从 HEAD 的版本配置阅读当前仓库版本，另行核对工作区目标版本；查询实际发布记录、标签和上一发布提交，确定唯一比较基线。
+3. 按 AGENTS 的原子化原则先提交已完成的应用改动；版本源、必要派生元数据和本次日志归入独立版本提交。
+4. 比较发布基线到当前最终代码，按功能归纳仍然生效的用户变化；同一功能反复修正合并为一条，回退后无净变化的内容省略。
+5. 修改默认版本来源和工作流中的全部版本默认值，在 `CHANGELOG.md` 顶部追加目标版本日志，核对标签格式、版本来源和日志标题一致。
+6. 按涉及的模块核对依赖方向、导航与状态边界、文件上限、资源和许可证，运行相关已有检查与构建；验证失败时保留证据并修复对应问题。
+7. 按 commit skill 核对暂存范围、白名单、隐私和实际验证结果，创建本地版本提交，标题使用 `chore(release): prepare v<version>`。
+8. 因该提交会改变 `versionCode`，从最终提交重新构建发布 APK；自行分发时使用已配置的固定发布签名并启用 `--require-release-signing`，再通过 `tools/verify_apk.py` 校验包、版本、ABI 和签名。
+9. 核对最新提交、工作区、APK 元数据和对应日志；后续标签创建、推送及发布按当前用户授权执行，实际推送由 git-push skill 核对范围和剩余次数。
 
-Keep this skill identical in `.codex/skills/version-bump/` and `.claude/skills/version-bump/`.
+## 构建与验证
+
+```text
+python scripts/build.py build-apk --build-type release
+python scripts/build.py build-apk --build-type release --jobs <N>
+python scripts/build.py build-apk --build-type release --require-release-signing --jobs <N>
+python scripts/build.py gradle --jobs <N> :app:testDebugUnitTest :media-support:testDebugUnitTest :mojito:testDebugUnitTest :app:lintDebug
+python -B -m unittest discover -s tools -p test_*.py
+```
+
+- `--jobs` 默认 12，接受 1～64 的整数；用户指定后，本次会话后续构建显式沿用，用户更改时更新，新会话恢复默认。
+- 按实际改动选择必要检查，不把全部示例机械执行一遍。APK 校验参数使用实际产物路径、SDK 和预期签名摘要。
+- 验证结果对应真实执行状态；提交前的 APK 用于验证，最终发布 APK 对应版本提交之后的源码与派生版本号。
+
+## 日志与 issue
+
+- 发布日志说明普通用户能感知的功能、行为、界面、修复和性能变化；工程规范与脚本维护不写成应用功能。
+- 查询实际目标仓库的 open issues，按功能筛选并阅读候选原文；全部要求满足且证据充分时使用关闭关键词，其余情况采用引用或省略。
+- 查询失败时明确说明未完成的关联核对，不猜 issue 编号或完成状态。
+- 公开日志和附件保留仓库相对路径及必要实现证据，清理账号、凭据、设备标识和本机独特路径。
+
+## 完成与维护
+
+确认唯一版本来源、发布基线、目标版本、日志、派生字段、提交范围和最终 APK 一致，报告实际版本提交与验证结果。
+
+`.codex/skills` 为主源，修改后立即执行 `python scripts/build.py sync-skills`，再通过 `python scripts/build.py sync-skills --check` 核对主源与 Claude 镜像的文件集合和字节一致；主源及镜像的关联修改一起提交。

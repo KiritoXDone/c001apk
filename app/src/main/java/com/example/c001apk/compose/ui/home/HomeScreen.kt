@@ -6,14 +6,12 @@ import android.content.Intent
 import androidx.navigationevent.NavigationEventInfo
 import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.rememberNavigationEventState
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.exclude
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
@@ -56,13 +54,13 @@ import com.example.c001apk.compose.ui.home.topic.HomeTopicScreen
 import com.example.c001apk.compose.util.CookieUtil.isLogin
 import com.example.c001apk.compose.util.ReportType
 import kotlinx.coroutines.launch
-import top.yukonga.miuix.kmp.basic.FloatingActionButton
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.icon.MiuixIcons
-import top.yukonga.miuix.kmp.icon.extended.Add
 import top.yukonga.miuix.kmp.icon.extended.Back
+import top.yukonga.miuix.kmp.icon.extended.Edit
 import top.yukonga.miuix.kmp.icon.extended.Search
+import top.yukonga.miuix.kmp.icon.extended.Update
 import top.yukonga.miuix.kmp.preference.CheckboxPreference
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.springAnimateToPage
@@ -269,8 +267,11 @@ fun HomeScreen(
             },
         )
     val context = LocalContext.current
-    var isScrollingUp by remember { mutableStateOf(false) }
+    val prefs = LocalUserPreferences.current
+    var updateAction by remember { mutableStateOf<(() -> Unit)?>(null) }
     val selectedTabIndex = pagerState.currentPage.coerceIn(tabList.indices)
+    val currentTabType = tabList[selectedTabIndex]
+    val canPublish = isLogin && !prefs.hideHomePublishButton && currentTabType == TabType.FEED
 
     LaunchedEffect(tabList) {
         val targetType =
@@ -299,7 +300,31 @@ fun HomeScreen(
                     title = "主页",
                     actions = {
                         MiuixToolbarIconButton(onClick = onSearch) {
-                            Icon(MiuixIcons.Search, contentDescription = "搜索")
+                            Icon(MiuixIcons.Search, contentDescription = "搜索", modifier = Modifier.size(24.dp))
+                        }
+                        if (canPublish) {
+                            MiuixToolbarIconButton(
+                                onClick = rememberHapticClick {
+                                    val intent = Intent(context, ReplyActivity::class.java)
+                                    intent.putExtra("type", "createFeed")
+                                    val animationBundle =
+                                        ActivityOptionsCompat.makeCustomAnimation(
+                                            context,
+                                            R.anim.anim_bottom_sheet_slide_up,
+                                            R.anim.anim_bottom_sheet_slide_down,
+                                        ).toBundle()
+                                    ContextCompat.startActivity(context, intent, animationBundle)
+                                },
+                            ) {
+                                Icon(MiuixIcons.Edit, contentDescription = "发布动态", modifier = Modifier.size(24.dp))
+                            }
+                        }
+                        if (currentTabType == TabType.APP) {
+                            updateAction?.let { onUpdate ->
+                                MiuixToolbarIconButton(onClick = onUpdate) {
+                                    Icon(MiuixIcons.Update, contentDescription = "检查应用更新", modifier = Modifier.size(24.dp))
+                                }
+                            }
                         }
                     },
                 )
@@ -314,37 +339,6 @@ fun HomeScreen(
                         scope.launch { pagerState.springAnimateToPage(index) }
                     },
                 )
-            }
-        },
-        floatingActionButton = {
-            if (isLogin && !LocalUserPreferences.current.hideHomePublishButton && tabList.getOrNull(selectedTabIndex) == TabType.FEED) {
-                AnimatedVisibility(
-                    modifier = Modifier.padding(bottom = bottomPadding),
-                    visible = isScrollingUp,
-                    enter = slideInVertically { it * 2 },
-                    exit = slideOutVertically { it * 2 },
-                ) {
-                    FloatingActionButton(
-                        onClick =
-                            rememberHapticClick {
-                                val intent = Intent(context, ReplyActivity::class.java)
-                                intent.putExtra("type", "createFeed")
-                                val animationBundle =
-                                    ActivityOptionsCompat.makeCustomAnimation(
-                                            context,
-                                            R.anim.anim_bottom_sheet_slide_up,
-                                            R.anim.anim_bottom_sheet_slide_down,
-                                        )
-                                        .toBundle()
-                                ContextCompat.startActivity(context, intent, animationBundle)
-                            },
-                    ) {
-                        Icon(
-                            imageVector = MiuixIcons.Add,
-                            contentDescription = null,
-                        )
-                    }
-                }
             }
         },
         contentWindowInsets =
@@ -376,9 +370,6 @@ fun HomeScreen(
                                 onOpenLink = onOpenLink,
                                 onCopyText = onCopyText,
                                 onReport = onReport,
-                                isScrollingUp = {
-                                    isScrollingUp = it
-                                },
                             )
 
                         TabType.APP ->
@@ -388,6 +379,7 @@ fun HomeScreen(
                                 resetRefreshState = resetRefreshState,
                                 onViewApp = onViewApp,
                                 onCheckUpdate = onCheckUpdate,
+                                onUpdateActionChange = { updateAction = it },
                             )
 
                         TabType.TOPIC,

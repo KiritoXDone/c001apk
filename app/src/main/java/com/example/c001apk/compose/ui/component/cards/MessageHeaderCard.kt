@@ -1,9 +1,24 @@
 package com.example.c001apk.compose.ui.component.cards
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -11,7 +26,12 @@ import com.example.c001apk.compose.ui.component.CoilLoader
 import com.example.c001apk.compose.ui.component.icons.FlutterProfileIcons
 import com.example.c001apk.compose.util.CookieUtil
 import com.example.c001apk.compose.util.decodeCookieValue
-import top.yukonga.miuix.kmp.basic.*
+import top.yukonga.miuix.kmp.basic.Card
+import top.yukonga.miuix.kmp.basic.CardDefaults
+import top.yukonga.miuix.kmp.basic.Icon
+import top.yukonga.miuix.kmp.basic.LinearProgressIndicator
+import top.yukonga.miuix.kmp.basic.ProgressIndicatorDefaults
+import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.squircle.squircleBackground
 import top.yukonga.miuix.kmp.squircle.squircleClip
 import top.yukonga.miuix.kmp.theme.MiuixTheme
@@ -22,26 +42,33 @@ fun MessageHeaderCard(
     isLogin: Boolean,
     userAvatar: String,
     userName: String,
-    level: String,
-    experience: String,
-    nextLevelExperience: String,
     onLogin: () -> Unit,
     onViewUser: (String) -> Unit,
 ) {
     Card(
-        modifier = modifier.fillMaxWidth(),
-        cornerRadius = 24.dp,
-        insideMargin = PaddingValues(20.dp),
+        modifier = modifier.fillMaxWidth().testTag("profile_header").semantics(mergeDescendants = true) {
+            role = Role.Button
+            contentDescription = if (isLogin) "查看个人主页" else "登录酷安"
+        },
+        colors = CardDefaults.defaultColors(
+            color = Color.Transparent,
+            contentColor = MiuixTheme.colorScheme.onSurface,
+        ),
         onClick = { if (isLogin) onViewUser(CookieUtil.uid) else onLogin() },
         showIndication = true,
     ) {
         Row(
+            modifier = Modifier.padding(horizontal = ProfileLayoutDefaults.HeaderInset)
+                .padding(top = ProfileLayoutDefaults.HeaderTopSpacing),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            horizontalArrangement = Arrangement.spacedBy(ProfileLayoutDefaults.HeaderContentSpacing),
         ) {
             Box(
-                Modifier.size(64.dp)
-                    .squircleBackground(MiuixTheme.colorScheme.secondaryContainer, 22.dp),
+                Modifier.size(ProfileLayoutDefaults.AvatarSize)
+                    .squircleBackground(
+                        MiuixTheme.colorScheme.secondaryContainer,
+                        ProfileLayoutDefaults.AvatarCornerRadius,
+                    ),
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(
@@ -53,50 +80,85 @@ fun MessageHeaderCard(
                 if (isLogin)
                     CoilLoader(
                         url = userAvatar,
-                        modifier = Modifier.fillMaxSize().squircleClip(22.dp),
+                        modifier = Modifier.fillMaxSize()
+                            .squircleClip(ProfileLayoutDefaults.AvatarCornerRadius),
                     )
             }
-            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Column(
+                Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(ProfileLayoutDefaults.HeaderTextSpacing),
+            ) {
                 Text(
                     if (isLogin) decodeCookieValue(userName) else "登录酷安",
-                    style = MiuixTheme.textStyles.title3,
+                    fontSize = ProfileLayoutDefaults.UserNameFontSize,
                     fontWeight = FontWeight.SemiBold,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
-                Text(
-                    if (isLogin) "Lv.${level.ifBlank { "0" }} · 查看个人主页" else "同步关注、收藏与消息",
-                    style = MiuixTheme.textStyles.footnote1,
-                    color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        if (isLogin) "查看个人主页" else "同步关注、收藏与消息",
+                        style = MiuixTheme.textStyles.footnote1,
+                        color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
+                        modifier = Modifier.weight(1f, fill = false),
+                    )
+                    Icon(
+                        FlutterProfileIcons.ChevronRight,
+                        null,
+                        Modifier.size(16.dp),
+                        tint = MiuixTheme.colorScheme.onSurfaceVariantSummary,
+                    )
+                }
             }
-            Icon(
-                FlutterProfileIcons.ChevronRight,
-                null,
-                Modifier.size(20.dp),
-                tint = MiuixTheme.colorScheme.onSurfaceVariantActions,
-            )
         }
-        if (isLogin) {
-            Spacer(Modifier.height(18.dp))
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+    }
+}
+
+@Composable
+fun MessageLevelCard(
+    level: String,
+    experience: String,
+    nextLevelExperience: String,
+    modifier: Modifier = Modifier,
+) {
+    val currentExperience = experience.toLongOrNull() ?: 0L
+    val requiredExperience = nextLevelExperience.toLongOrNull() ?: 0L
+    val nextLevel = level.toIntOrNull()?.plus(1)
+    Card(
+        modifier = modifier.fillMaxWidth().testTag("profile_level"),
+        colors = CardDefaults.defaultColors(
+            color = MiuixTheme.colorScheme.tertiaryContainer,
+            contentColor = MiuixTheme.colorScheme.onTertiaryContainer,
+        ),
+    ) {
+        Column(Modifier.padding(ProfileLayoutDefaults.ContentPadding)) {
+            Row(
+                Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(ProfileLayoutDefaults.ItemSpacing),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text("Lv.${level.ifBlank { "0" }}", fontWeight = FontWeight.SemiBold)
                 Text(
-                    "等级进度",
+                    if (requiredExperience > currentExperience && nextLevel != null) {
+                        "还差 ${requiredExperience - currentExperience} 经验升到 Lv.$nextLevel"
+                    } else {
+                        "${experience.ifBlank { "0" }} / ${nextLevelExperience.ifBlank { "0" }} 经验"
+                    },
+                    modifier = Modifier.weight(1f),
                     style = MiuixTheme.textStyles.footnote1,
                     color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
-                )
-                Text(
-                    "${experience.ifBlank { "0" }}/${nextLevelExperience.ifBlank { "0" }}",
-                    style = MiuixTheme.textStyles.footnote1,
-                    color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
+                    textAlign = androidx.compose.ui.text.style.TextAlign.End,
                 )
             }
-            Spacer(Modifier.height(8.dp))
-            val total = (nextLevelExperience.toFloatOrNull() ?: 0f).coerceAtLeast(1f)
+            Spacer(Modifier.height(10.dp))
             LinearProgressIndicator(
-                progress = ((experience.toFloatOrNull() ?: 0f) / total).coerceIn(0f, 1f),
+                progress = (currentExperience.toFloat() / requiredExperience.coerceAtLeast(1L))
+                    .coerceIn(0f, 1f),
                 modifier = Modifier.fillMaxWidth(),
-                height = 4.dp,
+                colors = ProgressIndicatorDefaults.progressIndicatorColors(
+                    backgroundColor = MiuixTheme.colorScheme.onTertiaryContainer.copy(alpha = 0.22f),
+                ),
+                height = 6.dp,
             )
         }
     }

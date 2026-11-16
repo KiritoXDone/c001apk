@@ -13,12 +13,9 @@ import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -153,26 +150,6 @@ inline fun composeClick(
     }
 }
 
-@Composable
-fun LazyListState.isScrollingUp(): Boolean {
-    var previousIndex by remember(this) { mutableIntStateOf(firstVisibleItemIndex) }
-    var previousScrollOffset by remember(this) { mutableIntStateOf(firstVisibleItemScrollOffset) }
-    return remember(this) {
-            derivedStateOf {
-                if (previousIndex != firstVisibleItemIndex) {
-                        previousIndex > firstVisibleItemIndex
-                    } else {
-                        previousScrollOffset >= firstVisibleItemScrollOffset
-                    }
-                    .also {
-                        previousIndex = firstVisibleItemIndex
-                        previousScrollOffset = firstVisibleItemScrollOffset
-                    }
-            }
-        }
-        .value
-}
-
 fun Context.openInBrowser(url: String) {
     try {
         startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
@@ -220,28 +197,3 @@ fun getReportUrl(id: String, type: ReportType): String =
         ReportType.REPLY -> "https://m.coolapk.com/mp/do?c=feed&m=report&type=feed_reply&id=$id"
         ReportType.USER -> "https://m.coolapk.com/mp/do?c=user&m=report&id=$id"
     }
-
-@androidx.compose.runtime.Composable
-fun androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState.isScrollingUp(): Boolean {
-    var previousIndex by
-        androidx.compose.runtime.remember {
-            androidx.compose.runtime.mutableIntStateOf(firstVisibleItemIndex)
-        }
-    var previousOffset by
-        androidx.compose.runtime.remember {
-            androidx.compose.runtime.mutableIntStateOf(firstVisibleItemScrollOffset)
-        }
-    return androidx.compose.runtime
-        .remember(this) {
-            androidx.compose.runtime.derivedStateOf {
-                val up =
-                    if (firstVisibleItemIndex != previousIndex)
-                        firstVisibleItemIndex < previousIndex
-                    else firstVisibleItemScrollOffset <= previousOffset
-                previousIndex = firstVisibleItemIndex
-                previousOffset = firstVisibleItemScrollOffset
-                up
-            }
-        }
-        .value
-}

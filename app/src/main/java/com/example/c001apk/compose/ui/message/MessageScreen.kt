@@ -7,23 +7,26 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.c001apk.compose.logic.providable.LocalUserPreferences
 import com.example.c001apk.compose.ui.component.MiuixScaffold as Scaffold
 import com.example.c001apk.compose.ui.component.cards.MessageFFFCard
 import com.example.c001apk.compose.ui.component.cards.MessageHeaderCard
+import com.example.c001apk.compose.ui.component.cards.MessageLevelCard
 import com.example.c001apk.compose.ui.component.cards.MessageWidgetCard
+import com.example.c001apk.compose.ui.component.cards.ProfileLayoutDefaults
 import com.example.c001apk.compose.ui.component.icons.FlutterProfileIcons
 import com.example.c001apk.compose.ui.component.TopBarScrollEffect
 import com.example.c001apk.compose.util.ReportType
 import com.example.c001apk.compose.util.makeToast
-import top.yukonga.miuix.kmp.basic.Text
+import top.yukonga.miuix.kmp.basic.SmallTitle
 
-/** Created by bggRGjQaUbCoE on 2024/6/2 */
 @Composable
 fun MessageScreen(
-    bottomPadding: androidx.compose.ui.unit.Dp = 0.dp,
+    bottomPadding: Dp = 0.dp,
     onLogin: () -> Unit,
     onSettingsClick: () -> Unit,
     onAccountsClick: () -> Unit,
@@ -41,6 +44,14 @@ fun MessageScreen(
     val layoutDirection = LocalLayoutDirection.current
     val prefs = LocalUserPreferences.current
     val listState = rememberLazyListState()
+    val navigationInset = with(LocalDensity.current) {
+        WindowInsets.navigationBars.getBottom(this).toDp()
+    }
+    val pageBottomSpacing = when {
+        navigationInset > 0.dp -> 12.dp
+        bottomPadding > 0.dp -> 24.dp
+        else -> 20.dp
+    }
     val viewModel =
         hiltViewModel<MessageViewModel, MessageViewModel.ViewModelFactory> { factory ->
             factory.create(url = "/v6/notification/list")
@@ -87,7 +98,7 @@ fun MessageScreen(
                 modifier = Modifier.fillMaxSize(),
                 isRefreshing = viewModel.isRefreshing,
                 onRefresh = viewModel::refresh,
-                contentPadding = PaddingValues(top = paddingValues.calculateTopPadding() + 12.dp),
+                contentPadding = PaddingValues(top = paddingValues.calculateTopPadding() + 10.dp),
                 refreshTexts = listOf("下拉刷新", "释放刷新", "正在刷新", "刷新完成"),
             ) {
                 BoxWithConstraints(Modifier.fillMaxSize()) {
@@ -100,21 +111,22 @@ fun MessageScreen(
                             PaddingValues(
                                 start = sideInset,
                                 end = sideInset,
-                                top = paddingValues.calculateTopPadding() + 12.dp,
-                                bottom =
-                                    bottomPadding + paddingValues.calculateBottomPadding() + 24.dp,
+                                top = paddingValues.calculateTopPadding() + 10.dp,
+                                bottom = maxOf(
+                                    bottomPadding,
+                                    paddingValues.calculateBottomPadding(),
+                                    navigationInset,
+                                ) + pageBottomSpacing,
                             ),
                     ) {
                         item(key = "profile") {
                             MessageHeaderCard(
                                 modifier =
-                                    Modifier.padding(horizontal = 12.dp).padding(bottom = 12.dp),
+                                    Modifier.padding(horizontal = ProfileLayoutDefaults.HorizontalMargin)
+                                        .padding(bottom = ProfileLayoutDefaults.SectionSpacing),
                                 isLogin = prefs.isLogin,
                                 userAvatar = prefs.userAvatar,
                                 userName = prefs.username,
-                                level = prefs.level,
-                                experience = prefs.experience,
-                                nextLevelExperience = prefs.nextLevelExperience,
                                 onLogin = onLogin,
                                 onViewUser = onViewUser,
                             )
@@ -123,28 +135,27 @@ fun MessageScreen(
                             item(key = "fff") {
                                 MessageFFFCard(
                                     modifier =
-                                        Modifier.padding(horizontal = 12.dp)
-                                            .padding(bottom = 12.dp),
+                                        Modifier.padding(horizontal = ProfileLayoutDefaults.HorizontalMargin)
+                                            .padding(bottom = ProfileLayoutDefaults.SectionSpacing),
                                     fffList = viewModel.fffList,
                                     onViewFFFList = onViewFFFList,
                                 )
                             }
+                            item(key = "level") {
+                                MessageLevelCard(
+                                    modifier = Modifier.padding(horizontal = ProfileLayoutDefaults.HorizontalMargin)
+                                        .padding(bottom = ProfileLayoutDefaults.SectionSpacing),
+                                    level = prefs.level,
+                                    experience = prefs.experience,
+                                    nextLevelExperience = prefs.nextLevelExperience,
+                                )
+                            }
                         }
-                        item(key = "toolsTitle") { ProfileSectionTitle("常用功能") }
-                        item(key = "widget") {
-                            MessageWidgetCard(
-                                modifier =
-                                    Modifier.padding(horizontal = 12.dp).padding(bottom = 12.dp),
-                                onViewFFFList = onViewFFFList,
-                                onViewHistory = onViewHistory,
-                            )
-                        }
-                        item(key = "messagesTitle") { ProfileSectionTitle("消息") }
                         item(key = "messages") {
                             MessageSection(
                                 modifier =
-                                    Modifier.padding(horizontal = 12.dp)
-                                        .padding(bottom = 12.dp),
+                                    Modifier.padding(horizontal = ProfileLayoutDefaults.HorizontalMargin)
+                                        .padding(bottom = ProfileLayoutDefaults.SectionSpacing),
                                 counts = viewModel.badgeCounts,
                                 onViewNotice = { type ->
                                     if (!prefs.isLogin) onLogin()
@@ -153,6 +164,14 @@ fun MessageScreen(
                                         onViewNotice(type.name)
                                     }
                                 },
+                            )
+                        }
+                        item(key = "toolsTitle") { ProfileSectionTitle("常用功能") }
+                        item(key = "widget") {
+                            MessageWidgetCard(
+                                modifier = Modifier.padding(horizontal = ProfileLayoutDefaults.HorizontalMargin),
+                                onViewFFFList = onViewFFFList,
+                                onViewHistory = onViewHistory,
                             )
                         }
                     }
@@ -169,10 +188,10 @@ fun MessageScreen(
 
 @Composable
 private fun ProfileSectionTitle(title: String) {
-    Text(
+    SmallTitle(
         title,
-        modifier = Modifier.padding(start = 28.dp, top = 6.dp, bottom = 10.dp),
-        style = top.yukonga.miuix.kmp.theme.MiuixTheme.textStyles.footnote1,
-        color = top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme.onSurfaceVariantSummary,
+        modifier = Modifier.padding(bottom = ProfileLayoutDefaults.SectionSpacing),
+        textColor = top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme.primary,
+        insideMargin = PaddingValues(horizontal = 28.dp, vertical = 4.dp),
     )
 }

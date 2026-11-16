@@ -12,6 +12,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.compositeOver
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
@@ -43,12 +45,16 @@ fun FloatingActionButton(
     minHeight: Dp = FloatingActionButtonDefaults.MinHeight,
     content: @Composable () -> Unit,
 ) {
+    // 合成实际底色后，以白图标 3:1 的对比度边界区分深浅容器。
+    val backgroundLuminance = containerColor.compositeOver(MiuixTheme.colorScheme.background).luminance()
+    val contentColor = if (backgroundLuminance <= 0.3f) Color.White else Color.Black
     Surface(
         onClick = onClick,
         modifier = modifier
             .semantics { role = Role.Button },
         shape = shape,
         color = containerColor,
+        contentColor = contentColor,
         shadowElevation = shadowElevation,
     ) {
         Box(

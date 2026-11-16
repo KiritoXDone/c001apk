@@ -1,8 +1,5 @@
 package com.example.c001apk.compose.ui.home.app
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -12,7 +9,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -25,13 +25,8 @@ import coil.request.ImageRequest
 import com.example.c001apk.compose.logic.model.UpdateCheckItem
 import com.example.c001apk.compose.logic.providable.LocalUserPreferences
 import com.example.c001apk.compose.ui.component.AdaptiveCardColumn
-import com.example.c001apk.compose.util.isScrollingUp
 import com.example.c001apk.compose.util.longVersionCodeCompat
 import top.yukonga.miuix.kmp.basic.CircularProgressIndicator
-import top.yukonga.miuix.kmp.basic.FloatingActionButton
-import top.yukonga.miuix.kmp.basic.Icon
-import top.yukonga.miuix.kmp.icon.MiuixIcons
-import top.yukonga.miuix.kmp.icon.extended.Update
 
 /** Created by bggRGjQaUbCoE on 2024/6/9 */
 @Composable
@@ -42,6 +37,7 @@ fun AppListScreen(
     resetRefreshState: () -> Unit,
     onViewApp: (String) -> Unit,
     onCheckUpdate: (List<UpdateCheckItem>) -> Unit,
+    onUpdateActionChange: ((() -> Unit)?) -> Unit,
 ) {
 
     val viewModel = hiltViewModel<AppListViewModel>()
@@ -49,6 +45,16 @@ fun AppListScreen(
     val context = LocalContext.current
     val view = LocalView.current
     val lazyListState = rememberLazyStaggeredGridState()
+    val currentOnCheckUpdate by rememberUpdatedState(onCheckUpdate)
+    val currentOnUpdateActionChange by rememberUpdatedState(onUpdateActionChange)
+    val canCheckUpdate = prefs.checkUpdate && viewModel.appList.isNotEmpty()
+
+    DisposableEffect(canCheckUpdate) {
+        currentOnUpdateActionChange(
+            if (canCheckUpdate) ({ currentOnCheckUpdate(viewModel.dataList) }) else null,
+        )
+        onDispose { currentOnUpdateActionChange(null) }
+    }
 
     LaunchedEffect(refreshState) {
         if (refreshState) {
@@ -110,24 +116,6 @@ fun AppListScreen(
             CircularProgressIndicator(
                 modifier = Modifier.align(Alignment.Center),
             )
-        }
-
-        if (prefs.checkUpdate && viewModel.appList.isNotEmpty()) {
-            AnimatedVisibility(
-                visible = lazyListState.isScrollingUp(),
-                enter = slideInVertically { it * 2 },
-                exit = slideOutVertically { it * 2 },
-                modifier =
-                    Modifier.align(Alignment.BottomEnd)
-                        .padding(20.dp)
-                        .padding(bottom = paddingValues.calculateBottomPadding()),
-            ) {
-                FloatingActionButton(
-                    onClick = { onCheckUpdate(viewModel.dataList) },
-                ) {
-                    Icon(imageVector = MiuixIcons.Update, contentDescription = null)
-                }
-            }
         }
     }
 }

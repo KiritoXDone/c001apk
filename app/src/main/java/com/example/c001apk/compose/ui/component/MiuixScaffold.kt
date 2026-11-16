@@ -22,11 +22,11 @@ fun MiuixScaffold(
     modifier: Modifier = Modifier,
     topBar: (@Composable () -> Unit)? = null,
     bottomBar: (@Composable () -> Unit)? = null,
-    floatingActionButton: @Composable () -> Unit = {},
     snackbarHost: @Composable () -> Unit = {},
     blurBars: Boolean = LocalUserPreferences.current.blurBars,
     floatingBottomBar: Boolean = false,
     containerColor: Color = MiuixTheme.colorScheme.surface,
+    topBarColor: Color = containerColor,
     contentWindowInsets: WindowInsets = WindowInsets.systemBars.union(WindowInsets.displayCutout),
     topBarScrollRequests: MutableSharedFlow<Unit>? = null,
     content: @Composable (PaddingValues) -> Unit,
@@ -59,13 +59,13 @@ fun MiuixScaffold(
                 if (topBar != null) {
                     Box(Modifier.topBarTap()) {
                         val background = when {
-                            backdrop == null -> Modifier.background(containerColor)
+                            topBarColor != containerColor || backdrop == null -> Modifier.background(topBarColor)
                             topBarStyle == TopBarStyle.OS4 -> Modifier.progressiveBarBlur(backdrop)
                             else -> Modifier.barBlur(backdrop)
                         }
                         Box(Modifier.matchParentSize().then(background))
                         CompositionLocalProvider(
-                            LocalBarColor provides if (backdrop != null) Color.Transparent else containerColor,
+                            LocalBarColor provides if (backdrop != null && topBarColor == containerColor) Color.Transparent else topBarColor,
                             LocalBarBackdrop provides backdrop,
                         ) {
                             CompactBar { topBar() }
@@ -92,7 +92,6 @@ fun MiuixScaffold(
                     }
                 }
             },
-            floatingActionButton = floatingActionButton,
             snackbarHost = snackbarHost,
             containerColor = containerColor,
             contentWindowInsets = contentWindowInsets,

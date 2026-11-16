@@ -85,6 +85,8 @@
 # 构建入口、验证工具与工作流。
 !/scripts/
 !/scripts/*.py
+!/scripts/build_support/
+!/scripts/build_support/**/*.py
 !/tools/
 !/tools/*.py
 !/.github/
@@ -100,20 +102,14 @@
 # 共享技能逐项放行，会话与个人设置保持本地。
 !/.codex/
 !/.codex/skills/
-!/.codex/skills/commit/
-!/.codex/skills/commit/SKILL.md
-!/.codex/skills/version-bump/
-!/.codex/skills/version-bump/SKILL.md
-!/.codex/skills/pr/
-!/.codex/skills/pr/SKILL.md
+!/.codex/skills/**/
+!/.codex/skills/**/SKILL.md
+!/.codex/skills/privacy-review/scripts/**/*.py
 !/.claude/
 !/.claude/skills/
-!/.claude/skills/commit/
-!/.claude/skills/commit/SKILL.md
-!/.claude/skills/version-bump/
-!/.claude/skills/version-bump/SKILL.md
-!/.claude/skills/pr/
-!/.claude/skills/pr/SKILL.md
+!/.claude/skills/**/
+!/.claude/skills/**/SKILL.md
+!/.claude/skills/privacy-review/scripts/**/*.py
 
 # 即使位于源码目录，生成内容、凭据与工具状态也不入库。
 **/build/
