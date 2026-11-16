@@ -50,7 +50,14 @@ python scripts/build.py build-apk --build-type release
 
 调试构建不启用 R8 和资源裁剪，发布构建默认开启。排查优化相关问题时使用 `python scripts/build.py build-apk --build-type release-no-r8`。
 
-版本名默认取自 [app/build.gradle.kts](../app/build.gradle.kts)，可通过 `--app-version x.y.z` 指定；并行线程数可用 `--max-workers 2` 限制。应用包名为 `com.example.c001apk.compose`，最低 Android 版本为 7.0（API 24），仅包含 ARM64 原生库。
+版本名默认取自 [app/build.gradle.kts](../app/build.gradle.kts)，可通过 `--app-version x.y.z` 指定。构建并发用 `--jobs N` 指定，默认 12，范围 1～64；透传为 Gradle `--max-workers=N`。旧 `--max-workers N` 作为入口别名保留，Gradle 任务透传时把额度参数放在任务之前：
+
+```sh
+python scripts/build.py build-apk --build-type debug --jobs 12
+python scripts/build.py gradle --jobs 12 :app:lintDebug
+```
+
+应用包名为 `com.example.c001apk.compose`，最低 Android 版本为 7.0（API 24），仅包含 ARM64 原生库。
 
 ## 签名
 

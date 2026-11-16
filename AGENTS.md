@@ -108,6 +108,13 @@ python -B -m unittest discover -s tools -p test_*.py
 - worktree 记录放在 `build/worktrees/<名称>.md`；接手时先阅读有效记录，再核对当前差异。
 - `docs/` 保留可长期维护的项目文档，本地过程材料不得混入。
 
+## 构建并发
+
+- `scripts/build.py build-apk` 和 `scripts/build.py gradle` 的 `--jobs N` 默认 12，接受 1～64 的整数，错误参数在环境检查前返回 2。
+- 用户指定并发数后，本次会话后续构建显式沿用该值，直到用户更改；跨上下文压缩保持，新会话恢复默认 12。
+- 共用 `scripts/build_support/concurrency.py`，将额度透传为 Gradle `--max-workers=N`；原有跨模块并行由 `gradle.properties` 管理。
+- 一次构建使用一个总额度，独立构建并行时先分配额度，合计不超过当前会话额度；共享 Gradle 输出按顺序执行。
+
 ## 助手规范与技能
 
 `CLAUDE.md` 只保留一行 `@AGENTS.md`。规范正文只维护本文件；`.codex/skills/` 与 `.claude/skills/` 的同名技能保持内容一致，路径均使用仓库相对写法。

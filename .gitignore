@@ -85,6 +85,8 @@
 # 构建入口、验证工具与工作流。
 !/scripts/
 !/scripts/*.py
+!/scripts/build_support/
+!/scripts/build_support/**/*.py
 !/tools/
 !/tools/*.py
 !/.github/
