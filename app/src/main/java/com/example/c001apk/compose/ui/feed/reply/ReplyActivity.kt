@@ -25,6 +25,7 @@ import android.view.View.VISIBLE
 import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
 import android.widget.ImageView
+import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
@@ -58,6 +59,8 @@ import com.example.c001apk.compose.ui.component.createMiuixLoadingDialog
 import com.example.c001apk.compose.ui.component.MiuixViewDialogBuilder
 import com.example.c001apk.compose.ui.feed.reply.emoji.EmojiPagerAdapter
 import com.example.c001apk.compose.ui.feed.reply.emoji.updateEmojiCategoryStyle
+import com.example.c001apk.compose.ui.theme.DefaultFontScale
+import com.example.c001apk.compose.ui.theme.miuixViewColors
 import com.example.c001apk.compose.util.EmojiTextWatcher
 import com.example.c001apk.compose.util.EmojiUtils
 import com.example.c001apk.compose.util.EmojiUtils.pickerCategories
@@ -388,32 +391,7 @@ class ReplyActivity :
                         )
                         uriList.add(uri)
 
-                        val imageView =
-                            ImageView(this).apply {
-                                layoutParams =
-                                    LinearLayout.LayoutParams(
-                                            (65.dp * width.toFloat() / height.toFloat()).toInt(),
-                                            65.dp,
-                                        )
-                                        .apply {
-                                            setMargins(5.dp, 0, 0, 0)
-                                        }
-                                setOnClickListener {
-                                    with(binding.imageLayout.indexOfChild(this)) {
-                                        binding.imageLayout.removeViewAt(this)
-                                        uriList.removeAt(this)
-                                        typeList.removeAt(this)
-                                        md5List.removeAt(this)
-                                        imageList.removeAt(this)
-                                        binding.imageLayout.isVisible = uriList.isNotEmpty()
-                                    }
-                                }
-                            }
-                        // Glide.with(this).load(uri).into(imageView)
-                        imageView.load(uri) {
-                            crossfade(true)
-                        }
-                        binding.imageLayout.addView(imageView)
+                        binding.imageLayout.addView(createAttachmentThumbnail(uri))
                     }
                 }
                     .onFailure {
@@ -432,6 +410,7 @@ class ReplyActivity :
                     }
             }
             binding.imageLayout.isVisible = uriList.isNotEmpty()
+            binding.imageScrollLayout.isVisible = uriList.isNotEmpty()
         }
 
         pickContent =
@@ -447,11 +426,52 @@ class ReplyActivity :
             }
     }
 
+    private fun createAttachmentThumbnail(uri: Uri): FrameLayout {
+        val thumbnail = FrameLayout(this).apply {
+            layoutParams = LinearLayout.LayoutParams(
+                ReplyEditorDefaults.ThumbnailSize.dp,
+                ReplyEditorDefaults.ThumbnailSize.dp,
+            ).apply { marginEnd = 8.dp }
+        }
+        thumbnail.addView(ImageView(this).apply {
+            layoutParams = FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.MATCH_PARENT,
+            )
+            scaleType = ImageView.ScaleType.CENTER_CROP
+            contentDescription = "已选择图片"
+            background = GradientDrawable().apply {
+                setColor(resolveSurfaceContainerColor())
+                cornerRadius = ReplyEditorDefaults.ThumbnailRadius.dp.toFloat()
+            }
+            clipToOutline = true
+            load(uri) { crossfade(true) }
+        })
+        thumbnail.addView(ReplyAttachmentDeleteView(this).apply {
+            layoutParams = FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.WRAP_CONTENT,
+                FrameLayout.LayoutParams.WRAP_CONTENT,
+                Gravity.TOP or Gravity.END,
+            ).apply { setMargins(4.dp, 4.dp, 4.dp, 4.dp) }
+            onRemove = {
+                val index = binding.imageLayout.indexOfChild(thumbnail)
+                binding.imageLayout.removeViewAt(index)
+                uriList.removeAt(index)
+                typeList.removeAt(index)
+                md5List.removeAt(index)
+                imageList.removeAt(index)
+                binding.imageLayout.isVisible = uriList.isNotEmpty()
+                binding.imageScrollLayout.isVisible = uriList.isNotEmpty()
+            }
+        })
+        return thumbnail
+    }
+
     @SuppressLint("ClickableViewAccessibility")
     private fun initView() {
-        binding.emojiBtn?.setOnClickListener(this)
+        binding.emojiBtn.setOnClickListener(this)
         binding.imageBtn.setOnClickListener(this)
-        binding.otherImageBtn?.setOnClickListener(this)
+        binding.otherImageBtn.setOnClickListener(this)
         binding.atBtn.setOnClickListener(this)
         binding.tagBtn.setOnClickListener(this)
         binding.checkBox.setOnClickListener(this)
@@ -481,6 +501,15 @@ class ReplyActivity :
             binding.inputLayout.background = radiusBg
             binding.emojiLayout.setBackgroundColor(color)
         } else binding.bottomLayout?.background = radiusBg
+        val colors = miuixViewColors(this)
+        binding.title.setTextColor(colors.onSurfaceContainer.toArgb())
+        binding.title.textSize = 18f * DefaultFontScale
+        binding.characterCount.setTextColor(colors.onSurfaceVariantSummary.toArgb())
+        binding.characterCount.textSize = 12f * DefaultFontScale
+        binding.dragHandle.background = GradientDrawable().apply {
+            setColor(colors.outline.toArgb())
+            cornerRadius = 2.dp.toFloat()
+        }
     }
 
     private fun initObserve() {
@@ -648,14 +677,15 @@ class ReplyActivity :
 
     private fun initPage() {
         binding.checkBox.text = if (type == "createFeed") "仅自己可见" else "回复并转发"
-        binding.checkBox.compact = type != "createFeed"
+        binding.checkBox.isReply = type != "createFeed"
         binding.title.text = if (type == "createFeed") "发布动态" else "回复"
+        binding.publish.actionLabel = if (type == "createFeed") "发布动态" else "发布回复"
         if (type != "createFeed" && !username.isNullOrEmpty())
             binding.editText.hint = "回复: " + username
-        binding.publish.isClickable = false
         title?.let {
             binding.editText.editableText.append("#${title}# ")
         }
+        updateEditorState()
     }
 
     private fun initEmojiPanel() {
@@ -754,7 +784,7 @@ class ReplyActivity :
     private fun initEditText() {
         val primaryColor = resolvePrimaryColor()
         val primaryDarkColor = resolvePrimaryDarkColor(primaryColor)
-        val boxColor = color
+        val boxColor = miuixViewColors(this).surfaceContainerHighest.toArgb()
         binding.editText.apply {
             isFocusable = true
             isFocusableInTouchMode = true
@@ -775,24 +805,25 @@ class ReplyActivity :
                     binding.editText.textSize,
                     primaryColor,
                 ) {
-                    if (binding.editText.text.toString().trim().isBlank()) {
-                        binding.publish.isClickable = false
-                        binding.publish.setTextColor(getColor(android.R.color.darker_gray))
-                    } else {
-                        binding.publish.isClickable = true
-                        binding.publish.setTextColor(
-                            primaryColor,
-                        )
-                    }
+                    updateEditorState()
                 },
             )
             setOnKeyListener(FastDeleteAtUserKeyListener)
         }
-        binding.textInputLayout.setFieldColors(primaryColor, boxColor)
-        binding.editText.setHintTextColor(ColorUtils.setAlphaComponent(primaryColor, 170))
+        binding.textInputLayout.setCardColor(boxColor)
+        binding.editText.setHintTextColor(miuixViewColors(this).onSurfaceVariantSummary.toArgb())
         binding.editText.setTextColor(
             com.example.c001apk.compose.ui.theme.miuixViewColors(this).onSurface.toArgb(),
         )
+    }
+
+    private fun updateEditorState() {
+        val text = binding.editText.text.toString()
+        binding.characterCount.text = "${text.length} / 500"
+        val canPublish = text.trim().isNotBlank()
+        binding.publish.canPublish = canPublish
+        binding.publish.isEnabled = canPublish
+        binding.publish.isClickable = canPublish
     }
 
     private fun setCursorColor(editText: TextView, color: Int) {
