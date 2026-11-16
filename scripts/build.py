@@ -14,6 +14,7 @@ from pathlib import Path
 
 from prebuild import ROOT, fail, java_executable, prepare
 from build_support.concurrency import add_jobs_argument, gradle_worker_arguments
+from build_support.skills import sync_skills
 
 
 def gradle_environment(jdk: Path, sdk: Path) -> dict[str, str]:
@@ -58,10 +59,12 @@ def collect_apk(build_type: str) -> Path:
 def main() -> int:
     sys.stdout.reconfigure(encoding="utf-8")
     sys.stderr.reconfigure(encoding="utf-8")
-    parser = argparse.ArgumentParser(description="Build c001apk",
+    parser = argparse.ArgumentParser(description="Build and synchronize c001apk",
                                      formatter_class=argparse.RawTextHelpFormatter)
     commands = parser.add_subparsers(dest="command", required=True)
     commands.add_parser("doctor", help="检查工具链，缺少 JDK 时自动准备")
+    skills = commands.add_parser("sync-skills", help="Synchronize Codex skills to Claude")
+    skills.add_argument("--check", action="store_true", help="Check file sets and bytes without writing")
     apk = commands.add_parser("build-apk", help="编译并收集安装包到 build/apk")
     apk.add_argument("--build-type", choices=("debug", "release", "release-no-r8"), default="debug")
     apk.add_argument("--app-version", help="覆盖本次构建版本名")
@@ -72,6 +75,13 @@ def main() -> int:
     add_jobs_argument(gradle)
     gradle.add_argument("arguments", nargs=argparse.REMAINDER)
     args = parser.parse_args(sys.argv[1:] or ["--help"])
+    if args.command == "sync-skills":
+        try:
+            sync_skills(ROOT, check=args.check)
+        except ValueError as error:
+            print(f"error: {error}", file=sys.stderr)
+            return 1
+        return 0
     if args.command == "gradle":
         if args.arguments and args.arguments[0] == "--":
             args.arguments = args.arguments[1:]

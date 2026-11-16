@@ -1,41 +1,47 @@
 ---
 name: commit
-description: Create or amend Git commits for c001apk. Use when preparing commit messages, committing task changes, or amending an existing commit.
+description: 按 c001apk 项目规范创建、修改和整理 Git 提交。创建提交、补充提交内容、修改提交说明或处理提交历史时使用。
 ---
 
-# Commit
+# 提交
 
-Follow the root `AGENTS.md`. Each commit must contain one cohesive logical change. A task or conversation is not a commit boundary.
+先阅读根目录 `AGENTS.md`，按其中的实际架构、配置来源、代码约束与提交要求执行，以当前分支、工作区和暂存区为提交依据。
 
-## Atomic Commit Boundaries
+新增或修改测试代码以用户明确要求编写测试为前提；必要验证采用构建、已有测试和应用调试，纯文档按实际范围检查。
 
-- Never combine independently reviewable changes just because they share a task, file, subsystem, or push. Separate independent features, bug fixes, refactors, formatting, build changes, and workflow or skill changes.
-- Keep a change with its required model, caller, resource, test, and directly relevant documentation updates. Do not split mechanically by file or layer when that leaves an incomplete implementation.
-- Before staging, partition the diff into logical changes and state the proposed commit subjects. Order dependent commits so each preserves a coherent source tree.
-- When one file contains multiple logical changes, stage only the relevant hunks or prepare an equivalent scoped index version. Preserve the remaining working-tree changes.
-- Every staged hunk must serve the commit's single stated purpose. If a hunk can be removed without affecting that purpose, move it to a separate commit. Never hide unrelated work behind a broad subject.
-- A push may contain multiple atomic commits; permission to push everything does not permit a mixed commit.
+## 提交信息
 
-## Message Format
+- 标题、正文和尾注使用英文。
+- 标题采用 `type(scope): summary`，scope 按实际模块填写；适合整体描述的改动使用 `type: summary`。
+- type 使用 feat、fix、refactor、perf、ui、docs、style、test、build、ci、chore、revert 中实际对应的类型。
+- scope 使用真实模块/子系统的小写名称，摘要用英文祈使句描述最终变化，省略句末句号，建议控制在 72 个字符以内。
+- 简单改动使用标题；需要正文时使用简短项目符号说明最终结果，验证说明对应实际执行结果。
 
-- Write the subject and body in English. Use `type(scope): summary`; omit the scope when changes span multiple modules. Choose `feat`, `fix`, `refactor`, `perf`, `docs`, `build`, `ci`, `test`, or `chore` according to the actual change.
-- Use the lowercase name of an actual module or subsystem as the scope, such as `feed`, `media`, or `build`. Describe the final change in the summary; avoid vague wording such as "update code".
-- Include a body when needed to explain the concrete problem, resulting behavior, actual validation, and relevant limitations. Do not narrate the work process or add tool or model attribution.
-- Do not report a check as passed if it was not run, failed, or had no executable test cases.
-- Read an issue before referencing it. Use `close #<number>` only when its requirements are fully satisfied; use `Refs #<number>` for partial relevance.
+## 执行流程
 
-## Workflow
+1. 执行 `git status --short --branch`、`git diff`、`git diff --cached`，检查已有改动和提交归属。
+2. 按 AGENTS 核对实际架构、桥接依赖与持续代码约束，包括代码文件上限，并执行必要格式化与验证；超限先拆分，纯规范/文档按实际范围检查。
+3. 确认改动归属后，按当前独立任务的具体路径或补丁暂存；其余改动保留原状，归属明确后分别处理。
+4. 执行 `git diff --cached --check` 和 `git ls-files --cached --ignored --exclude-standard`，确认前者通过、后者结果为空。
+5. 清理新增文件中的本机私人路径、账号、签名信息和其他凭据；补齐白名单规则后，通过普通 `git add` 暂存。
+6. 复核暂存内容与说明，按实际验证结果确认完成状态；必要验证失败时先处理失败项，再创建完成状态的提交。
+7. 创建本地提交，保留本次纳入内容与验证结果，供完成核对。
 
-1. Check `git status --short --branch`, staged and unstaged diffs, and untracked files to confirm the task scope and current branch; partition the changes using the atomic commit rules above.
-2. Run the existing project checks required by the changes. Documentation-only and skill-only changes do not require a build unless the user explicitly requests one.
-3. Check new paths against the allowlist; never bypass it with `git add -f`. Do not stage machine-specific paths, logs, signing material, screenshots, or build outputs.
-4. Stage explicit paths or scoped hunks for one logical change, then review the complete `git diff --cached` against its proposed subject and run `git diff --cached --check`. Do not stage all task changes in one batch unless they form one atomic change.
-5. Create the local commit, then verify it with `git log -1 --format=%B` and `git status --short --branch`.
+## 版本、问题关联与历史
 
-Amend existing commits only within the user's authorization; do not rewrite published history without permission. When changing only a commit message, verify that the file tree is unchanged.
+- 更新版本时阅读同级 `../version-bump/SKILL.md`；版本元数据和日志按该技能独立提交。
+- 关联 issue 前阅读原文并对照实际交付；完整满足需求且证据充分时使用 Closes，部分完成时使用引用。
+- 修改历史前核对用户授权、提交的推送状态并保存可恢复引用；已推送历史在明确授权覆盖本次改写后处理。
+- 仅修改提交信息时，核对各提交改写前后的文件树一致。
 
-## Pushing
+## 推送
 
-Creating a local commit does not authorize a push. Explain the remote, target branch, and every outgoing commit, then wait for explicit confirmation. Do not ask again if existing confirmation covers this push. Do not automatically push tags, force-push, or merge pull requests.
+- 需要推送时，阅读同级 `../git-push/SKILL.md`，由该技能核对远端、目标、实际命令和执行次数。
 
-Keep this skill identical in `.codex/skills/commit/` and `.claude/skills/commit/`.
+## 完成与维护
+
+检查最新提交与工作区，报告实际纳入的文件、验证结果和待提交事项。
+
+`.codex/skills` 为主源，每次修改后立即通过项目同步入口更新 `.claude/skills`，再检查两侧文件与字节一致。主源与镜像的相关变更一起提交。
+
+同步使用 `python scripts/build.py sync-skills`，只读核对使用 `python scripts/build.py sync-skills --check`。

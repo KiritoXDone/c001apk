@@ -64,7 +64,8 @@
 
 - 不过度防御，不为尚不存在的失败增加备用实现；禁止空异常处理、把错误变成默认成功、重复校验同一不变量。
 - 只在能恢复或补充有效上下文的边界捕获异常；保留协程取消，错误交给现有状态与日志通道处理。
-- 注释、文档和用户说明使用简体中文，中英文之间空一格；技能文件和 Git 提交信息使用英文。代码注释使用语言原生的单行语法，每段不超过 2 行，只写意图、约束与边界。
+- 注释、开发规范和用户说明使用简体中文，中英文之间空一格；Git 提交信息使用英文。代码注释使用语言原生的单行语法，每段不超过 2 行，只写意图、约束与边界。
+- 单个自有代码文件最多 2400 行，含注释与空行；超限按原模块职责拆分。
 - 及时清理本次任务涉及的废弃代码与重复资源，保留第三方版权和许可证。
 - 共享文件只写仓库相对路径、环境变量或通用占位符；不得写入本机绝对路径、用户名、设备标识、账号凭据、Cookie、签名密码或抓包内容。
 - 本机路径通过环境变量或被忽略的 `local.properties` 配置。日志、截图、构建产物不得进入版本控制。
@@ -77,6 +78,8 @@
 python scripts/prebuild.py
 python scripts/prebuild.py --portable
 python scripts/build.py doctor
+python scripts/build.py sync-skills
+python scripts/build.py sync-skills --check
 python scripts/build.py build-apk --build-type debug
 python scripts/build.py build-apk --build-type release
 python scripts/build.py gradle :app:testDebugUnitTest :media-support:testDebugUnitTest :mojito:testDebugUnitTest :app:lintDebug
@@ -102,9 +105,12 @@ python -B -m unittest discover -s tools -p test_*.py
 ## 本地方案与过程记录
 
 - 普通任务用提交说明和最终回复交代结果，不固定生成方案或过程记录。
-- 确需保留方案时放在 `build/docs/<任务标识>.md`，验收与交接记录放在 `build/record/<任务标识>-<阶段号>.md`；临时脚本和附件放在同名子目录。
-- 任务标识为 `YYYYMMDD-主题`；同一目标的重试与修正更新原记录，不重复生成总结文件。
-- 记录保留目标、状态、分支与提交、验收结果、证据路径和下一步；未执行、失败与通过明确区分，每份最多 200 行。
+- 方案保存为 `build/docs/YYYYMMDD-简体中文标题.md`，同一任务维护一份；记录保存为 `build/record/YYYYMMDD-简体中文标题-序号.md`，附件放在同名子目录。
+- 日期采用任务开始日，跨天和跨会话保持日期与标题；序号从 1 连续递增，每个序号对应一个独立探索或实施目标。同一目标的重试、修正、补编和恢复持续更新原记录。
+- 每份记录最多 300 行；完整工具输出保存为附件并引用，日志与截图引用实际位置。
+- 顶部写任务与阶段目标、状态、更新时间、分支与提交、未提交改动和下一步；缺项写“无”。状态使用进行中、受阻、已完成、已终止，完成以对应验收通过为依据。
+- 验收标记未执行、通过或失败并引用证据；阶段切换时更新唯一覆盖清单、前置门槛、有效决定、剩余项、运行作业句柄与恢复要求。
+- 接手先定位对应日期与标题，再阅读最大数值序号的记录，核对证据、分支、提交、工作区和作业状态。
 - worktree 记录放在 `build/worktrees/<名称>.md`；接手时先阅读有效记录，再核对当前差异。
 - `docs/` 保留可长期维护的项目文档，本地过程材料不得混入。
 
@@ -115,12 +121,30 @@ python -B -m unittest discover -s tools -p test_*.py
 - 共用 `scripts/build_support/concurrency.py`，将额度透传为 Gradle `--max-workers=N`；原有跨模块并行由 `gradle.properties` 管理。
 - 一次构建使用一个总额度，独立构建并行时先分配额度，合计不超过当前会话额度；共享 Gradle 输出按顺序执行。
 
-## 助手规范与技能
+## 并行编写
 
-`CLAUDE.md` 只保留一行 `@AGENTS.md`。规范正文只维护本文件；`.codex/skills/` 与 `.claude/skills/` 的同名技能保持内容一致，路径均使用仓库相对写法。
+- 主 agent 维护唯一覆盖清单、前置门槛与跨文件接口。工程基线和独立技能同步通过后，按独立模块或能力并行编写。
+- 派发前明确目标、编辑范围、依赖、接口、返回结果和验收条件；共享文件由单一负责人编辑，同一文件的改动按顺序安排。
+- 元数据来源、技能镜像同步、目标产物目录、应用实例和设备操作由单一负责人管理；子 agent 修改技能源后交给同步负责人立即同步。
+- 子 agent 返回结果后，主 agent 阅读实际差异并核对验证证据；任务派发或代理报告不能代替验收。提交与推送由主 agent 汇总操作。
 
-- 创建或修改提交前阅读 [提交技能](.codex/skills/commit/SKILL.md)。严格按独立逻辑改动拆分提交，禁止杂糅；同一任务、文件或推送不代表应合为一笔。相关实现及必要依赖、测试和文档一同提交，同文件的独立改动按块暂存。
-- 更新应用版本时阅读 [版本技能](.codex/skills/version-bump/SKILL.md)。普通工程规范和脚本调整不自行更新版本。
-- 创建、说明或审查合并请求前阅读 [合并请求技能](.codex/skills/pr/SKILL.md)。当前默认目标分支为 `main`，没有参考项目的双通道发布流程。
-- 推送前说明改动、远端、目标分支及所有待推送提交，等待用户明确确认；已有覆盖本次推送的确认时不重复询问。
-- 创建标签、推送标签、发布版本或合并请求，需要用户指令覆盖相应操作；不得因新增技能而自动执行这些操作。
+## 修改与提交
+
+- 每次提交对应一个完整逻辑目标，关联实现、配置和文档一起提交，独立目标分开提交。同一任务、文件或推送不代表应合为一笔，同文件的独立改动按块暂存。
+- 独立修改完成且必要验证通过后及时创建本地提交，依赖尚未完成的关联改动保留到同一目标完成。
+
+## 配置来源与助手规范
+
+- `app/build.gradle.kts` 管理应用身份、唯一默认版本、Git 派生版本号和签名；`gradle/libs.versions.toml` 管理插件与依赖；`gradle/wrapper/gradle-wrapper.properties` 管理 Gradle 版本。
+- 多语言资源位于 `app/src/main/res/`；主题位于 `app/src/main/java/com/example/c001apk/compose/ui/theme/`。
+- `scripts/build_support/` 维护构建并发额度与技能同步；技能同步独立于 SDK、JDK 和应用状态。
+- `CLAUDE.md` 只保留一行 `@AGENTS.md`。`.codex/skills/` 为主源，修改后立即通过同步入口更新 `.claude/skills/` 并检查文件集合与字节一致；独立镜像改动先归入主源。
+
+## 技能使用
+
+- 创建或修改本地提交时，阅读 commit skill。
+- 推送提交、分支或标签时，阅读 git-push skill。
+- 更新版本或整理发布日志时，阅读 version-bump skill。
+- 回复 Git issue 时，阅读 issue-reply skill。
+- 准备、创建、更新、描述或审查 PR 时，阅读 pull-request skill。
+- 审查隐私性或本机独特路径时，阅读 privacy-review skill。
