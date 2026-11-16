@@ -11,7 +11,7 @@ import com.example.c001apk.compose.ui.component.icons.NotificationIcon
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
-/** Normalize the glyph bounds, not just their shared 24-unit vector canvases. */
+// 根据图形实际边界统一视觉尺寸。
 @Composable
 internal fun MessageEntryIcon(entry: MessageEntry) {
     val vector = when (entry) {
@@ -20,7 +20,7 @@ internal fun MessageEntryIcon(entry: MessageEntry) {
         MessageEntry.FOLLOWS -> FlutterProfileIcons.PersonAdd
         MessageEntry.MESSAGES -> FlutterProfileIcons.Mail
     }
-    // Bounds of the bundled paths. Keep aspect ratios, with a common 20dp longest edge.
+    // 保留比例，图形最长边统一为 20dp。
     val extent = when (entry) {
         MessageEntry.NOTICES -> 19.5f
         MessageEntry.LIKES, MessageEntry.FOLLOWS -> 22.03124f
@@ -37,5 +37,5 @@ internal fun MessageEntryIcon(entry: MessageEntry) {
         scaleX = scale
         scaleY = scale
         translationY = offset
-    }, tint = MiuixTheme.colorScheme.onSurfaceVariantSummary)
+    }, tint = MiuixTheme.colorScheme.onSurface)
 }
