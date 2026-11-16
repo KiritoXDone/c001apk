@@ -189,9 +189,9 @@ class ReplyToolChipView @JvmOverloads constructor(context: Context, attrs: Attri
     private var iconResource by mutableIntStateOf(0)
 
     init {
-        val attributes = context.obtainStyledAttributes(attrs, intArrayOf(android.R.attr.src, android.R.attr.text))
-        iconResource = attributes.getResourceId(0, 0)
-        text = attributes.getText(1).toString()
+        val attributes = context.obtainStyledAttributes(attrs, R.styleable.ReplyToolChipView)
+        iconResource = attributes.getResourceId(R.styleable.ReplyToolChipView_android_src, 0)
+        text = attributes.getText(R.styleable.ReplyToolChipView_android_text).toString()
         attributes.recycle()
     }
 

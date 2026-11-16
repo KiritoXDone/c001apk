@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <declare-styleable name="ReplyToolChipView">
+        <attr name="android:src" />
+        <attr name="android:text" />
+    </declare-styleable>
+
     <declare-styleable name="NestedScrollableHost">
         <attr name="sameDirectionWithParent" format="boolean" />
         <attr name="childVerticalScroll" format="boolean" />
