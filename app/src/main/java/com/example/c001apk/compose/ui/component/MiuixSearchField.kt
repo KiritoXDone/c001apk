@@ -10,12 +10,20 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.withResumed
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.InputField
 import top.yukonga.miuix.kmp.basic.TextField
@@ -36,8 +44,23 @@ fun MiuixSearchField(
     modifier: Modifier = Modifier,
     label: String = "",
     enabled: Boolean = true,
+    shouldAutoFocus: Boolean = false,
     interactionSource: MutableInteractionSource? = null,
 ) {
+    if (shouldAutoFocus) {
+        val lifecycle = LocalLifecycleOwner.current.lifecycle
+        var hasRequestedInitialFocus by rememberSaveable { mutableStateOf(false) }
+        val currentOnExpandedChange by rememberUpdatedState(onExpandedChange)
+        LaunchedEffect(lifecycle) {
+            // 首次可交互时展开，避开导航清焦点；从结果页返回时不重复弹出输入法。
+            if (!hasRequestedInitialFocus) {
+                lifecycle.withResumed {
+                    currentOnExpandedChange(true)
+                    hasRequestedInitialFocus = true
+                }
+            }
+        }
+    }
     InputField(
         query = query,
         onQueryChange = onQueryChange,

@@ -79,6 +79,7 @@ fun SearchScreen(
                         onSearch = { onCheckSearch(it) },
                         expanded = searchExpanded,
                         onExpandedChange = { searchExpanded = it },
+                        shouldAutoFocus = true,
                         interactionSource = interactionSource,
                         label = if (!title.isNullOrEmpty()) stringResource(R.string.search_hint_in, title)
                             else "搜索动态、用户、话题和应用",
