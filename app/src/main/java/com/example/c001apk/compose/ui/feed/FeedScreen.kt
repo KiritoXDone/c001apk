@@ -82,7 +82,6 @@ import top.yukonga.miuix.kmp.icon.extended.Reply
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 /** Created by bggRGjQaUbCoE on 2024/6/4 */
-@OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
 fun FeedScreen(
     modifier: Modifier = Modifier,
@@ -503,7 +502,8 @@ fun FeedScreen(
                                     }
                                 }
 
-                                stickyHeader(key = "sort") {
+                                // 排序随评论区滚动，避免吸顶到状态栏下方并被顶栏重复采样。
+                                item(key = "sort") {
                                     FeedReplySortCard(
                                         replyCount = viewModel.replyCount,
                                         selected = selected,

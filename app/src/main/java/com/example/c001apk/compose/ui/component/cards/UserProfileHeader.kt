@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -218,6 +219,7 @@ fun UserProfileHeader(
     }
 }
 
+@OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 @Composable
 private fun UserStatistic(
     label: String,
@@ -226,10 +228,11 @@ private fun UserStatistic(
     onClick: (() -> Unit)? = null,
 ) {
     val content: @Composable () -> Unit = {
-        Row(
+        // 字号放大时标签换行，不再被单行宽度截断。
+        FlowRow(
             Modifier.padding(vertical = 12.dp),
             horizontalArrangement = Arrangement.spacedBy(4.dp),
-            verticalAlignment = Alignment.CenterVertically,
+            itemVerticalAlignment = Alignment.CenterVertically,
         ) {
             Text(value, fontSize = 17.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
             Text(label, fontSize = 12.sp, color = MiuixTheme.colorScheme.onSurfaceVariantSummary, maxLines = 1)
@@ -258,6 +261,8 @@ private fun ProfileCopyText(
 ) {
     Card(
         modifier = modifier,
+        // 文字贴边排版，不能使用卡片默认圆角裁掉首尾笔画。
+        cornerRadius = 0.dp,
         colors = top.yukonga.miuix.kmp.basic.CardDefaults.defaultColors(color = Color.Transparent),
         showIndication = true,
         onClick = onClick,

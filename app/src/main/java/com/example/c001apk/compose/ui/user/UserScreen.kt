@@ -272,7 +272,8 @@ fun UserScreen(
             ),
         ) {
             val sideInset = ((maxWidth - 800.dp) / 2).coerceAtLeast(0.dp)
-            val feedViewportHeight = (maxHeight - paddingValues.calculateTopPadding()).coerceAtLeast(1.dp)
+            // 外层需能将整段资料移出视口，避免关注按钮停留在顶栏采样区。
+            val feedViewportHeight = maxHeight
             TopBarScrollEffect {
                 feedListState.requestScrollToItem(0)
                 lazyListState.animateScrollToItem(0)
@@ -331,6 +332,7 @@ fun UserScreen(
                                 .testTag("user_feed_refresh"),
                             refreshTexts = listOf("下拉刷新", "释放刷新", "正在刷新", "刷新完成"),
                             pullToRefreshState = feedRefreshState,
+                            contentPadding = PaddingValues(top = paddingValues.calculateTopPadding()),
                             isRefreshing = viewModel.isRefreshing,
                             onRefresh = {
                                 viewModel.isPull = true
