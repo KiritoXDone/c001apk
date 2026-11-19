@@ -17,6 +17,12 @@ android {
     }
 }
 
+androidComponents {
+    onVariants(selector().all()) { variant ->
+        variant.sources.baselineProfiles?.addStaticSourceDirectory("src/androidMain/baselineProfiles")
+    }
+}
+
 kotlin {
     androidTarget {
         compilerOptions { jvmTarget.set(JvmTarget.JVM_21) }

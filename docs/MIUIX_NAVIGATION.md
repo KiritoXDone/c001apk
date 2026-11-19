@@ -1,6 +1,6 @@
 # Miuix navigation
 
-应用使用提交 `2855a36b` 的本地 `miuix-nav` 源码处理页面导航、条目状态及 ViewModel 所有权、页面转场和预测返回。`AppNavHost` 使用库提供的 `NavDisplay`、`NavTransitions.MiuixDefault` 与设备圆角半径；应用不自行实现页面手势识别或转场曲线。
+应用使用本地 [Miuix 源码](../miuix/README.md) 中的 `miuix-nav` 处理页面导航、条目状态及 ViewModel 所有权、页面转场和预测返回。`AppNavHost` 使用库提供的 `NavDisplay`、`NavTransitions.MiuixDefault` 与设备圆角半径；应用不自行实现页面手势识别或转场曲线。
 
 ## Routes and state
 

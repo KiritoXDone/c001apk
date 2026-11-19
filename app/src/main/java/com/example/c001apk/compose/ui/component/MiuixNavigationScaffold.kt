@@ -87,7 +87,12 @@ fun MiuixNavigationScaffold(
                             val description = if (index == badgeIndex && unreadCount > 0) {
                                 "$label，未读 ${if (unreadCount > 99) "99+" else unreadCount} 条"
                             } else label
-                            GlassNavigationItem(icon, label, description)
+                            GlassNavigationItem(
+                                icon = icon,
+                                label = label,
+                                contentDescription = description,
+                                badge = badge.takeIf { index == badgeIndex && unreadCount > 0 },
+                            )
                         },
                         selectedIndex = selectedIndex,
                         onSelect = onSelect,
@@ -97,7 +102,6 @@ fun MiuixNavigationScaffold(
                         containerColor = container.copy(alpha = 1f),
                         stroke = if (backdrop != null) GlassNavigationBarDefaults.stroke() else null,
                         shadow = if (backdrop != null) GlassShadows.Float else null,
-                        badge = { index -> if (index == badgeIndex) badge() },
                     )
                 } else if (!wide)
                     NavigationBar(color = LocalBarColor.current) {

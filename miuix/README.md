@@ -1,7 +1,7 @@
 # Miuix 源码
 
-固定来源：[compose-miuix-ui/miuix](https://github.com/compose-miuix-ui/miuix)，提交
-`2855a36ba516cbf2b5ff46d722da38c94a59c07b`，Apache-2.0 许可证见 [LICENSE](LICENSE)。
+固定来源：[compose-miuix-ui/miuix v0.9.5-beta01](https://github.com/compose-miuix-ui/miuix/releases/tag/v0.9.5-beta01)，提交
+`6d2554a850b8960e2616c968263ff64beb5ffb03`，Apache-2.0 许可证见 [LICENSE](LICENSE)。
 
 保留应用使用的 core、material、squircle、ui、preference、icons、nav、blur、glass 和 glass-icons 模块的
 `commonMain`、`androidMain` 原始源码与基线配置；其他平台和示例不参与应用构建。每个模块的
@@ -14,10 +14,10 @@
 `preference`、`icons`、`nav`、`blur`、`glass` 和 `glass-icons`。`glass` 依赖 `blur`、
 `material` 和 `ui`，`glass-icons` 依赖 `core`。
 
-本地兼容补丁：`SmallTopAppBar`、`BlurTopAppBar` 和 `GlassTopAppBar` 支持可组合标题、
+本地兼容补丁：`SmallTopAppBar` 和 `GlassTopAppBar` 支持可组合标题、
 标题对齐、自定义 inset 和点击消费控制；`SmallTopAppBar` 可选按大栏策略仅裁剪标题，
 允许控件阴影越过栏边（这是本项目对小栏的适配）；`GlassIconButton` 支持禁用及保持状态，关闭继承时
-不回退父 backdrop；`GlassNavigationBar` 支持角标和回退底色；`GlassSegmentedTabRow` 允许
+不回退父 backdrop；`GlassNavigationBar` 支持自定义回退底色；`GlassSegmentedTabRow` 允许
 空 backdrop；`GlassDropdownPopup` 支持关闭完成回调及未指定 valueAnchor 时的水平对齐。
 `NavDisplay` 根据内容键判断顶层页面变化，避免同一页面的参数更新导致输入框失焦。
 `FloatingActionButton` 按实际容器底色选择深浅内容色，以白图标 3:1 的对比度为边界，半透明底色先与页面背景合成。

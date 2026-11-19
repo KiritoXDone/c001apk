@@ -90,6 +90,7 @@ enum class TopAppBarTitleAlignment { Native, Center, Start }
  *
  * @param title The title of the [TopAppBar].
  * @param modifier The modifier to be applied to the  [TopAppBar].
+ * @param expandable Whether the large title can expand. `false` keeps the compact title visible.
  * @param color The background color of the [TopAppBar].
  * @param titleColor The color of the collapsed small title text.
  * @param largeTitle The large title of the [TopAppBar].
@@ -109,6 +110,7 @@ enum class TopAppBarTitleAlignment { Native, Center, Start }
 fun TopAppBar(
     title: String,
     modifier: Modifier = Modifier,
+    expandable: Boolean = true,
     color: Color = MiuixTheme.colorScheme.surface,
     titleColor: Color = MiuixTheme.colorScheme.onSurface,
     largeTitle: String = title,
@@ -135,11 +137,12 @@ fun TopAppBar(
 
     TopAppBarLayout(
         title = title,
+        expandable = expandable,
         color = color,
         titleColor = titleColor,
         largeTitle = largeTitle,
         largeTitleColor = largeTitleColor,
-        largeTitleBlurRadius = 0.dp,
+        titleBlurRadius = 0.dp,
         subtitle = subtitle,
         subtitleColor = subtitleColor,
         navigationIcon = navigationIcon,
@@ -150,94 +153,6 @@ fun TopAppBar(
         scrollBehavior = scrollBehavior,
         modifier = modifier,
         defaultWindowInsetsPadding = defaultWindowInsetsPadding,
-        bottomContent = bottomContent,
-    )
-}
-
-/**
- * A [BlurTopAppBar] whose large title blurs as it collapses.
- *
- * @param title The title of the [BlurTopAppBar].
- * @param largeTitleBlurRadius How far the large title blurs out as it collapses. It reaches this
- *   radius at the point the title has fully faded.
- * @param modifier The modifier to be applied to the [BlurTopAppBar].
- * @param color The background color of the [BlurTopAppBar].
- * @param titleColor The color of the collapsed small title text.
- * @param largeTitle The large title of the [BlurTopAppBar].
- * @param largeTitleColor The color of the expanded large title text.
- * @param subtitle The subtitle displayed below the title bar area.
- * @param subtitleColor The color of the subtitle text.
- * @param navigationIcon The content that represents the navigation icon.
- * @param actions The content that represents the action icons.
- * @param scrollBehavior The behavior that controls the [BlurTopAppBar].
- * @param defaultWindowInsetsPadding Whether to apply default window insets padding.
- * @param titlePadding The horizontal padding of the title and large title.
- * @param navigationIconPadding The start padding of the navigation icon.
- * @param actionIconPadding The end padding of the action icons.
- * @param titleAlpha Draw-phase opacity applied to both title containers.
- * @param bottomContent Content displayed below the title bar area.
- */
-@Composable
-fun BlurTopAppBar(
-    title: String,
-    largeTitleBlurRadius: Dp,
-    modifier: Modifier = Modifier,
-    color: Color = MiuixTheme.colorScheme.surface,
-    titleColor: Color = MiuixTheme.colorScheme.onSurface,
-    largeTitle: String = title,
-    largeTitleColor: Color = MiuixTheme.colorScheme.onSurface,
-    subtitle: String = "",
-    subtitleColor: Color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
-    navigationIcon: @Composable () -> Unit = {},
-    actions: @Composable RowScope.() -> Unit = {},
-    scrollBehavior: ScrollBehavior? = null,
-    defaultWindowInsetsPadding: Boolean = true,
-    titlePadding: Dp = TopAppBarDefaults.TitlePadding,
-    navigationIconPadding: Dp = TopAppBarDefaults.NavigationIconPadding,
-    actionIconPadding: Dp = TopAppBarDefaults.ActionIconPadding,
-    titleAlpha: () -> Float = { 1f },
-    titleContent: (@Composable () -> Unit)? = null,
-    titleAlignment: TopAppBarTitleAlignment = TopAppBarTitleAlignment.Native,
-    windowInsets: WindowInsets? = null,
-    consumeBarTaps: Boolean = true,
-    bottomContent: @Composable () -> Unit = {},
-) {
-    // Wrap the given actions in a Row.
-    val actionsRow =
-        @Composable {
-            Row(
-                horizontalArrangement = Arrangement.End,
-                verticalAlignment = Alignment.CenterVertically,
-                content = actions,
-            )
-        }
-
-    // Compose a Surface with a TopAppBarLayout content.
-    // The surface's background color is animated as specified above.
-    // The height of the app bar is determined by subtracting the bar's height offset from the
-    // app bar's defined constant height value (i.e. the ContainerHeight token).
-    TopAppBarLayout(
-        title = title,
-        titleAlpha = titleAlpha,
-        color = color,
-        titleColor = titleColor,
-        largeTitle = largeTitle,
-        largeTitleColor = largeTitleColor,
-        largeTitleBlurRadius = largeTitleBlurRadius,
-        subtitle = subtitle,
-        subtitleColor = subtitleColor,
-        navigationIcon = navigationIcon,
-        actions = actionsRow,
-        titlePadding = titlePadding,
-        navigationIconPadding = navigationIconPadding,
-        actionIconPadding = actionIconPadding,
-        scrollBehavior = scrollBehavior,
-        modifier = modifier,
-        defaultWindowInsetsPadding = defaultWindowInsetsPadding,
-        titleContent = titleContent,
-        titleAlignment = titleAlignment,
-        windowInsets = windowInsets,
-        consumeBarTaps = consumeBarTaps,
         bottomContent = bottomContent,
     )
 }
@@ -733,12 +648,12 @@ private suspend fun settleAppBar(
  *   and writes the matching `heightOffsetLimit` from the large title's measured height.
  * @param modifier the [Modifier] to be applied to this layout.
  * @param largeTitle the large title of the [TopAppBar], if not specified, it will be the same as title.
- * @param largeTitleBlurRadius how far the large title blurs out as it collapses.
+ * @param titleBlurRadius maximum blur radius applied during title collapse/expand transitions.
  * @param defaultWindowInsetsPadding whether to apply default window insets padding to the [TopAppBar].
  * @param bottomContent the composable content displayed below the title bar area.
  */
 @Composable
-private fun TopAppBarLayout(
+fun TopAppBarLayout(
     title: String,
     color: Color,
     titleColor: Color,
@@ -752,8 +667,9 @@ private fun TopAppBarLayout(
     actionIconPadding: Dp,
     scrollBehavior: ScrollBehavior?,
     modifier: Modifier = Modifier,
+    expandable: Boolean = true,
     largeTitle: String = title,
-    largeTitleBlurRadius: Dp = 0.dp,
+    titleBlurRadius: Dp = 0.dp,
     defaultWindowInsetsPadding: Boolean = true,
     titleAlpha: () -> Float = { 1f },
     titleContent: (@Composable () -> Unit)? = null,
@@ -781,17 +697,23 @@ private fun TopAppBarLayout(
             1f - largeTitleFade()
         }
     }
-    val updateHeightOffsetLimit = remember(scrollBehavior) {
+    val updateHeightOffsetLimit = remember(scrollBehavior, expandable) {
         { height: Int ->
             scrollBehavior?.state?.let { state ->
-                val limit = -height.toFloat()
-                if (state.heightOffsetLimit != limit) {
-                    val restoringFromSmallTopAppBar = state.pinnedBySmallTopAppBar
-                    state.heightOffsetLimit = limit
-                    // A pinned small bar retains contentOffset while its own height stays fixed.
-                    if (restoringFromSmallTopAppBar) {
-                        state.heightOffset = if (state.contentOffset < 0f) limit else 0f
-                        state.pinnedBySmallTopAppBar = false
+                if (!expandable) {
+                    state.pinnedBySmallTopAppBar = true
+                    state.heightOffsetLimit = 0f
+                    state.heightOffset = 0f
+                } else {
+                    val limit = -height.toFloat()
+                    if (state.heightOffsetLimit != limit) {
+                        val restoringFromSmallTopAppBar = state.pinnedBySmallTopAppBar
+                        state.heightOffsetLimit = limit
+                        // A pinned small bar retains contentOffset while its own height stays fixed.
+                        if (restoringFromSmallTopAppBar) {
+                            state.heightOffset = if (state.contentOffset < 0f) limit else 0f
+                            state.pinnedBySmallTopAppBar = false
+                        }
                     }
                 }
             }
@@ -800,15 +722,19 @@ private fun TopAppBarLayout(
     }
 
     // Boolean derivedStateOf invalidates only on flip → the spring fires once per crossing, not per frame.
-    val smallTitleVisible by remember(scrollBehavior) {
+    val smallTitleVisible by remember(scrollBehavior, expandable) {
         derivedStateOf {
-            scrollBehavior?.state?.let { state ->
-                if (state.pinnedBySmallTopAppBar) {
-                    state.contentOffset < 0f
-                } else {
-                    state.collapsedFraction * 3f >= 1f
-                }
-            } ?: false
+            if (!expandable) {
+                true
+            } else {
+                scrollBehavior?.state?.let { state ->
+                    if (state.pinnedBySmallTopAppBar) {
+                        state.contentOffset < 0f
+                    } else {
+                        state.collapsedFraction * 3f >= 1f
+                    }
+                } ?: false
+            }
         }
     }
     val smallTitleAlpha = remember { Animatable(if (smallTitleVisible) 1f else 0f) }
@@ -854,8 +780,19 @@ private fun TopAppBarLayout(
                     .clipTopAppBarTitle(titleClip) { titleClip.titleOrigin }
                     .padding(horizontal = titlePadding)
                     .graphicsLayer {
-                        alpha = smallTitleAlpha.value * titleAlpha()
+                        val currentAlpha = smallTitleAlpha.value
+                        alpha = currentAlpha * titleAlpha()
                         translationY = smallTitleTranslationY.value
+                        val radius = if (titleBlurRadius > 0.dp) {
+                            titleBlurRadius.toPx() * 0.5f * (1f - currentAlpha).coerceIn(0f, 1f)
+                        } else {
+                            0f
+                        }
+                        renderEffect = if (radius > 0.1f) {
+                            BlurEffect(radius, radius, TileMode.Decal)
+                        } else {
+                            null
+                        }
                     },
             ) {
                 if (titleContent != null) titleContent() else Text(
@@ -885,8 +822,8 @@ private fun TopAppBarLayout(
                         // Assigned on every path, including the disabled one: the layer keeps
                         // whatever it was last given, so a radius that drops back to zero would
                         // otherwise leave the last blur on the title for good.
-                        val radius = if (largeTitleBlurRadius > 0.dp) {
-                            largeTitleBlurRadius.toPx() * largeTitleFade()
+                        val radius = if (titleBlurRadius > 0.dp) {
+                            titleBlurRadius.toPx() * largeTitleFade()
                         } else {
                             0f
                         }
@@ -905,18 +842,20 @@ private fun TopAppBarLayout(
                         }
                         .onSizeChanged { updateHeightOffsetLimit(it.height) },
                 ) {
-                    Text(
-                        text = largeTitle,
-                        color = animatedLargeTitleColor,
-                        fontSize = MiuixTheme.textStyles.title1.fontSize,
-                        fontWeight = FontWeight.Normal,
-                    )
-                    if (subtitle.isNotEmpty()) {
+                    if (expandable) {
                         Text(
-                            text = subtitle,
-                            color = animatedSubtitleColor,
-                            style = MiuixTheme.textStyles.body2,
+                            text = largeTitle,
+                            color = animatedLargeTitleColor,
+                            fontSize = MiuixTheme.textStyles.title1.fontSize,
+                            fontWeight = FontWeight.Normal,
                         )
+                        if (subtitle.isNotEmpty()) {
+                            Text(
+                                text = subtitle,
+                                color = animatedSubtitleColor,
+                                style = MiuixTheme.textStyles.body2,
+                            )
+                        }
                     }
                 }
             }
@@ -926,8 +865,19 @@ private fun TopAppBarLayout(
                         .layoutId("smallSubtitle")
                         .clipTopAppBarTitle(titleClip) { titleClip.subtitleOrigin }
                         .graphicsLayer {
-                            alpha = smallTitleAlpha.value * titleAlpha()
+                            val currentAlpha = smallTitleAlpha.value
+                            alpha = currentAlpha * titleAlpha()
                             translationY = smallTitleTranslationY.value
+                            val radius = if (titleBlurRadius > 0.dp) {
+                                titleBlurRadius.toPx() * 0.5f * (1f - currentAlpha).coerceIn(0f, 1f)
+                            } else {
+                                0f
+                            }
+                            renderEffect = if (radius > 0.1f) {
+                                BlurEffect(radius, radius, TileMode.Decal)
+                            } else {
+                                null
+                            }
                         },
                 ) {
                     Text(
@@ -1035,7 +985,9 @@ private fun TopAppBarLayout(
 
         val verticalCenter = collapsedHeight / 2
         val smallSubtitleHeight = smallSubtitlePlaceable?.height ?: 0
-        val smallSubtitleBottom = verticalCenter + titlePlaceable.height / 2 + smallSubtitleHeight
+        val smallTitleGroupHeight = titlePlaceable.height + smallSubtitleHeight
+        val smallTitleGroupTop = verticalCenter - if (smallSubtitlePlaceable != null) smallTitleGroupHeight / 2 else titlePlaceable.height / 2
+        val smallSubtitleBottom = smallTitleGroupTop + smallTitleGroupHeight
         val expandedBottomPadding = if (smallSubtitlePlaceable != null) {
             TopAppBarDefaults.SubtitleBottomPadding.roundToPx()
         } else {
@@ -1052,29 +1004,25 @@ private fun TopAppBarLayout(
                 y = verticalCenter - navigationIconPlaceable.height / 2,
             )
 
-            // Title
-            var baseX = if (titleAlignment == TopAppBarTitleAlignment.Start) navigationIconPlaceable.width
-                else (constraints.maxWidth - titlePlaceable.width) / 2
-            if (titleAlignment == TopAppBarTitleAlignment.Native) {
-                if (baseX < navigationIconPlaceable.width) {
-                    baseX += (navigationIconPlaceable.width - baseX)
-                } else if (baseX + titlePlaceable.width > constraints.maxWidth - actionIconsPlaceable.width) {
-                    baseX += ((constraints.maxWidth - actionIconsPlaceable.width) - (baseX + titlePlaceable.width))
-                }
-            }
-            val titleY = verticalCenter - titlePlaceable.height / 2
-            titleClip.titleOrigin = IntOffset(
-                if (layoutDirection == LayoutDirection.Ltr) baseX else constraints.maxWidth - baseX - titlePlaceable.width,
-                titleY,
+            val titleGroupWidth = maxOf(titlePlaceable.width, smallSubtitlePlaceable?.width ?: 0)
+            val groupX = titleAlignment.groupStart(
+                barWidth = constraints.maxWidth,
+                groupWidth = titleGroupWidth,
+                navigationWidth = navigationIconPlaceable.width,
+                actionsWidth = actionIconsPlaceable.width,
             )
-            titlePlaceable.placeRelative(x = baseX, y = titleY)
+            val titleX = groupX + titleAlignment.textOffset(titleGroupWidth, titlePlaceable.width)
+            titleClip.titleOrigin = IntOffset(
+                titleX.physicalX(layoutDirection, constraints.maxWidth, titlePlaceable.width),
+                smallTitleGroupTop,
+            )
+            titlePlaceable.placeRelative(x = titleX, y = smallTitleGroupTop)
 
-            // Small subtitle (centered below small title, same alpha as small title)
             smallSubtitlePlaceable?.let { subtitle ->
-                val subtitleX = (constraints.maxWidth - subtitle.width) / 2
-                val subtitleY = verticalCenter + titlePlaceable.height / 2
+                val subtitleX = groupX + titleAlignment.textOffset(titleGroupWidth, subtitle.width)
+                val subtitleY = smallTitleGroupTop + titlePlaceable.height
                 titleClip.subtitleOrigin = IntOffset(
-                    if (layoutDirection == LayoutDirection.Ltr) subtitleX else constraints.maxWidth - subtitleX - subtitle.width,
+                    subtitleX.physicalX(layoutDirection, constraints.maxWidth, subtitle.width),
                     subtitleY,
                 )
                 subtitle.placeRelative(x = subtitleX, y = subtitleY)
@@ -1296,7 +1244,9 @@ private fun SmallTopAppBarLayout(
         }
         val verticalCenter = if (titleContent != null) rowHeight / 2
             else TopAppBarDefaults.SmallTopAppBarCenterHeight.roundToPx() / 2
-        val subtitleY = verticalCenter + titlePlaceable.height / 2
+        val titleGroupHeight = titlePlaceable.height + subtitleHeight
+        val titleGroupTop = verticalCenter - titleGroupHeight / 2
+        val subtitleY = titleGroupTop + titlePlaceable.height
         val subtitleBottomPadding = if (subtitlePlaceable != null) TopAppBarDefaults.SubtitleBottomPadding.roundToPx() else 0
         val contentTop = maxOf(rowHeight, subtitleY + subtitleHeight + subtitleBottomPadding)
         val layoutHeight = contentTop + bottomContentPlaceable.height
@@ -1309,37 +1259,32 @@ private fun SmallTopAppBarLayout(
                 y = verticalCenter - navigationIconPlaceable.height / 2,
             )
 
-            // Title
-            var baseX = if (titleAlignment == TopAppBarTitleAlignment.Start) navigationIconPlaceable.width
-                else (constraints.maxWidth - titlePlaceable.width) / 2
-            if (titleAlignment == TopAppBarTitleAlignment.Native) {
-                if (baseX < navigationIconPlaceable.width) {
-                    baseX += (navigationIconPlaceable.width - baseX)
-                } else if (baseX + titlePlaceable.width > constraints.maxWidth - actionIconsPlaceable.width) {
-                    baseX += ((constraints.maxWidth - actionIconsPlaceable.width) - (baseX + titlePlaceable.width))
-                }
-            }
-            val titleY = verticalCenter - titlePlaceable.height / 2
+            val titleGroupWidth = maxOf(titlePlaceable.width, subtitlePlaceable?.width ?: 0)
+            val groupX = titleAlignment.groupStart(
+                barWidth = constraints.maxWidth,
+                groupWidth = titleGroupWidth,
+                navigationWidth = navigationIconPlaceable.width,
+                actionsWidth = actionIconsPlaceable.width,
+            )
+            val titleX = groupX + titleAlignment.textOffset(titleGroupWidth, titlePlaceable.width)
             if (!clipControlsToBounds) {
                 titleClip.titleOrigin = IntOffset(
-                    if (layoutDirection == LayoutDirection.Ltr) baseX else constraints.maxWidth - baseX - titlePlaceable.width,
-                    titleY,
+                    titleX.physicalX(layoutDirection, constraints.maxWidth, titlePlaceable.width),
+                    titleGroupTop,
                 )
             }
-            titlePlaceable.placeRelative(x = baseX, y = titleY)
+            titlePlaceable.placeRelative(x = titleX, y = titleGroupTop)
 
-            // Action icons
             actionIconsPlaceable.placeRelative(
                 x = constraints.maxWidth - actionIconsPlaceable.width,
                 y = verticalCenter - actionIconsPlaceable.height / 2,
             )
 
-            // Subtitle (centered, right below title)
             subtitlePlaceable?.let { subtitle ->
-                val subtitleX = (constraints.maxWidth - subtitle.width) / 2
+                val subtitleX = groupX + titleAlignment.textOffset(titleGroupWidth, subtitle.width)
                 if (!clipControlsToBounds) {
                     titleClip.subtitleOrigin = IntOffset(
-                        if (layoutDirection == LayoutDirection.Ltr) subtitleX else constraints.maxWidth - subtitleX - subtitle.width,
+                        subtitleX.physicalX(layoutDirection, constraints.maxWidth, subtitle.width),
                         subtitleY,
                     )
                 }
@@ -1351,6 +1296,24 @@ private fun SmallTopAppBarLayout(
         }
     }
 }
+
+private fun TopAppBarTitleAlignment.groupStart(barWidth: Int, groupWidth: Int, navigationWidth: Int, actionsWidth: Int): Int {
+    val center = (barWidth - groupWidth) / 2
+    return when (this) {
+        TopAppBarTitleAlignment.Native -> {
+            val end = barWidth - actionsWidth - groupWidth
+            center.coerceIn(navigationWidth, maxOf(navigationWidth, end))
+        }
+        TopAppBarTitleAlignment.Center -> center
+        TopAppBarTitleAlignment.Start -> navigationWidth
+    }
+}
+
+private fun TopAppBarTitleAlignment.textOffset(groupWidth: Int, textWidth: Int): Int =
+    if (this == TopAppBarTitleAlignment.Start) 0 else (groupWidth - textWidth) / 2
+
+private fun Int.physicalX(layoutDirection: LayoutDirection, width: Int, childWidth: Int): Int =
+    if (layoutDirection == LayoutDirection.Ltr) this else width - this - childWidth
 
 // Slack so the centred title isn't butted against nav/actions.
 private const val TITLE_WIDTH_FRACTION = 0.9

@@ -13,7 +13,7 @@ import top.yukonga.miuix.kmp.blur.internal.BLEND_MODE_SHADER_STANDARD
 import top.yukonga.miuix.kmp.blur.internal.BLEND_MODE_SHADER_STANDARD_RAMP
 import top.yukonga.miuix.kmp.blur.internal.BLUR_KERNEL_REACH
 import top.yukonga.miuix.kmp.blur.internal.BLUR_RADIUS_TO_SIGMA
-import top.yukonga.miuix.kmp.blur.internal.PROGRESSIVE_LEVEL_FRACTION_1
+import top.yukonga.miuix.kmp.blur.internal.PROGRESSIVE_LIGHT_FRACTION
 import top.yukonga.miuix.kmp.blur.internal.adjustedVarianceForExp
 import top.yukonga.miuix.kmp.blur.internal.adjustedVarianceForScale
 import top.yukonga.miuix.kmp.blur.internal.chain
@@ -123,8 +123,8 @@ fun BackdropEffectScope.progressiveBlur(
         // Sized for the middle level: the lightest level's variance then stays above the pyramid's
         // box floor at common radii, and every stack pass runs on 1/scale² pixels. The sharp end
         // doesn't ride this layer, so it doesn't constrain the scale.
-        val sigma1 = maxOf(rX, rY) * BLUR_RADIUS_TO_SIGMA * PROGRESSIVE_LEVEL_FRACTION_1
-        val exp = downScaleExpFor(sigma1 * sigma1)
+        val lightSigma = maxOf(rX, rY) * BLUR_RADIUS_TO_SIGMA * PROGRESSIVE_LIGHT_FRACTION
+        val exp = downScaleExpFor(lightSigma * lightSigma * 2f)
         val scale = (1 shl exp).toFloat()
         val kernelPadding = BLUR_KERNEL_REACH * scale
         if (kernelPadding > padding) {
@@ -282,10 +282,9 @@ internal fun obtainBlendColorsEffect(scope: BackdropEffectScopeImpl, colors: Blu
 internal fun buildRampBlendColorsEffect(
     scope: BackdropEffectScopeImpl,
     colors: BlurColors,
-    ax: Float,
-    ay: Float,
-    projFull: Float,
-    projZero: Float,
+    gradVecX: Float,
+    gradVecY: Float,
+    gradOffset: Float,
     curve: Float,
 ): RenderEffect {
     val needsExtended = colors.needsExtendedBlend()
@@ -294,8 +293,8 @@ internal fun buildRampBlendColorsEffect(
         if (needsExtended) BLEND_MODE_SHADER_EXTENDED_RAMP else BLEND_MODE_SHADER_STANDARD_RAMP,
     )
     shader.setBlendLayerUniforms(scope, colors, needsExtended)
-    shader.setFloatUniform("in_gradAxis", ax, ay)
-    shader.setFloatUniform("in_gradBand", projFull, projZero)
+    shader.setFloatUniform("in_gradVec", gradVecX, gradVecY)
+    shader.setFloatUniform("in_gradOffset", gradOffset)
     shader.setFloatUniform("in_curve", curve)
     return createRuntimeShaderEffect(shader, "child")
 }

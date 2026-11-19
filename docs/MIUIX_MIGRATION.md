@@ -5,7 +5,7 @@
 - 上游：[frisk1127/c001apk-compose](https://github.com/frisk1127/c001apk-compose)，基线提交 `82ffea3c746955420c1d4f00380f5a6d7a6cad02`。
 - 实现采用 Kotlin 原生 Compose。
 - 设计规范参考：[Mishka UI guidelines](https://github.com/YuKongA/Mishka/blob/main/docs/ui-guidelines.md)。采用 squircle 圆角、12 dp 外边距、分段设置卡片、选中即生效的单选弹窗、窗口弹窗与毛玻璃背景采样。
-- 组件：[miuix 源码 `2855a36b`](https://github.com/compose-miuix-ui/miuix/tree/2855a36ba516cbf2b5ff46d722da38c94a59c07b)，使用 UI、Preference、Icons、Blur、Nav 及其必要基础模块；Android 接入和许可证见 [miuix/README.md](../miuix/README.md)。
+- 组件：[miuix v0.9.5-beta01](https://github.com/compose-miuix-ui/miuix/tree/6d2554a850b8960e2616c968263ff64beb5ffb03)，使用 UI、Preference、Icons、Blur、Nav 及其必要基础模块；Android 接入和许可证见 [miuix/README.md](../miuix/README.md)。
 
 ## 实现
 

@@ -22,7 +22,7 @@ CommonMark 0.30.0 与 GFM 表格、删除线、任务列表扩展遵循 BSD 3-Cl
 
 ## Miuix
 
-Miuix 的公共和 Android 源码来自 [compose-miuix-ui/miuix](https://github.com/compose-miuix-ui/miuix/tree/2855a36ba516cbf2b5ff46d722da38c94a59c07b) 的提交 `2855a36ba516cbf2b5ff46d722da38c94a59c07b`，遵循 Apache-2.0；原始许可保存在 `miuix/LICENSE`，应用内附带 `app/src/main/assets/licenses/Miuix-Apache-2.0.txt`。模块范围与构建适配见 `miuix/README.md`。
+Miuix 的公共和 Android 源码来自 [compose-miuix-ui/miuix](https://github.com/compose-miuix-ui/miuix)，遵循 Apache-2.0；原始许可保存在 `miuix/LICENSE`，应用内附带 `app/src/main/assets/licenses/Miuix-Apache-2.0.txt`。固定提交、模块范围与构建适配见 [miuix/README.md](../miuix/README.md)。
 
 ## BoxProxy 界面适配
 

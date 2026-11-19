@@ -93,10 +93,12 @@ internal fun createBlurEffect(
         if (n > 0) {
             val shaderOffsets = scope.obtainShaderOffsetsBuffer(n)
             val shaderWeights = scope.obtainShaderWeightsBuffer(n)
+            var pairWeightSum = 0f
             for (i in 0 until n) {
                 shaderOffsets[i * 2] = paramOffsets[i]
                 shaderOffsets[i * 2 + 1] = 0f
                 shaderWeights[i] = paramWeights[i]
+                pairWeightSum += paramWeights[i]
             }
             val hShader = scope.obtainRuntimeShader(
                 BLUR_H_KEYS[n][bucket],
@@ -104,6 +106,7 @@ internal fun createBlurEffect(
             ).apply {
                 setFloatUniform("in_blurOffset", shaderOffsets)
                 setFloatUniform("in_blurWeight", shaderWeights)
+                setFloatUniform("in_centerWeight", (1f - 2f * pairWeightSum).coerceAtLeast(0f))
                 setFloatUniform("in_maxCoord", texW - 0.5f, texH - 0.5f)
             }
             effect = runtimeShaderEffect(hShader, "child")
@@ -115,10 +118,12 @@ internal fun createBlurEffect(
         if (n > 0) {
             val shaderOffsets = scope.obtainShaderOffsetsBuffer(n)
             val shaderWeights = scope.obtainShaderWeightsBuffer(n)
+            var pairWeightSum = 0f
             for (i in 0 until n) {
                 shaderOffsets[i * 2] = 0f
                 shaderOffsets[i * 2 + 1] = paramOffsets[i]
                 shaderWeights[i] = paramWeights[i]
+                pairWeightSum += paramWeights[i]
             }
             val vShader = scope.obtainRuntimeShader(
                 BLUR_V_KEYS[n][bucket],
@@ -126,6 +131,7 @@ internal fun createBlurEffect(
             ).apply {
                 setFloatUniform("in_blurOffset", shaderOffsets)
                 setFloatUniform("in_blurWeight", shaderWeights)
+                setFloatUniform("in_centerWeight", (1f - 2f * pairWeightSum).coerceAtLeast(0f))
                 setFloatUniform("in_maxCoord", texW - 0.5f, texH - 0.5f)
             }
             effect = effect?.chain(runtimeShaderEffect(vShader, "child"))
@@ -174,8 +180,12 @@ internal fun createProgressiveBlurEffect(
     val padProj = padding * (ax + ay)
     val projFull = (projFullComp + padProj) / downScale
     var projZero = (projZeroComp + padProj) / downScale
-    // Degenerate band (start == end, or a zero-extent axis) would divide by zero in the shader.
+    // Degenerate band (start == end, or a zero-extent axis) would divide by zero when normalizing.
     if (abs(projZero - projFull) < 1e-3f) projZero = projFull + 1e-3f
+    val invGradSpan = 1f / (projZero - projFull)
+    val gradVecX = ax * invGradSpan
+    val gradVecY = ay * invGradSpan
+    val gradOffset = -projFull * invGradSpan
 
     // Shader uses σ = radius·0.5 + 0.5, so radius = 2·σ_ds − 1; capped at the constant loop bound.
     val maxCap = PROGRESSIVE_BLUR_MAX_TAP.toFloat()
@@ -186,33 +196,37 @@ internal fun createProgressiveBlurEffect(
 
     val clampedCurve = curve.coerceIn(0.05f, 20f)
 
-    if (radiusX > 0f && maxRadiusX >= 0.5f) {
+    val hasH = radiusX > 0f && maxRadiusX >= 0.5f
+    val hasV = radiusY > 0f && maxRadiusY >= 0.5f
+
+    if (hasH) {
         val tap = progressiveLoopTapBound(maxRadiusX)
+        val hUnpremul = !hasV
         val hShader = scope.obtainRuntimeShader(
-            progressiveLoopShaderKey(axis = 0, downScale = downScale, tap = tap),
-            progressiveBlurShaderForTap(tap),
+            progressiveLoopShaderKey(axis = 0, downScale = downScale, tap = tap, unpremul = hUnpremul),
+            progressiveBlurShaderForTap(tap, unpremul = hUnpremul),
         ).apply {
             setFloatUniform("in_maxCoord", texW - 0.5f, texH - 0.5f)
             setFloatUniform("in_step", 1f, 0f)
             setFloatUniform("in_maxRadius", maxRadiusX)
-            setFloatUniform("in_gradAxis", ax, ay)
-            setFloatUniform("in_gradBand", projFull, projZero)
+            setFloatUniform("in_gradVec", gradVecX, gradVecY)
+            setFloatUniform("in_gradOffset", gradOffset)
             setFloatUniform("in_curve", clampedCurve)
         }
         effect = runtimeShaderEffect(hShader, "child")
     }
 
-    if (radiusY > 0f && maxRadiusY >= 0.5f) {
+    if (hasV) {
         val tap = progressiveLoopTapBound(maxRadiusY)
         val vShader = scope.obtainRuntimeShader(
-            progressiveLoopShaderKey(axis = 1, downScale = downScale, tap = tap),
-            progressiveBlurShaderForTap(tap),
+            progressiveLoopShaderKey(axis = 1, downScale = downScale, tap = tap, unpremul = true),
+            progressiveBlurShaderForTap(tap, unpremul = true),
         ).apply {
             setFloatUniform("in_maxCoord", texW - 0.5f, texH - 0.5f)
             setFloatUniform("in_step", 0f, 1f)
             setFloatUniform("in_maxRadius", maxRadiusY)
-            setFloatUniform("in_gradAxis", ax, ay)
-            setFloatUniform("in_gradBand", projFull, projZero)
+            setFloatUniform("in_gradVec", gradVecX, gradVecY)
+            setFloatUniform("in_gradOffset", gradOffset)
             setFloatUniform("in_curve", clampedCurve)
         }
         effect = effect?.chain(runtimeShaderEffect(vShader, "child"))
@@ -261,6 +275,10 @@ internal fun createProgressiveStackEffect(
     val projFull = (projMin + startFraction * span + padProj) / downScale
     var projZero = (projMin + endFraction * span + padProj) / downScale
     if (abs(projZero - projFull) < 1e-3f) projZero = projFull + 1e-3f
+    val invGradSpan = 1f / (projZero - projFull)
+    val gradVecX = ax * invGradSpan
+    val gradVecY = ay * invGradSpan
+    val gradOffset = -projFull * invGradSpan
 
     // Downscaled-space sigma supplying the variance the downscale cascade's box prefilter doesn't
     // already cover; 0 (skip the blur) when the prefilter alone reaches the level's target.
@@ -274,49 +292,45 @@ internal fun createProgressiveStackEffect(
     val clampedCurve = curve.coerceIn(0.05f, 20f)
     val stack = progressiveStackEffect(
         scope,
-        levelSigma(sigmaX, PROGRESSIVE_LEVEL_FRACTION_0),
-        levelSigma(sigmaY, PROGRESSIVE_LEVEL_FRACTION_0),
-        levelSigma(sigmaX, PROGRESSIVE_LEVEL_FRACTION_1),
-        levelSigma(sigmaY, PROGRESSIVE_LEVEL_FRACTION_1),
-        levelSigma(sigmaX, PROGRESSIVE_LEVEL_FRACTION_2),
-        levelSigma(sigmaY, PROGRESSIVE_LEVEL_FRACTION_2),
-        ax,
-        ay,
-        projFull,
-        projZero,
+        levelSigma(sigmaX, PROGRESSIVE_FULL_FRACTION),
+        levelSigma(sigmaY, PROGRESSIVE_FULL_FRACTION),
+        levelSigma(sigmaX, PROGRESSIVE_LIGHT_FRACTION),
+        levelSigma(sigmaY, PROGRESSIVE_LIGHT_FRACTION),
+        gradVecX,
+        gradVecY,
+        gradOffset,
         clampedCurve,
         preEffect,
         postEffect,
         nativeSharpEnd = exp == 0,
+        unpremulBase = postBlend == null,
     ) ?: return null
     return if (postBlend != null) {
-        stack.chain(buildRampBlendColorsEffect(scope, postBlend, ax, ay, projFull, projZero, clampedCurve))
+        stack.chain(buildRampBlendColorsEffect(scope, postBlend, gradVecX, gradVecY, gradOffset, clampedCurve))
     } else {
         stack
     }
 }
 
 /**
- * Loop-shader radius (`2σ − 1`) of `blur2`'s effective Gaussian at [exp]: the larger of its target
- * sigma and the cascade's box floor, capped at the tap bound. The sharp overlay starts here so the
- * handoff is seamless.
+ * Loop-shader radius (`2σ − 1`) of `lightBlur`'s effective Gaussian at [exp] in full-res texels,
+ * capped at 12. The sharp overlay starts here so the handoff is seamless.
  */
 internal fun progressiveSharpLoopRadius(radius: Float, exp: Int): Float {
-    val sigma = radius.coerceAtLeast(0f) * BLUR_RADIUS_TO_SIGMA * PROGRESSIVE_LEVEL_FRACTION_2
+    val sigma = radius.coerceAtLeast(0f) * BLUR_RADIUS_TO_SIGMA * PROGRESSIVE_LIGHT_FRACTION
     val effSigma = sqrt(maxOf(sigma * sigma, impliedBoxVarianceForScale((1 shl exp).toFloat())))
-    return (2f * effSigma - 1f).coerceIn(0f, PROGRESSIVE_BLUR_MAX_TAP.toFloat())
+    return (2f * effSigma - 1f).coerceIn(0f, 12f)
 }
 
-/** Linear-raw position of the sharp band's onset (`pow(smoothstep(raw), curve) = 2/3`). */
+/** Linear-raw position of the sharp band's onset (`pow(smoothstep(raw), curve) = 0.5`). */
 private fun progressiveSharpRawThreshold(curve: Float): Float {
-    val ssThr = (2.0 / 3.0).pow(1.0 / curve.coerceIn(0.05f, 20f))
-    // Analytic smoothstep inverse: t = 0.5 − sin(asin(1 − 2y) / 3).
+    val ssThr = (0.5).pow(1.0 / curve.coerceIn(0.05f, 20f))
     return (0.5 - sin(asin(1.0 - 2.0 * ssThr) / 3.0)).toFloat()
 }
 
 /**
  * Full-resolution sharp overlay: an optional variable loop blur (H then V) with the ramp's clear-end
- * mask (`clamp(3·raw − 2, 0, 1)`) folded into the last pass. The radius ramps from
+ * mask (`clamp((raw − 0.75) / 0.25, 0, 1)`) folded into the last pass. The radius ramps from
  * [progressiveSharpLoopRadius] at the band's onset to zero at the clear end, so the handoff reads as
  * one continuous blur instead of sharp content alpha-faded over a still-blurred base.
  *
@@ -352,11 +366,22 @@ internal fun createProgressiveSharpOverlayEffect(
     val clampedCurve = curve.coerceIn(0.05f, 20f)
 
     // The loop blur ramps across the sharp band only: full strength at the band's onset
-    // (`pThr`, where the stack below is pure blur2), zero at the ramp's clear end.
+    // (`pThr`, where the stack below is pure lightBlur), zero at the ramp's clear end.
     val pThr = projFull + progressiveSharpRawThreshold(curve) * (projZero - projFull)
     val loopFull = pThr - originProj
     var loopZero = projZero - originProj
     if (abs(loopZero - loopFull) < 1e-3f) loopZero = loopFull + 1e-3f
+    val maskSpan = projZero - projFull
+    val loopSpan = loopZero - loopFull
+    val invLoopSpan = 1f / loopSpan
+    val loopGradVecX = ax * invLoopSpan
+    val loopGradVecY = ay * invLoopSpan
+    val loopGradOffset = -loopFull * invLoopSpan
+    val maskScale = loopSpan / maskSpan
+    val maskOffset = -(projFull - originProj) / maskSpan
+    val invMaskSpan = 1f / maskSpan
+    val maskGradVecX = ax * invMaskSpan
+    val maskGradVecY = ay * invMaskSpan
 
     val maxRadiusX = progressiveSharpLoopRadius(radiusX, exp)
     val maxRadiusY = progressiveSharpLoopRadius(radiusY, exp)
@@ -364,20 +389,21 @@ internal fun createProgressiveSharpOverlayEffect(
     val hasH = maxRadiusX >= 0.5f
     val hasV = maxRadiusY >= 0.5f
 
-    fun loopPass(axis: Int, maxRadius: Float, stepX: Float, stepY: Float, masked: Boolean): RenderEffect {
+    fun loopPass(axis: Int, maxRadius: Float, stepX: Float, stepY: Float, masked: Boolean, unpremul: Boolean = true): RenderEffect {
         val tap = progressiveLoopTapBound(maxRadius)
         val shader = scope.obtainRuntimeShader(
             progressiveSharpShaderKey(axis = axis, tap = tap, masked = masked),
-            progressiveBlurShaderForTap(tap, masked),
+            progressiveBlurShaderForTap(tap, masked, unpremul),
         ).apply {
             setFloatUniform("in_maxCoord", bandW - 0.5f, bandH - 0.5f)
             setFloatUniform("in_step", stepX, stepY)
             setFloatUniform("in_maxRadius", maxRadius)
-            setFloatUniform("in_gradAxis", ax, ay)
-            setFloatUniform("in_gradBand", loopFull, loopZero)
+            setFloatUniform("in_gradVec", loopGradVecX, loopGradVecY)
+            setFloatUniform("in_gradOffset", loopGradOffset)
             setFloatUniform("in_curve", 1f)
             if (masked) {
-                setFloatUniform("in_maskBand", projFull - originProj, projZero - originProj)
+                setFloatUniform("in_maskScale", maskScale)
+                setFloatUniform("in_maskOffset", maskOffset)
                 setFloatUniform("in_maskCurve", clampedCurve)
             }
         }
@@ -387,8 +413,8 @@ internal fun createProgressiveSharpOverlayEffect(
     // The ramp mask is folded into the last loop pass (one fewer full-resolution band pass);
     // only the no-blur case runs it standalone.
     return when {
-        hasH && hasV -> loopPass(0, maxRadiusX, 1f, 0f, masked = false)
-            .chain(loopPass(1, maxRadiusY, 0f, 1f, masked = true))
+        hasH && hasV -> loopPass(0, maxRadiusX, 1f, 0f, masked = false, unpremul = false)
+            .chain(loopPass(1, maxRadiusY, 0f, 1f, masked = true, unpremul = true))
 
         hasH -> loopPass(0, maxRadiusX, 1f, 0f, masked = true)
 
@@ -396,11 +422,11 @@ internal fun createProgressiveSharpOverlayEffect(
 
         else -> {
             val mask = scope.obtainRuntimeShader("ProgSharpRamp", PROGRESSIVE_LEVEL_MASK_SHADER).apply {
-                setFloatUniform("in_gradAxis", ax, ay)
-                setFloatUniform("in_gradBand", projFull - originProj, projZero - originProj)
+                setFloatUniform("in_gradVec", maskGradVecX, maskGradVecY)
+                setFloatUniform("in_gradOffset", maskOffset)
                 setFloatUniform("in_curve", clampedCurve)
-                setFloatUniform("in_level", -2f)
-                setFloatUniform("in_slope", -3f)
+                setFloatUniform("in_level", -0.5f / 0.5f)
+                setFloatUniform("in_slope", -1f / 0.5f)
             }
             runtimeShaderEffect(mask, "child")
         }
@@ -409,7 +435,7 @@ internal fun createProgressiveSharpOverlayEffect(
 
 /**
  * Component-space bbox of the region where the overlay mask is non-zero (`smoothstep(raw)^curve >
- * 2/3`, inverted to a threshold line on the gradient, clipped with a [margin] for rounding and tap
+ * 0.75`, inverted to a threshold line on the gradient, clipped with a [margin] for rounding and tap
  * reach). Only this sub-rect is recorded; null means the band misses the component.
  */
 internal fun progressiveSharpBandBounds(
@@ -509,10 +535,11 @@ internal fun adjustedVarianceForScale(sigmaSquared: Float, scale: Float): Float 
 internal fun adjustedVarianceForExp(sigmaSquared: Float, exp: Int): Float = adjustedVarianceForScale(sigmaSquared, (1 shl exp).toFloat())
 
 /**
- * Generates a 27-tap discrete kernel (-13..+13) from [variance], normalizes it, and merges adjacent
- * pairs into [outOffsets]/[outWeights] (first [MAX_BLUR_TAPS] slots), returning the tap count.
- * Returns 0 when the variance is too small or no pair survives the weight threshold. Scratch arrays
- * keep the observe-driven path allocation-free.
+ * Generates a 27-tap discrete kernel (-13..+13) from [variance], normalizes it, and merges
+ * symmetric side pairs into [outOffsets]/[outWeights] (first [MAX_BLUR_TAPS] slots), returning the
+ * pair count (center tap 0 is sampled once outside the loop). Returns 0 when the variance is too
+ * small or no pair survives the weight threshold. Scratch arrays keep the observe-driven path
+ * allocation-free.
  */
 internal fun computeBlurParamsInto(
     variance: Float,
@@ -534,40 +561,21 @@ internal fun computeBlurParamsInto(
     for (i in 1..13) total += rawScratch[i] * 2.0
     for (i in 0..13) rawScratch[i] /= total
 
+    // Pairs 0..6: merge (1,2), (3,4), ..., (11,12), (13); center (0) is sampled once outside the loop.
     var tapCount = 0
-
-    // Pair 0: the center is sampled twice (±ε), so its per-sample weight is halved.
-    val halfCenter = rawScratch[0] * 0.5
-    val w1 = rawScratch[1]
-    if (halfCenter + w1 > 1e-6) {
-        outOffsets[0] = (w1 / (halfCenter + w1)).toFloat()
-        tapCount = 1
-    }
-
-    // 4. Pairs 1-6: merge (2,3), (4,5), ..., (12,13)
-    var i = 2
+    var i = 1
     while (i < 14 && tapCount < MAX_BLUR_TAPS) {
         val wa = rawScratch[i]
         val wb = if (i + 1 < 14) rawScratch[i + 1] else 0.0
         val combined = wa + wb
         if (combined < WEIGHT_THRESHOLD) break
-        outOffsets[tapCount] = ((wa * i + wb * (i + 1)) / combined).toFloat()
-        outWeights[tapCount] = combined.toFloat()
-        tapCount++
-        i += 2
-    }
-
-    // 5. Center weight = residual ensuring sum(weights) = 0.5
-    //    (each weight is counted twice due to symmetric sampling, so 2×0.5 = 1.0)
-    var pairWeightSum = 0f
-    for (j in 1 until tapCount) pairWeightSum += outWeights[j]
-    outWeights[0] = (0.5f - pairWeightSum).coerceAtLeast(0f)
-
-    // 6. Validity check: zero out weights outside (0, 1)
-    for (j in 0 until tapCount) {
-        if (outWeights[j] <= 0f || outWeights[j] >= 1f) {
-            outWeights[j] = 0f
+        val w = combined.toFloat()
+        if (w > 0f && w < 1f) {
+            outOffsets[tapCount] = ((wa * i + wb * (i + 1)) / combined).toFloat()
+            outWeights[tapCount] = w
+            tapCount++
         }
+        i += 2
     }
 
     return tapCount
