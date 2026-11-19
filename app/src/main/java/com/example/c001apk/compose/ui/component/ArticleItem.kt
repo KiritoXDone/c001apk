@@ -1,9 +1,11 @@
 package com.example.c001apk.compose.ui.component
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -25,6 +27,7 @@ fun LazyListScope.ArticleItem(
     onLike: () -> Unit,
     onViewUser: (String) -> Unit,
     onComments: () -> Unit,
+    afterMessage: (@Composable () -> Unit)? = null,
 ) {
     val hasCover = !response.messageCover.isNullOrEmpty()
     val hasTitle = !response.title.isNullOrEmpty()
@@ -62,6 +65,9 @@ fun LazyListScope.ArticleItem(
     }
     item(key = "bottom") {
         ReadingSurface(last = !hasRows) {
+            if (afterMessage != null) {
+                Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp)) { afterMessage() }
+            }
             FeedBottomInfo(
                 modifier =
                     Modifier.padding(horizontal = 16.dp)
@@ -69,7 +75,7 @@ fun LazyListScope.ArticleItem(
                 isFeedContent = true,
                 ip = response.ipLocation.orEmpty(),
                 dateline = response.dateline ?: 0,
-                replyNum = response.replynum.orEmpty(),
+                replyNum = response.vote?.totalCommentNum?.toString() ?: response.replynum.orEmpty(),
                 likeNum = response.likenum.orEmpty(),
                 onViewFeed = onComments,
                 onLike = onLike,

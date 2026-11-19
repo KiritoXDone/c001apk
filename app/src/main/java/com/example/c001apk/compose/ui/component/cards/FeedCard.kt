@@ -91,6 +91,7 @@ fun FeedCard(
     onBlockUser: (String) -> Unit,
     showTradeLinkHint: Boolean = false,
     onDismissTradeLinkHint: () -> Unit = {},
+    afterMessage: (@Composable () -> Unit)? = null,
 ) {
     val horizontal = 12.dp
     Card(
@@ -131,6 +132,9 @@ fun FeedCard(
             showTradeLinkHint = showTradeLinkHint,
             onDismissTradeLinkHint = onDismissTradeLinkHint,
         )
+        if (afterMessage != null) {
+            Column(Modifier.fillMaxWidth().padding(horizontal = horizontal)) { afterMessage() }
+        }
         FeedBottomInfo(
             modifier =
                 Modifier.padding(horizontal = horizontal)
@@ -552,9 +556,6 @@ fun FeedHeader(
 ) {
 
     val vertical = if (isFeedContent) 12.dp else 10.dp
-    var dropdownMenuExpanded by remember { mutableStateOf(false) }
-    val context = LocalContext.current
-
     ConstraintLayout(
         modifier = modifier.fillMaxWidth().wrapContentHeight(),
     ) {
@@ -661,59 +662,79 @@ fun FeedHeader(
         )
 
         if (!isFeedContent) {
-            MiuixMoreMenu(
-                expanded = dropdownMenuExpanded,
-                onExpandedChange = { dropdownMenuExpanded = it },
-                modifier =
-                    Modifier.aspectRatio(1f, false).constrainAs(expand) {
-                        top.linkTo(parent.top)
-                        end.linkTo(parent.end)
-                        bottom.linkTo(device.bottom)
-                        height = Dimension.fillToConstraints
-                    },
-            ) {
-                listOf("复制", "拉黑").forEachIndexed { index, menu ->
-                    DropdownMenuItem(
-                        text = { Text(menu) },
-                        onClick = {
-                            dropdownMenuExpanded = false
-                            when (index) {
-                                0 ->
-                                    context.copyText(
-                                        getShareText(ShareType.FEED, data.id.orEmpty()),
-                                    )
+            FeedOverflowMenu(
+                data = data,
+                onReport = onReport,
+                onRemoveFromCollection = onRemoveFromCollection,
+                removingFromCollection = removingFromCollection,
+                onDelete = onDelete,
+                onBlockUser = onBlockUser,
+                modifier = Modifier.aspectRatio(1f, false).constrainAs(expand) {
+                    top.linkTo(parent.top)
+                    end.linkTo(parent.end)
+                    bottom.linkTo(device.bottom)
+                    height = Dimension.fillToConstraints
+                },
+            )
+        }
+    }
+}
 
-                                1 -> onBlockUser?.let { it(data.uid.orEmpty()) }
-                            }
-                        },
-                    )
-                }
-                if (isLogin) {
-                    DropdownMenuItem(
-                        text = { Text(stringResource(id = R.string.menu_report)) },
-                        onClick = {
-                            dropdownMenuExpanded = false
-                            onReport?.let { it(data.id.orEmpty(), ReportType.FEED) }
-                        },
-                    )
-                }
-                onRemoveFromCollection?.let { remove ->
-                    DropdownMenuItem(
-                        text = { Text(if (removingFromCollection) "取消收藏中…" else "取消收藏", color = MiuixTheme.colorScheme.error) },
-                        enabled = !removingFromCollection,
-                        onClick = { dropdownMenuExpanded = false; remove() },
-                    )
-                }
-                if (data.uid == CookieUtil.uid) {
-                    DropdownMenuItem(
-                        text = { Text(stringResource(id = R.string.menu_delete), color = MiuixTheme.colorScheme.error) },
-                        onClick = {
-                            dropdownMenuExpanded = false
-                            onDelete?.let { it(data.id.orEmpty(), LikeType.FEED, null) }
-                        },
-                    )
-                }
-            }
+@Composable
+internal fun FeedOverflowMenu(
+    data: HomeFeedResponse.Data,
+    modifier: Modifier = Modifier,
+    onReport: ((String, ReportType) -> Unit)? = null,
+    onRemoveFromCollection: (() -> Unit)? = null,
+    removingFromCollection: Boolean = false,
+    onDelete: ((String, LikeType, String?) -> Unit)? = null,
+    onBlockUser: ((String) -> Unit)? = null,
+) {
+    var expanded by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+    MiuixMoreMenu(
+        expanded = expanded,
+        onExpandedChange = { expanded = it },
+        modifier = modifier,
+    ) {
+        DropdownMenuItem(
+            text = { Text("复制") },
+            onClick = {
+                expanded = false
+                context.copyText(getShareText(ShareType.FEED, data.id.orEmpty()))
+            },
+        )
+        DropdownMenuItem(
+            text = { Text("拉黑") },
+            onClick = {
+                expanded = false
+                onBlockUser?.invoke(data.uid.orEmpty())
+            },
+        )
+        if (isLogin) {
+            DropdownMenuItem(
+                text = { Text(stringResource(id = R.string.menu_report)) },
+                onClick = {
+                    expanded = false
+                    onReport?.invoke(data.id.orEmpty(), ReportType.FEED)
+                },
+            )
+        }
+        onRemoveFromCollection?.let { remove ->
+            DropdownMenuItem(
+                text = { Text(if (removingFromCollection) "取消收藏中…" else "取消收藏", color = MiuixTheme.colorScheme.error) },
+                enabled = !removingFromCollection,
+                onClick = { expanded = false; remove() },
+            )
+        }
+        if (data.uid == CookieUtil.uid) {
+            DropdownMenuItem(
+                text = { Text(stringResource(id = R.string.menu_delete), color = MiuixTheme.colorScheme.error) },
+                onClick = {
+                    expanded = false
+                    onDelete?.invoke(data.id.orEmpty(), LikeType.FEED, null)
+                },
+            )
         }
     }
 }

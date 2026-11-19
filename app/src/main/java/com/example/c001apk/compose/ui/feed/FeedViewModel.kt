@@ -264,8 +264,6 @@ constructor(
                                     itemSize++
                                 itemSize += articleList?.size ?: 0
                             }
-                            if (isVoteFeed) itemSize++
-
                             if (!response.topReplyRows.isNullOrEmpty()) {
                                 response.topReplyRows?.getOrNull(0)?.let { reply ->
                                     topId = reply.id

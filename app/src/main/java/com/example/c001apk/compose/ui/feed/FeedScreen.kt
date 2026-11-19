@@ -30,6 +30,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -47,6 +48,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.c001apk.compose.R
 import com.example.c001apk.compose.constant.Constants.EMPTY_STRING
 import com.example.c001apk.compose.logic.model.HomeFeedResponse
+import com.example.c001apk.compose.logic.providable.LocalUserPreferences
 import com.example.c001apk.compose.logic.state.LoadingState
 import com.example.c001apk.compose.ui.base.LikeType
 import com.example.c001apk.compose.ui.component.ArticleItem
@@ -443,8 +445,26 @@ fun FeedScreen(
                             }
 
                             is LoadingState.Success -> {
-                                val response =
-                                    (viewModel.feedState as LoadingState.Success).response
+                                val state = viewModel.feedState as LoadingState.Success
+                                val response = state.response
+                                val voteContent: (@Composable () -> Unit)? = if (response.isVoteFeed) {
+                                    {
+                                        val preferences = LocalUserPreferences.current
+                                        key(preferences.accountRevision, response.id) {
+                                            FeedVoteContent(
+                                                vote = response.vote,
+                                                title = response.vote?.messageTitle?.takeIf {
+                                                    it.isNotBlank() && it != response.messageTitle && it != response.title
+                                                },
+                                                canVote = preferences.isLogin && !state.isPublic,
+                                                submitting = viewModel.submittingVote,
+                                                refreshing = viewModel.isRefreshing,
+                                                error = viewModel.voteError,
+                                                onSubmit = viewModel::submitVote,
+                                            )
+                                        }
+                                    }
+                                } else null
                                 if (!articleList.isNullOrEmpty()) {
                                     ArticleItem(
                                         response = response,
@@ -468,6 +488,7 @@ fun FeedScreen(
                                                 )
                                             }
                                         },
+                                        afterMessage = voteContent,
                                     )
                                 } else {
                                     item(key = "header") {
@@ -498,27 +519,8 @@ fun FeedScreen(
                                                 viewModel.onDelete(id, deleteType)
                                             },
                                             onBlockUser = {},
+                                            afterMessage = voteContent,
                                         )
-                                    }
-                                }
-
-                                if (response.isVoteFeed) {
-                                    item(key = "vote") {
-                                        val preferences = com.example.c001apk.compose.logic.providable.LocalUserPreferences.current
-                                        val state = viewModel.feedState as? LoadingState.Success
-                                        androidx.compose.runtime.key(preferences.accountRevision, response.id) {
-                                            FeedVoteCard(
-                                                vote = response.vote,
-                                                title = response.vote?.messageTitle?.takeIf {
-                                                    it.isNotBlank() && it != response.messageTitle && it != response.title
-                                                },
-                                                canVote = preferences.isLogin && state?.isPublic == false,
-                                                submitting = viewModel.submittingVote,
-                                                refreshing = viewModel.isRefreshing,
-                                                error = viewModel.voteError,
-                                                onSubmit = viewModel::submitVote,
-                                            )
-                                        }
                                     }
                                 }
 
@@ -621,6 +623,7 @@ fun FeedScreen(
                                 loadingState = viewModel.loadingState,
                                 loadMore = viewModel::loadMore,
                                 isEnd = viewModel.stopAutomaticLoading,
+                                isVoteCommentList = filterData?.isVoteFeed == true,
                                 onViewUser = onViewUser,
                                 onViewFeed = onViewFeed,
                                 onOpenLink = onOpenLink,

@@ -42,6 +42,7 @@ import com.example.c001apk.compose.ui.component.cards.PurchasePriceSummaryCard
 import com.example.c001apk.compose.ui.component.cards.ReceivedLikeCard
 import com.example.c001apk.compose.ui.component.cards.TextCard
 import com.example.c001apk.compose.ui.component.cards.TitleCard
+import com.example.c001apk.compose.ui.component.cards.VoteCommentCard
 import com.example.c001apk.compose.util.ReportType
 import top.yukonga.miuix.kmp.basic.HorizontalDivider
 
@@ -78,6 +79,7 @@ fun LazyListScope.ItemCard(
     onShowProductConfigComparison: (() -> Unit)? = null,
     onShowGlobalProductComparison: (() -> Unit)? = null,
     onToggleProductEntityComparison: ((HomeFeedResponse.Entities) -> Unit)? = null,
+    isVoteCommentList: Boolean = false,
 ) {
 
     when (loadingState) {
@@ -108,6 +110,7 @@ fun LazyListScope.ItemCard(
                     onOpenLink = onOpenLink,
                     onCopyText = onCopyText,
                     onShowTotalReply = onShowTotalReply,
+                    isVoteCommentList = isVoteCommentList,
                     isHomeFeed = isHomeFeed,
                     onReport = onReport,
                     isTotalReply = isTotalReply,
@@ -173,6 +176,7 @@ fun FeedListEntry(
     onShowProductConfigComparison: (() -> Unit)? = null,
     onShowGlobalProductComparison: (() -> Unit)? = null,
     onToggleProductEntityComparison: ((HomeFeedResponse.Entities) -> Unit)? = null,
+    isVoteCommentList: Boolean = false,
 ) {
     if ((item.entityType != "feed_reply" || isReceivedLikeList) &&
         FilteredContentNotice(item)) return
@@ -295,7 +299,19 @@ fun FeedListEntry(
                     )
             }
 
-        "feed" ->
+        "feed" -> if (isVoteCommentList) {
+            VoteCommentCard(
+                data = item,
+                onViewUser = onViewUser,
+                onViewFeed = onViewFeed,
+                onOpenLink = onOpenLink,
+                onCopyText = onCopyText,
+                onReport = onReport,
+                onLike = onLike,
+                onDelete = onDelete,
+                onBlockUser = { uid -> onBlockUser(uid, null) },
+            )
+        } else {
             FeedCard(
                 modifier = Modifier.padding(horizontal = 12.dp),
                 data = item,
@@ -313,6 +329,7 @@ fun FeedListEntry(
                     onBlockUser(uid, null)
                 },
             )
+        }
 
         "feed_reply" -> {
             FeedReplyCard(
