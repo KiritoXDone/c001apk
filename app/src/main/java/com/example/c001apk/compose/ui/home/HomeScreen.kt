@@ -6,6 +6,7 @@ import android.content.Intent
 import androidx.navigationevent.NavigationEventInfo
 import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.rememberNavigationEventState
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.exclude
 import androidx.compose.foundation.layout.fillMaxSize
@@ -19,6 +20,7 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -95,7 +97,7 @@ fun HomeTabEditorScreen(
     onBackClick: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
-    val storedMenus by viewModel.homeMenus.collectAsStateWithLifecycle(initialValue = emptyList())
+    val storedMenus by viewModel.homeMenus.collectAsStateWithLifecycle()
     val saving by viewModel.saving.collectAsStateWithLifecycle()
     val saveError by viewModel.saveError.collectAsStateWithLifecycle()
     // The draft is the screen's state: Room's first emission fills it once, later emissions must
@@ -104,9 +106,9 @@ fun HomeTabEditorScreen(
         mutableStateOf<List<HomeMenu>?>(null)
     }
     LaunchedEffect(storedMenus) {
-        if (draft == null && storedMenus.isNotEmpty()) draft = storedMenus
+        if (draft == null) draft = storedMenus?.takeIf { it.isNotEmpty() }
     }
-    val menus = draft ?: storedMenus
+    val menus = draft ?: storedMenus.orEmpty()
     val enabledCount = menus.count(HomeMenu::isEnable)
     // An accepted save owns its write until completion; don't pop and cancel the entry's scope.
     NavigationBackHandler(
@@ -238,52 +240,37 @@ fun HomeScreen(
     onReport: (String, ReportType) -> Unit,
 ) {
 
-    val scope = rememberCoroutineScope()
+    val storedMenus by viewModel.homeMenus.collectAsStateWithLifecycle()
+    val menus = storedMenus
+    if (menus == null) {
+        Scaffold(modifier = Modifier.fillMaxSize(), topBar = { HomeTopBar(onSearch) }) {}
+        return
+    }
 
-    val storedMenus by viewModel.homeMenus.collectAsStateWithLifecycle(initialValue = emptyList())
+    val scope = rememberCoroutineScope()
     val tabList =
-        remember(storedMenus) {
-            if (storedMenus.isEmpty()) {
-                homeTabTypes
-            } else {
-                storedMenus
-                    .asSequence()
-                    .filter(HomeMenu::isEnable)
-                    .sortedBy(HomeMenu::position)
-                    .mapNotNull { menu ->
-                        homeTabTypes.firstOrNull { it.name == menu.title }
-                    }
-                    .toList()
-                    .ifEmpty { listOf(TabType.FEED) }
-            }
+        remember(menus) {
+            menus.filter(HomeMenu::isEnable).mapNotNull { menu ->
+                homeTabTypes.firstOrNull { it.name == menu.title }
+            }.ifEmpty { listOf(TabType.FEED) }
         }
     var selectedTabType by rememberSaveable { mutableStateOf(TabType.FEED) }
-    val initialPage = tabList.indexOf(selectedTabType).coerceAtLeast(0)
-    val pagerState =
+    val pageKey = remember(tabList) { tabList.map(TabType::name) }
+    val pagerState = key(pageKey) {
+        val initialType = selectedTabType.takeIf(tabList::contains)
+            ?: TabType.FEED.takeIf(tabList::contains)
+            ?: tabList.first()
         rememberPagerState(
-            initialPage = initialPage,
-            pageCount = {
-                tabList.size
-            },
+            initialPage = tabList.indexOf(initialType),
+            pageCount = { tabList.size },
         )
+    }
     val context = LocalContext.current
     val prefs = LocalUserPreferences.current
     var updateAction by remember { mutableStateOf<(() -> Unit)?>(null) }
     val selectedTabIndex = pagerState.currentPage.coerceIn(tabList.indices)
     val currentTabType = tabList[selectedTabIndex]
     val canPublish = isLogin && !prefs.hideHomePublishButton && currentTabType == TabType.FEED
-
-    LaunchedEffect(tabList) {
-        val targetType =
-            selectedTabType.takeIf(tabList::contains)
-                ?: TabType.FEED.takeIf(tabList::contains)
-                ?: tabList.first()
-        selectedTabType = targetType
-        val targetIndex = tabList.indexOf(targetType)
-        if (pagerState.currentPage != targetIndex) {
-            pagerState.scrollToPage(targetIndex)
-        }
-    }
 
     LaunchedEffect(pagerState, tabList) {
         snapshotFlow { pagerState.settledPage }
@@ -296,12 +283,9 @@ fun HomeScreen(
         modifier = Modifier.fillMaxSize(),
         topBar = {
             androidx.compose.foundation.layout.Column {
-                TopAppBar(
-                    title = "主页",
+                HomeTopBar(
+                    onSearch = onSearch,
                     actions = {
-                        MiuixToolbarIconButton(onClick = onSearch) {
-                            Icon(MiuixIcons.Search, contentDescription = "搜索", modifier = Modifier.size(24.dp))
-                        }
                         if (canPublish) {
                             MiuixToolbarIconButton(
                                 onClick = rememberHapticClick {
@@ -397,4 +381,17 @@ fun HomeScreen(
             }
         }
     }
+}
+
+@Composable
+private fun HomeTopBar(
+    onSearch: () -> Unit,
+    actions: @Composable RowScope.() -> Unit = {},
+) {
+    TopAppBar(title = "主页", actions = {
+        MiuixToolbarIconButton(onClick = onSearch) {
+            Icon(MiuixIcons.Search, contentDescription = "搜索", modifier = Modifier.size(24.dp))
+        }
+        actions()
+    })
 }

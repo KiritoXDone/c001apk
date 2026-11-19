@@ -8,11 +8,12 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -27,8 +28,10 @@ constructor(
      * Normalization stays in memory: writing position back on every collection would erase the
      * order the user saved. Unknown and FOLLOW rows are ignored, missing tabs are appended.
      */
-    val homeMenus: Flow<List<HomeMenu>> =
-        homeMenuRepo.loadAllListFlow().map { stored -> normalizeHomeMenus(stored) }
+    val homeMenus: StateFlow<List<HomeMenu>?> =
+        homeMenuRepo.loadAllListFlow()
+            .map { stored -> normalizeHomeMenus(stored) }
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), null)
 
     private val _saving = MutableStateFlow(false)
     val saving: StateFlow<Boolean> = _saving.asStateFlow()

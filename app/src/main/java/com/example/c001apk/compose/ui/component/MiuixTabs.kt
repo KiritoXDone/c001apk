@@ -7,7 +7,6 @@ import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -58,7 +57,6 @@ fun MiuixTabRow(
 ) {
     if (tabs.isEmpty()) return
     val selected = selectedTabIndex.coerceIn(tabs.indices)
-    val scroll = rememberScrollState()
     val topBarStyle = LocalUserPreferences.current.topBarStyle
     AnimatedVisibility(
         visible = LocalCollapsingTabs.current?.visible ?: true,
@@ -68,7 +66,7 @@ fun MiuixTabRow(
         when (topBarStyle) {
             TopBarStyle.Classic -> ClassicTabRow(tabs, selected, onTabSelected, modifier, withContour = false)
             TopBarStyle.ClassicContour -> ClassicTabRow(tabs, selected, onTabSelected, modifier, withContour = true)
-            TopBarStyle.OS4 -> Os4TabRow(tabs, selected, onTabSelected, modifier, withContour, scroll)
+            TopBarStyle.OS4 -> Os4TabRow(tabs, selected, onTabSelected, modifier, withContour)
         }
     }
 }
@@ -99,7 +97,6 @@ private fun Os4TabRow(
     onSelect: (Int) -> Unit,
     modifier: Modifier,
     withContour: Boolean,
-    scroll: ScrollState,
 ) {
     val density = LocalDensity.current
     val layoutDirection = LocalLayoutDirection.current
@@ -132,9 +129,11 @@ private fun Os4TabRow(
         val viewport = if (constraints.hasBoundedWidth) constraints.maxWidth else naturalWidth
         val contentWidth = maxOf(viewport, naturalWidth)
         val slotWidth = (contentWidth - trackInset * 2 - gap * (tabs.size - 1)).toFloat() / tabs.size
-        LaunchedEffect(selected, viewport, contentWidth, tabs, layoutDirection) {
-            val center = trackInset + selected * (slotWidth + gap) + slotWidth / 2
-            scroll.animateScrollTo((center - viewport / 2f).roundToInt().coerceIn(0, contentWidth - viewport))
+        val center = trackInset + selected * (slotWidth + gap) + slotWidth / 2
+        val targetScroll = (center - viewport / 2f).roundToInt().coerceIn(0, contentWidth - viewport)
+        val scroll = rememberScrollState(initial = targetScroll)
+        LaunchedEffect(selected, targetScroll, tabs, layoutDirection) {
+            if (scroll.value != targetScroll) scroll.animateScrollTo(targetScroll)
         }
         Box(Modifier.fillMaxWidth().height(height).glassShadow(shape, GlassShadows.Float).clip(shape).then(surface)) {
             Box(Modifier.horizontalScroll(scroll, overscrollEffect = null)) {
