@@ -8,11 +8,14 @@ import com.example.c001apk.compose.logic.model.HomeFeedResponse
 import com.example.c001apk.compose.logic.model.OSSUploadPrepareModel
 import com.example.c001apk.compose.logic.model.OSSUploadPrepareResponse
 import com.example.c001apk.compose.logic.model.StringEntity
+import com.example.c001apk.compose.logic.model.VOTE_COMMENT_TYPE
+import com.example.c001apk.compose.logic.network.ApiFailures
 import com.example.c001apk.compose.logic.repository.NetworkRepo
 import com.example.c001apk.compose.logic.repository.RecentEmojiRepo
 import com.google.gson.Gson
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -28,6 +31,7 @@ class ReplyViewModel @Inject constructor(
     var isInit = true
     var type: String? = null
     var rid: String? = null
+    internal var voteCommentTarget: VoteCommentTarget? = null
 
     var responseData: HomeFeedResponse.Data? = null
     var toastText = MutableStateFlow<String?>(null)
@@ -71,10 +75,7 @@ class ReplyViewModel @Inject constructor(
                         if (response.data != null) {
                             toastText.value = response.data.count
                             if (response.data.count == "验证通过") {
-                                if (type == "createFeed")
-                                    onPostCreateFeed()
-                                else
-                                    onPostReply()
+                                postCurrentDraft()
                             }
                         } else if (response.message != null) {
                             toastText.value = response.message
@@ -116,23 +117,51 @@ class ReplyViewModel @Inject constructor(
     }
 
     var postFinished = MutableStateFlow(false)
-    fun onPostCreateFeed() {
-        viewModelScope.launch(Dispatchers.IO) {
-            networkRepo.postCreateFeed(replyAndFeedData)
+    private var createFeedJob: Job? = null
+
+    fun postCurrentDraft() {
+        when (type) {
+            "createFeed", VOTE_COMMENT_TYPE -> onPostCreateFeed()
+            else -> onPostReply()
+        }
+    }
+
+    @Synchronized
+    private fun onPostCreateFeed() {
+        if (postFinished.value || createFeedJob?.isActive == true) return
+        val voteTarget = voteCommentTarget
+        if (type == VOTE_COMMENT_TYPE && voteTarget?.isCurrentAccount() != true) {
+            toastText.value = "账号已切换，请重新打开投票"
+            return
+        }
+        val draft = HashMap(replyAndFeedData)
+        createFeedJob = viewModelScope.launch(Dispatchers.IO) {
+            val submission = if (voteTarget == null) {
+                networkRepo.postCreateFeed(draft)
+            } else {
+                networkRepo.postVoteComment(
+                    voteId = voteTarget.voteId,
+                    message = draft["message"].orEmpty(),
+                    pictureUrls = draft["pic"].orEmpty(),
+                    anonymous = voteTarget.anonymous,
+                    accountRevision = voteTarget.accountRevision,
+                )
+            }
+            submission
                 .collect { result ->
                     val response = result.getOrNull()
                     if (response != null) {
-                        if (response.data?.id != null) {
+                        if (!response.data?.id.isNullOrBlank() && (response.error ?: 0) == 0) {
                             postFinished.value = true
                         } else {
-                            toastText.value = response.message
+                            toastText.value = response.message ?: "发布失败，请重试"
                             if (response.messageStatus == "err_request_captcha") {
                                 onGetValidateCaptcha()
                             }
                         }
                     } else {
-                        toastText.value = result.exceptionOrNull()?.message ?: "response is null"
-                        result.exceptionOrNull()?.printStackTrace()
+                        toastText.value = (result.exceptionOrNull() as? Exception)
+                            ?.let(ApiFailures::safeMessage) ?: "发布失败，请重试"
                     }
                 }
         }

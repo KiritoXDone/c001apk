@@ -267,6 +267,10 @@ data class HomeFeedResponse(
         val userSelectedOption: String? = null,
         @SerializedName("anonymous_status")
         val anonymousStatus: Int? = null,
+        @SerializedName("user_anonymous_status")
+        val userAnonymousStatus: Int? = null,
+        @SerializedName("user_vote_comment_status")
+        val userVoteCommentStatus: Int? = null,
     ) : Parcelable {
         val selectedIds: Set<String>
             get() = userSelectedOption.orEmpty().split(',').map(String::trim)

@@ -55,6 +55,7 @@ import com.example.c001apk.compose.R
 import com.example.c001apk.compose.databinding.ActivityReplyBinding
 import com.example.c001apk.compose.databinding.ItemCaptchaBinding
 import com.example.c001apk.compose.logic.model.OSSUploadPrepareModel
+import com.example.c001apk.compose.logic.model.VOTE_COMMENT_TYPE
 import com.example.c001apk.compose.ui.component.createMiuixLoadingDialog
 import com.example.c001apk.compose.ui.component.MiuixViewDialogBuilder
 import com.example.c001apk.compose.ui.feed.reply.emoji.EmojiPagerAdapter
@@ -74,6 +75,8 @@ import com.example.c001apk.compose.util.performConfiguredHapticFeedback
 import com.example.c001apk.compose.view.SmoothInputLayout
 import dagger.hilt.android.AndroidEntryPoint
 import java.util.UUID
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicInteger
 import kotlin.math.max
 import kotlin.math.roundToInt
 import kotlinx.coroutines.Dispatchers
@@ -106,6 +109,9 @@ class ReplyActivity :
     private lateinit var binding: ActivityReplyBinding
     private val viewModel by viewModels<ReplyViewModel>()
     private val type: String? by lazy { intent.getStringExtra("type") }
+    private val voteCommentTarget by lazy {
+        if (type == VOTE_COMMENT_TYPE) VoteCommentTarget.fromIntent(intent) else null
+    }
     private val rid: String? by lazy { intent.getStringExtra("rid") }
     private val username: String? by lazy { intent.getStringExtra("username") }
 
@@ -147,6 +153,12 @@ class ReplyActivity :
                 androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_YES
             else androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_NO
         super.onCreate(savedInstanceState)
+        if (type == VOTE_COMMENT_TYPE && voteCommentTarget?.isCurrentAccount() != true) {
+            pendingShowKeyboard = false
+            makeToast("请重新打开投票后发表评论")
+            finish()
+            return
+        }
         WindowCompat.setDecorFitsSystemWindows(window, false)
         binding = ActivityReplyBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -286,6 +298,7 @@ class ReplyActivity :
 
         viewModel.type = type
         viewModel.rid = rid
+        viewModel.voteCommentTarget = voteCommentTarget
 
         initView()
         initEditText()
@@ -523,22 +536,24 @@ class ReplyActivity :
                                     "/" +
                                     it.uploadFileName
                             }
+                        val remainingUploads = AtomicInteger(uriList.size)
+                        val uploadFailed = AtomicBoolean(false)
                         ossUpload(
                             this@ReplyActivity,
                             responseData,
                             uriList,
                             typeList,
                             md5List,
-                            iOnSuccess = { index ->
+                            iOnSuccess = {
                                 if (BuildConfig.DEBUG) {
                                     Log.i("OSSUpload", "uploadSuccess")
                                 }
-                                if (index == uriList.lastIndex) {
-                                    if (type == "createFeed") viewModel.onPostCreateFeed()
-                                    else viewModel.onPostReply()
+                                if (remainingUploads.decrementAndGet() == 0 && !uploadFailed.get()) {
+                                    viewModel.postCurrentDraft()
                                 }
                             },
                             iOnFailure = {
+                                uploadFailed.set(true)
                                 if (BuildConfig.DEBUG) {
                                     Log.i("OSSUpload", "uploadFailed")
                                 }
@@ -597,11 +612,12 @@ class ReplyActivity :
                 viewModel.postFinished.collect {
                     if (it) {
                         closeDialog()
-                        val intent = Intent()
-                        if (type == "createFeed") {
-                            this@ReplyActivity.makeToast("发布成功")
-                        } else {
-                            intent.putExtra("response_data", viewModel.responseData)
+                        val intent = voteCommentTarget?.resultIntent() ?: Intent().apply {
+                            if (type == "createFeed") {
+                                this@ReplyActivity.makeToast("发布成功")
+                            } else {
+                                putExtra("response_data", viewModel.responseData)
+                            }
                         }
                         setResult(RESULT_OK, intent)
                         finish()
@@ -676,6 +692,14 @@ class ReplyActivity :
     }
 
     private fun initPage() {
+        voteCommentTarget?.let { target ->
+            binding.checkBox.isVisible = false
+            binding.title.text = if (target.anonymous) "匿名评论" else "写评论"
+            binding.publish.actionLabel = "发表评论"
+            binding.editText.hint = "说说你的观点"
+            updateEditorState()
+            return
+        }
         binding.checkBox.text = if (type == "createFeed") "仅自己可见" else "回复并转发"
         binding.checkBox.isReply = type != "createFeed"
         binding.title.text = if (type == "createFeed") "发布动态" else "回复"
@@ -993,40 +1017,34 @@ class ReplyActivity :
                         )
                     },
                 )
-                if (type == "createFeed") {
-                    viewModel.replyAndFeedData["id"] = ""
-                    viewModel.replyAndFeedData["message"] = binding.editText.text.toString()
-                    viewModel.replyAndFeedData["type"] = "feed"
-                    viewModel.replyAndFeedData["status"] = "1"
-                    viewModel.replyAndFeedData["publish_status"] =
-                        if (binding.checkBox.isChecked) "1" else "0"
-
-                    targetType?.let {
-                        if (it == "apk") viewModel.replyAndFeedData["type"] = "comment"
-                        viewModel.replyAndFeedData["targetType"] = it
-                    }
-                    targetId?.let {
-                        viewModel.replyAndFeedData["targetId"] = it
-                    }
-
-                    if (uriList.isNotEmpty()) {
-                        viewModel.onPostOSSUploadPrepare(imageList)
-                    } else {
-                        viewModel.onPostCreateFeed()
-                    }
-                } else {
-                    viewModel.replyAndFeedData["message"] = binding.editText.text.toString()
-                    viewModel.replyAndFeedData["replyAndForward"] =
-                        if (binding.checkBox.isChecked) "1" else "0"
-                    if (uriList.isNotEmpty()) {
-                        viewModel.onPostOSSUploadPrepare(imageList)
-                    } else {
-                        viewModel.onPostReply()
-                    }
-                }
-                showDialog()
+                publishDraft()
             }
         }
+    }
+
+    private fun publishDraft() {
+        if (voteCommentTarget?.isCurrentAccount() == false) {
+            makeToast("账号已切换，请重新打开投票")
+            return
+        }
+        val draft = viewModel.replyAndFeedData
+        draft["message"] = binding.editText.text.toString()
+        draft.remove("pic")
+        when (type) {
+            "createFeed" -> {
+                draft["id"] = ""
+                draft["type"] = if (targetType == "apk") "comment" else "feed"
+                draft["status"] = "1"
+                draft["publish_status"] = if (binding.checkBox.isChecked) "1" else "0"
+                targetType?.let { draft["targetType"] = it }
+                targetId?.let { draft["targetId"] = it }
+            }
+            VOTE_COMMENT_TYPE -> Unit
+            else -> draft["replyAndForward"] = if (binding.checkBox.isChecked) "1" else "0"
+        }
+        showDialog()
+        if (uriList.isNotEmpty()) viewModel.onPostOSSUploadPrepare(imageList)
+        else viewModel.postCurrentDraft()
     }
 
     private fun showDialog() {

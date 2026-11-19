@@ -9,7 +9,10 @@ import com.example.c001apk.compose.logic.model.AccountCollection
 import com.example.c001apk.compose.logic.model.FeedContentResponse
 import com.example.c001apk.compose.logic.model.HomeFeedResponse
 import com.example.c001apk.compose.logic.model.ProductConfigData
+import com.example.c001apk.compose.logic.model.VOTE_COMMENT_TYPE
 import com.example.c001apk.compose.logic.model.configSections
+import com.example.c001apk.compose.logic.network.ApiFailure
+import com.example.c001apk.compose.logic.network.ApiFailureKind
 import com.example.c001apk.compose.logic.network.ApiService
 import com.example.c001apk.compose.logic.network.feedSearchScope
 import com.example.c001apk.compose.logic.state.LoadingState
@@ -306,6 +309,29 @@ constructor(
 
     suspend fun postCreateFeed(data: HashMap<String, String>) = fire {
         Result.success(apiService.postCreateFeed(data).await())
+    }
+
+    suspend fun postVoteComment(
+        voteId: String,
+        message: String,
+        pictureUrls: String,
+        anonymous: Boolean,
+        accountRevision: Long,
+    ) = fire {
+        val account = CookieUtil.accountSession
+        if (!account.isLogin || account.revision != accountRevision) {
+            throw ApiFailure(ApiFailureKind.AUTHENTICATION, "账号已切换，请重新打开投票")
+        }
+        val fields = hashMapOf(
+            "id" to "",
+            "type" to VOTE_COMMENT_TYPE,
+            "fid" to voteId,
+            "message" to message,
+            "pic" to pictureUrls,
+            "status" to "1",
+            "is_anonymous" to if (anonymous) "1" else "0",
+        )
+        Result.success(apiService.postCreateFeed(fields).await())
     }
 
     suspend fun postRequestValidate(data: HashMap<String, String?>) = fire {

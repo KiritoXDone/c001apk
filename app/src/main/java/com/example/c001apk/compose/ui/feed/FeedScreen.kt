@@ -70,6 +70,7 @@ import com.example.c001apk.compose.ui.component.cards.LoadingCard
 import com.example.c001apk.compose.ui.component.rememberHapticClick
 import com.example.c001apk.compose.ui.component.TopBarScrollEffect
 import com.example.c001apk.compose.ui.feed.reply.ReplyActivity
+import com.example.c001apk.compose.ui.feed.reply.VoteCommentTarget
 import com.example.c001apk.compose.util.CookieUtil
 import com.example.c001apk.compose.util.CookieUtil.isLogin
 import com.example.c001apk.compose.util.ReportType
@@ -171,6 +172,11 @@ fun FeedScreen(
         rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
             result: ActivityResult ->
             if (result.resultCode == RESULT_OK) {
+                result.data?.let { VoteCommentTarget.fromIntent(it) }?.let { target ->
+                    viewModel.onVoteCommentPublished(target)
+                    context.makeToast("评论已发布")
+                    return@rememberLauncherForActivityResult
+                }
                 val data =
                     result.data?.getParcelableExtraCompat<HomeFeedResponse.Data>("response_data")
                 data?.let {
@@ -185,11 +191,7 @@ fun FeedScreen(
             }
         }
 
-    fun launchReply() {
-        val intent = Intent(context, ReplyActivity::class.java)
-        intent.putExtra("type", viewModel.replyType)
-        intent.putExtra("rid", viewModel.replyId)
-        intent.putExtra("username", viewModel.replyName)
+    fun launchEditor(intent: Intent) {
         val options =
             ActivityOptionsCompat.makeCustomAnimation(
                 context,
@@ -197,6 +199,15 @@ fun FeedScreen(
                 R.anim.anim_bottom_sheet_slide_down,
             )
         replyLauncher.launch(intent, options)
+    }
+
+    fun launchReply() {
+        launchEditor(
+            Intent(context, ReplyActivity::class.java)
+                .putExtra("type", viewModel.replyType)
+                .putExtra("rid", viewModel.replyId)
+                .putExtra("username", viewModel.replyName),
+        )
     }
 
     val filterData = (viewModel.feedState as? LoadingState.Success)?.response
@@ -527,10 +538,20 @@ fun FeedScreen(
                                 // 排序随评论区滚动，避免吸顶到状态栏下方并被顶栏重复采样。
                                 item(key = "sort") {
                                     if (response.isVoteFeed) {
-                                        Text(
-                                            text = "投票评论 ${viewModel.replyCount}",
-                                            style = MiuixTheme.textStyles.headline2,
-                                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 12.dp),
+                                        val preferences = LocalUserPreferences.current
+                                        val vote = response.vote
+                                        val target = if (preferences.isLogin && !state.isPublic) {
+                                            vote?.commentTarget(id, preferences.accountRevision)
+                                        } else null
+                                        VoteCommentsHeader(
+                                            count = viewModel.replyCount,
+                                            onWriteComment = target?.let { destination ->
+                                                {
+                                                    if (vote?.commentTarget(id, destination.accountRevision) == destination) {
+                                                        launchEditor(destination.editorIntent(context))
+                                                    }
+                                                }
+                                            },
                                         )
                                     } else FeedReplySortCard(
                                         replyCount = viewModel.replyCount,

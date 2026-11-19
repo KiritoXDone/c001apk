@@ -25,6 +25,7 @@ import com.example.c001apk.compose.logic.state.FooterState
 import com.example.c001apk.compose.logic.state.LoadingState
 import com.example.c001apk.compose.ui.base.BaseViewModel
 import com.example.c001apk.compose.ui.base.LikeType
+import com.example.c001apk.compose.ui.feed.reply.VoteCommentTarget
 import com.example.c001apk.compose.ui.history.HistoryType
 import com.example.c001apk.compose.util.CookieUtil
 import com.google.gson.Gson
@@ -168,11 +169,12 @@ constructor(
         if (validChoices.size != optionIds.size || validChoices.size !in vote.selectionRange) return
 
         val requestedId = id
+        val submitAnonymously = anonymous && vote.anonymousStatus == 1
         voteError = null
         submittingVote = true
         voteJob = viewModelScope.launch {
             try {
-                val result = networkRepo.postVote(voteId, validChoices, anonymous && vote.anonymousStatus == 1).first()
+                val result = networkRepo.postVote(voteId, validChoices, submitAnonymously).first()
                 if (id != requestedId || account.revision != CookieUtil.accountSession.revision) return@launch
                 val current = feedState as? LoadingState.Success ?: return@launch
                 if (current.response.vote?.id != voteId) return@launch
@@ -187,6 +189,7 @@ constructor(
                 val confirmedVote = updatedVote.copy(
                     userSelectedOption = updatedVote.userSelectedOption
                         ?.takeIf(String::isNotBlank) ?: validChoices.joinToString(","),
+                    userAnonymousStatus = updatedVote.userAnonymousStatus ?: if (submitAnonymously) 1 else 0,
                 )
                 feedState = current.copy(response = current.response.copy(vote = confirmedVote))
                 replyCount = confirmedVote.totalCommentNum?.toString() ?: replyCount
@@ -194,6 +197,14 @@ constructor(
                 if (id == requestedId) submittingVote = false
             }
         }
+    }
+
+    internal fun onVoteCommentPublished(target: VoteCommentTarget) {
+        if (id != target.feedId || !target.isCurrentAccount()) return
+        val current = feedState as? LoadingState.Success ?: return
+        val vote = current.response.vote?.takeIf { it.id == target.voteId } ?: return
+        feedState = current.copy(response = current.response.copy(vote = vote.copy(userVoteCommentStatus = 1)))
+        refreshVoteFeed()
     }
 
     init {
@@ -396,16 +407,12 @@ constructor(
                     isPull = false
                     return
                 }
-                guestReplyGate.cancel()
-                resetParams()
                 if (isVoteFeed && isPull) {
-                    isPull = false
-                    cancelFetch()
-                    voteError = null
-                    isRefreshing = true
-                    fetchFeedData(verifyCaptcha = true)
+                    refreshVoteFeed()
                     return
                 }
+                guestReplyGate.cancel()
+                resetParams()
                 isRefreshing = true
                 fetchData()
             } else {
@@ -421,6 +428,16 @@ constructor(
                 fetchFeedData(verifyCaptcha = true)
             }
         }
+    }
+
+    private fun refreshVoteFeed() {
+        guestReplyGate.cancel()
+        cancelFetch()
+        resetParams()
+        isPull = false
+        voteError = null
+        isRefreshing = true
+        fetchFeedData(verifyCaptcha = true)
     }
 
     private fun generateMess(
