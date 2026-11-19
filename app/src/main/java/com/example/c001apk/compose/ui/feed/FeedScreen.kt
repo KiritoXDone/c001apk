@@ -267,7 +267,7 @@ fun FeedScreen(
                         actions = {
                             ReadingSidebarButton(sidebarHidden, onToggleSidebar)
                             if (viewModel.feedState is LoadingState.Success) {
-                                if (isLogin) {
+                                if (isLogin && filterData?.isVoteFeed != true) {
                                     MiuixToolbarIconButton(
                                         onClick = rememberHapticClick {
                                             viewModel.replyId = viewModel.id
@@ -502,9 +502,35 @@ fun FeedScreen(
                                     }
                                 }
 
+                                if (response.isVoteFeed) {
+                                    item(key = "vote") {
+                                        val preferences = com.example.c001apk.compose.logic.providable.LocalUserPreferences.current
+                                        val state = viewModel.feedState as? LoadingState.Success
+                                        androidx.compose.runtime.key(preferences.accountRevision, response.id) {
+                                            FeedVoteCard(
+                                                vote = response.vote,
+                                                title = response.vote?.messageTitle?.takeIf {
+                                                    it.isNotBlank() && it != response.messageTitle && it != response.title
+                                                },
+                                                canVote = preferences.isLogin && state?.isPublic == false,
+                                                submitting = viewModel.submittingVote,
+                                                refreshing = viewModel.isRefreshing,
+                                                error = viewModel.voteError,
+                                                onSubmit = viewModel::submitVote,
+                                            )
+                                        }
+                                    }
+                                }
+
                                 // 排序随评论区滚动，避免吸顶到状态栏下方并被顶栏重复采样。
                                 item(key = "sort") {
-                                    FeedReplySortCard(
+                                    if (response.isVoteFeed) {
+                                        Text(
+                                            text = "投票评论 ${viewModel.replyCount}",
+                                            style = MiuixTheme.textStyles.headline2,
+                                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 12.dp),
+                                        )
+                                    } else FeedReplySortCard(
                                         replyCount = viewModel.replyCount,
                                         selected = selected,
                                         updateSortReply = { index ->

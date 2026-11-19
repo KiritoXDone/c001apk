@@ -15,6 +15,7 @@ import com.example.c001apk.compose.logic.model.LoadUrlResponse
 import com.example.c001apk.compose.logic.model.OSSUploadPrepareResponse
 import com.example.c001apk.compose.logic.model.ProductConfigResponse
 import com.example.c001apk.compose.logic.model.TotalReplyResponse
+import com.example.c001apk.compose.logic.model.VoteResponse
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import okhttp3.ResponseBody
@@ -253,14 +254,21 @@ interface ApiService {
         @FieldMap data: HashMap<String, String?>,
     ): Call<LikeResponse>
 
+    @POST("/v6/vote/createUserVote")
+    @FormUrlEncoded
+    fun postVote(
+        @Field("id") voteId: String,
+        @FieldMap options: Map<String, String>,
+        @Field("anonymous_status") anonymousStatus: Int,
+    ): Call<VoteResponse>
+
     @GET("/v6/vote/commentList")
     fun getVoteComment(
         @Query("fid") fid: String,
-        @Query("extra_key") extraKey: String,
         @Query("page") page: Int,
         @Query("firstItem") firstItem: String?,
         @Query("lastItem") lastItem: String?,
-    ): Call<TotalReplyResponse>
+    ): Call<HomeFeedResponse>
 
     @GET("/v6/question/answerList")
     fun getAnswerList(

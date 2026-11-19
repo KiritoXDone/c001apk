@@ -212,7 +212,10 @@ data class HomeFeedResponse(
         val userInfo: UserInfo?,
         val fUserInfo: UserInfo?,
         var isFollow: Int?,
-    ) : Parcelable
+    ) : Parcelable {
+        val isVoteFeed: Boolean
+            get() = vote != null || feedType == "vote"
+    }
 
     @Parcelize
     data class Feed(
@@ -260,7 +263,26 @@ data class HomeFeedResponse(
         @SerializedName("message_title")
         val messageTitle: String?,
         val options: List<Option>?,
-    ) : Parcelable
+        @SerializedName("user_selected_option")
+        val userSelectedOption: String? = null,
+        @SerializedName("anonymous_status")
+        val anonymousStatus: Int? = null,
+    ) : Parcelable {
+        val selectedIds: Set<String>
+            get() = userSelectedOption.orEmpty().split(',').map(String::trim)
+                .filter(String::isNotEmpty).toSet()
+
+        val availableOptions: List<Option>
+            get() = options.orEmpty().filter { !it.id.isNullOrBlank() && !it.title.isNullOrBlank() }
+                .distinctBy { it.id }.sortedBy { it.order ?: Int.MAX_VALUE }
+
+        val selectionRange: IntRange
+            get() = (minSelectNum ?: 1).coerceAtLeast(1)..(maxSelectNum ?: 1).coerceAtLeast(1)
+
+        fun isUpcoming(now: Long): Boolean = startTime?.let { now < it } == true
+
+        fun isClosed(now: Long): Boolean = endTime?.let { now >= it } == true
+    }
 
     @Parcelize
     data class Option(

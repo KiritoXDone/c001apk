@@ -142,7 +142,7 @@ fun FeedCard(
             isFeedContent = isFeedContent,
             ip = data.ipLocation.orEmpty(),
             dateline = data.dateline ?: 0,
-            replyNum = data.replynum.orEmpty(),
+            replyNum = data.vote?.totalCommentNum?.toString() ?: data.replynum.orEmpty(),
             likeNum = data.likenum.orEmpty(),
             onViewFeed = {
                 onViewFeed(data.id.orEmpty(), true)

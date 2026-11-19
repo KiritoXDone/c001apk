@@ -87,7 +87,15 @@ constructor(
     var deletedFeedId by mutableStateOf<String?>(null)
         private set
 
+    var submittingVote by mutableStateOf(false)
+        private set
+
+    var voteError by mutableStateOf<String?>(null)
+        private set
+
     private var deleteJob: kotlinx.coroutines.Job? = null
+    private var voteJob: kotlinx.coroutines.Job? = null
+    private var isVoteFeed = false
     private var localFavoriteBusy = false
     private val guestReplyGate = GuestReplyGate(
         viewModelScope,
@@ -148,6 +156,46 @@ constructor(
         deletedFeedId = null
     }
 
+    fun submitVote(optionIds: Set<String>, anonymous: Boolean) {
+        val state = feedState as? LoadingState.Success ?: return
+        val vote = state.response.vote ?: return
+        val voteId = vote.id?.takeIf(String::isNotBlank) ?: return
+        val account = CookieUtil.accountSession
+        if (submittingVote || isRefreshing || state.isPublic || !account.isLogin) return
+        val now = System.currentTimeMillis() / 1_000
+        if (vote.isUpcoming(now) || vote.isClosed(now) || vote.selectedIds.isNotEmpty()) return
+        val validChoices = vote.availableOptions.mapNotNull { it.id }.filter(optionIds::contains)
+        if (validChoices.size != optionIds.size || validChoices.size !in vote.selectionRange) return
+
+        val requestedId = id
+        voteError = null
+        submittingVote = true
+        voteJob = viewModelScope.launch {
+            try {
+                val result = networkRepo.postVote(voteId, validChoices, anonymous && vote.anonymousStatus == 1).first()
+                if (id != requestedId || account.revision != CookieUtil.accountSession.revision) return@launch
+                val current = feedState as? LoadingState.Success ?: return@launch
+                if (current.response.vote?.id != voteId) return@launch
+                val response = result.getOrNull()
+                val updatedVote = response?.data
+                if (updatedVote == null || (response.error ?: 0) != 0) {
+                    voteError = (result.exceptionOrNull() as? Exception)?.let(ApiFailures::safeMessage)
+                        ?: response?.message?.takeIf(String::isNotBlank)
+                        ?: "投票失败，请重试"
+                    return@launch
+                }
+                val confirmedVote = updatedVote.copy(
+                    userSelectedOption = updatedVote.userSelectedOption
+                        ?.takeIf(String::isNotBlank) ?: validChoices.joinToString(","),
+                )
+                feedState = current.copy(response = current.response.copy(vote = confirmedVote))
+                replyCount = confirmedVote.totalCommentNum?.toString() ?: replyCount
+            } finally {
+                if (id == requestedId) submittingVote = false
+            }
+        }
+    }
+
     init {
         fetchFeedData()
     }
@@ -182,13 +230,14 @@ constructor(
                 networkRepo
                     .getFeedContent("/v6/feed/detail?id=$requestedId", verifyCaptcha)
                     .collect { state ->
-                        if (requestedId != id) return@collect
+                        if (requestedId != id || revision != CookieUtil.accountSession.revision) return@collect
                         if (state is LoadingState.Success) {
                             val response = state.response
 
                             feedUid = response.uid.orEmpty()
                             feedUsername = response.username.orEmpty()
-                            replyCount = response.replynum.orEmpty()
+                            isVoteFeed = response.isVoteFeed
+                            replyCount = response.vote?.totalCommentNum?.toString() ?: response.replynum.orEmpty()
                             feedTypeName = response.feedTypeName.orEmpty()
                             feedType = response.feedType.orEmpty()
 
@@ -215,6 +264,7 @@ constructor(
                                     itemSize++
                                 itemSize += articleList?.size ?: 0
                             }
+                            if (isVoteFeed) itemSize++
 
                             if (!response.topReplyRows.isNullOrEmpty()) {
                                 response.topReplyRows?.getOrNull(0)?.let { reply ->
@@ -297,7 +347,9 @@ constructor(
     }
 
     override suspend fun customFetchData() =
-        networkRepo.getFeedContentReply(
+        if (isVoteFeed) {
+            networkRepo.getVoteComments(id, page, firstItem, lastItem)
+        } else networkRepo.getFeedContentReply(
             id,
             listType,
             page,
@@ -312,6 +364,7 @@ constructor(
     override fun handleResponse(
         response: List<HomeFeedResponse.Data>,
     ): List<HomeFeedResponse.Data> {
+        if (isVoteFeed) return response.distinctBy { it.entityId ?: it.id }
         response.forEach { item ->
             item.username = "${item.username}${if (item.uid == feedUid) " [楼主]" else EMPTY_STRING}"
             if (!item.replyRows.isNullOrEmpty()) {
@@ -341,8 +394,20 @@ constructor(
     override fun refresh() {
         if (!isRefreshing && !isLoadMore) {
             if (feedState is LoadingState.Success) {
+                if (isVoteFeed && submittingVote) {
+                    isPull = false
+                    return
+                }
                 guestReplyGate.cancel()
                 resetParams()
+                if (isVoteFeed && isPull) {
+                    isPull = false
+                    cancelFetch()
+                    voteError = null
+                    isRefreshing = true
+                    fetchFeedData(verifyCaptcha = true)
+                    return
+                }
                 isRefreshing = true
                 fetchData()
             } else {
@@ -907,6 +972,10 @@ constructor(
         guestReplyGate.cancel()
         collections.reset()
         deleteJob?.cancel()
+        voteJob?.cancel()
+        submittingVote = false
+        voteError = null
+        isVoteFeed = false
         deletingFeed = false
         deletedFeedId = null
         isAccountCollected = false

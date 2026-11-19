@@ -312,14 +312,18 @@ constructor(
         Result.success(apiService.postRequestValidate(data).await())
     }
 
-    suspend fun getVoteComment(
+    suspend fun postVote(voteId: String, optionIds: List<String>, anonymous: Boolean) = fire {
+        val options = optionIds.withIndex().associate { (index, id) -> "select_option[$index]" to id }
+        Result.success(apiService.postVote(voteId, options, if (anonymous) 1 else 0).await())
+    }
+
+    suspend fun getVoteComments(
         fid: String,
-        extraKey: String,
         page: Int,
         firstItem: String?,
         lastItem: String?,
-    ) = fire {
-        Result.success(apiService.getVoteComment(fid, extraKey, page, firstItem, lastItem).await())
+    ) = flowList {
+        apiService.getVoteComment(fid, page, firstItem, lastItem).await()
     }
 
     suspend fun getAnswerList(
