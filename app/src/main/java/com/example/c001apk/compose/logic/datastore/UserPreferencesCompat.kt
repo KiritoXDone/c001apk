@@ -85,6 +85,7 @@ data class UserPreferencesCompat(
     val protocolVersionCustomized: Boolean = false,
     val predictiveBack: Boolean = true,
     val mainNavigationOrder: List<Int> = MainNavigationOrder.default,
+    val autoClearImageCache: Boolean = false,
 ) {
     constructor(
         original: UserPreferences,
@@ -159,6 +160,7 @@ data class UserPreferencesCompat(
         protocolVersionCustomized = original.protocolVersionCustomized,
         predictiveBack = !original.disablePredictiveBack,
         mainNavigationOrder = MainNavigationOrder.normalize(original.mainNavigationOrderList),
+        autoClearImageCache = original.autoClearImageCache,
         followSelection =
             if (original.followSelectionConfigured) original.followSelection.coerceIn(0, 5)
             else original.followTypeValue.takeIf { it in 1..4 } ?: 1,
@@ -256,6 +258,7 @@ data class UserPreferencesCompat(
             .setProtocolVersionCustomized(protocolVersionCustomized)
             .setDisablePredictiveBack(!predictiveBack)
             .addAllMainNavigationOrder(MainNavigationOrder.normalize(mainNavigationOrder))
+            .setAutoClearImageCache(autoClearImageCache)
             .build()
 
     companion object {

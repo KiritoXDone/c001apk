@@ -489,6 +489,14 @@ fun SettingsScreen(
                                         showCleanCacheDialog = true
                                     }
                                     SwitchListItem(
+                                        value = prefs.autoClearImageCache,
+                                        leadingImageVector = MiuixIcons.Delete,
+                                        headlineText = "退出时清除图片缓存",
+                                        supportingText = "下次启动时自动清除图片缓存",
+                                    ) {
+                                        viewModel.setAutoClearImageCache(it)
+                                    }
+                                    SwitchListItem(
                                         value = prefs.checkUpdate,
                                         leadingImageVector = MiuixIcons.Update,
                                         headlineText = "检查已安装应用更新",

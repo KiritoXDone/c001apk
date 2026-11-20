@@ -161,6 +161,12 @@ constructor(
         }
     }
 
+    fun setAutoClearImageCache(value: Boolean) {
+        viewModelScope.launch {
+            userPreferencesRepository.setAutoClearImageCache(value)
+        }
+    }
+
     fun setOpenInBrowser(value: Boolean) {
         viewModelScope.launch {
             userPreferencesRepository.setOpenInBrowser(value)

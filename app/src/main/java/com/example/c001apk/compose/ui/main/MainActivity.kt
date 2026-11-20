@@ -103,7 +103,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setupStableStatusBarInsets()
 
-        // Restore the local account before navigation; network registration never holds the splash.
+        // 缓存清理和账号恢复完成后再显示页面，网络注册不阻塞启动。
         val contentView = findViewById<View>(android.R.id.content)
         contentView.viewTreeObserver.addOnPreDrawListener(
             object : ViewTreeObserver.OnPreDrawListener {

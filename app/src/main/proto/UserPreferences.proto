@@ -76,6 +76,7 @@ message UserPreferences {
   string defaultSearchOrder = 68;
   string topBarStyle = 69;
   string bottomBarStyle = 70;
+  bool autoClearImageCache = 71;
 }
 
 enum ThemeType{

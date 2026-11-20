@@ -122,6 +122,10 @@ constructor(
             userPreferences.updateData { it.copy(imageQuality = value) }
         }
 
+    suspend fun setAutoClearImageCache(value: Boolean) = userPreferences.updateData {
+        it.copy(autoClearImageCache = value)
+    }
+
     suspend fun setImageFilter(value: Boolean) =
         withContext(Dispatchers.IO) {
             userPreferences.updateData { it.copy(imageFilter = value) }

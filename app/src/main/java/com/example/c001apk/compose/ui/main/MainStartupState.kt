@@ -6,7 +6,7 @@ import androidx.compose.runtime.setValue
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 
-/** Only local account restoration holds the launch screen; device registration runs afterward. */
+// 本地缓存清理与账号恢复完成后显示主界面，设备注册随后进行。
 internal class MainStartupState {
     var preparingAccount by mutableStateOf(true)
         private set

@@ -97,6 +97,8 @@ constructor(
 
     suspend fun setImageQuality(value: Int) = userPreferencesDataSource.setImageQuality(value)
 
+    suspend fun setAutoClearImageCache(value: Boolean) = userPreferencesDataSource.setAutoClearImageCache(value)
+
     suspend fun setImageFilter(value: Boolean) = userPreferencesDataSource.setImageFilter(value)
 
     suspend fun setOpenInBrowser(value: Boolean) = userPreferencesDataSource.setOpenInBrowser(value)

@@ -4,6 +4,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.viewModelScope
+import com.example.c001apk.compose.logic.cache.StartupImageCacheCleaner
 import com.example.c001apk.compose.logic.repository.NetworkRepo
 import com.example.c001apk.compose.logic.repository.UserPreferencesRepository
 import com.example.c001apk.compose.logic.smid.DigitalUnionRepository
@@ -26,6 +27,7 @@ constructor(
     private val userPreferencesRepository: UserPreferencesRepository,
     private val digitalUnion: DigitalUnionRepository,
     private val accounts: com.example.c001apk.compose.logic.accounts.AccountStore,
+    private val startupImageCacheCleaner: StartupImageCacheCleaner,
 ) : PrefsViewModel(userPreferencesRepository) {
 
     internal val startup = MainStartupState()
@@ -33,7 +35,10 @@ constructor(
     init {
         viewModelScope.launch {
             startup.prepare(
-                initializeAccount = { accounts.initialize() },
+                initializeAccount = {
+                    startupImageCacheCleaner.awaitCleanup()
+                    accounts.initialize()
+                },
                 ensureId = { digitalUnion.ensureId() },
             )
             getCheckLoginInfo()
