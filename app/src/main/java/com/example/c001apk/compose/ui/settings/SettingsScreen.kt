@@ -1,6 +1,5 @@
 package com.example.c001apk.compose.ui.settings
 
-import android.os.Build
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -33,8 +32,6 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.c001apk.compose.BuildConfig
 import com.example.c001apk.compose.R
-import com.example.c001apk.compose.ThemeMode
-import com.example.c001apk.compose.ThemeType
 import com.example.c001apk.compose.logic.model.HapticStrength
 import com.example.c001apk.compose.logic.providable.LocalUserPreferences
 import com.example.c001apk.compose.ui.blacklist.BlackListType
@@ -44,16 +41,13 @@ import com.example.c001apk.compose.ui.component.MiuixDialogButton as TextButton
 import com.example.c001apk.compose.ui.component.MiuixScaffold as Scaffold
 import com.example.c001apk.compose.ui.component.currentWindowSize
 import com.example.c001apk.compose.ui.component.icons.Smartphone
-import com.example.c001apk.compose.ui.component.icons.Swatch
 import com.example.c001apk.compose.ui.component.rememberHapticClick
 import com.example.c001apk.compose.ui.component.settings.BasicListItem
 import com.example.c001apk.compose.ui.component.settings.DropdownListItem
 import com.example.c001apk.compose.ui.component.settings.PreferenceGroup
 import com.example.c001apk.compose.ui.component.settings.SelectionItem
-import com.example.c001apk.compose.ui.component.settings.StateDropdownListItem
 import com.example.c001apk.compose.ui.component.settings.SwitchListItem
 import com.example.c001apk.compose.ui.component.TopBarScrollEffect
-import com.example.c001apk.compose.ui.theme.paletteStyleOptions
 import com.example.c001apk.compose.util.CacheDataManager.clearAllCache
 import com.example.c001apk.compose.util.CacheDataManager.getTotalCacheSize
 import java.util.Formatter
@@ -65,14 +59,10 @@ import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Back
 import top.yukonga.miuix.kmp.icon.extended.Blocklist
 import top.yukonga.miuix.kmp.icon.extended.Delete
+import top.yukonga.miuix.kmp.icon.extended.Favorites
 import top.yukonga.miuix.kmp.icon.extended.Image
-import top.yukonga.miuix.kmp.icon.extended.Photos
 import top.yukonga.miuix.kmp.icon.extended.Recent
 import top.yukonga.miuix.kmp.icon.extended.Rename
-import top.yukonga.miuix.kmp.icon.extended.ScreenMirroring
-import top.yukonga.miuix.kmp.icon.extended.SelectAll
-import top.yukonga.miuix.kmp.icon.extended.Sort
-import top.yukonga.miuix.kmp.icon.extended.Theme
 import top.yukonga.miuix.kmp.icon.extended.Update
 import top.yukonga.miuix.kmp.icon.extended.WorldClock
 import top.yukonga.miuix.kmp.utils.scrollEndHaptic
@@ -116,7 +106,6 @@ fun SettingsScreen(
     val activeSection = if (wide) wideSection else routeSection
 
     val imageQualityList by lazy { listOf("网络自适应", "原图", "普清") }
-    val themeList by lazy { listOf("跟随系统", "总是开启", "总是关闭") }
     val hapticStrengthList by lazy { HapticStrength.options.map { it.label } }
 
     var showSZLMIDDialog by remember { mutableStateOf(false) }
@@ -199,193 +188,15 @@ fun SettingsScreen(
                         ),
                 ) {
                     when (activeSection) {
-                        SettingsSection.Appearance -> {
-                            item(key = "Appearance_0") {
-                                PreferenceGroup(title = "主题") {
-                                    SwitchListItem(
-                                        value = prefs.materialYou,
-                                        leadingImageVector = MiuixIcons.Theme,
-                                        headlineText = "系统主题色",
-                                    ) {
-                                        viewModel.setMaterialYou(it)
-                                    }
-                                    StateDropdownListItem(
-                                        isEnable = !prefs.materialYou,
-                                        leadingImageVector = MiuixIcons.Theme,
-                                        headlineText = "主题颜色",
-                                        value = prefs.themeType,
-                                        selections =
-                                            ThemeType.entries
-                                                .toMutableList()
-                                                .also { it.remove(ThemeType.UNRECOGNIZED) }
-                                                .map {
-                                                    SelectionItem(
-                                                        stringResource(id = themeTypeLabelRes(it)),
-                                                        it,
-                                                    )
-                                                },
-                                        onValueChanged = { _, value ->
-                                            if (value == ThemeType.Custom)
-                                                showThemeTypeDialog = true
-                                            viewModel.setThemeType(value)
-                                        },
-                                    )
-                                    StateDropdownListItem(
-                                        isEnable = !prefs.materialYou,
-                                        leadingImageVector = MiuixIcons.Swatch,
-                                        headlineText = "调色版风格",
-                                        value = prefs.paletteStyle,
-                                        selections =
-                                            paletteStyleOptions.mapIndexed { index, option ->
-                                                SelectionItem(
-                                                    stringResource(id = option.label),
-                                                    index,
-                                                )
-                                            },
-                                        onValueChanged = { index, _ ->
-                                            viewModel.setPaletteStyle(index)
-                                        },
-                                    )
-                                    DropdownListItem(
-                                        leadingImageVector = MiuixIcons.Theme,
-                                        headlineText = "深色主题",
-                                        value = prefs.themeMode.name,
-                                        selections =
-                                            (0..2).map {
-                                                SelectionItem(
-                                                    themeList[it],
-                                                    ThemeMode.entries[it].name,
-                                                )
-                                            },
-                                        onValueChanged = { index, _ ->
-                                            viewModel.setDarkTheme(ThemeMode.forNumber(index))
-                                        },
-                                    )
-                                    SwitchListItem(
-                                        value = prefs.pureBlack,
-                                        leadingImageVector = MiuixIcons.Theme,
-                                        headlineText = "纯黑主题",
-                                    ) {
-                                        viewModel.setPureBlack(it)
-                                    }
-                                }
-                            }
-                            item(key = "Appearance_1") {
-                                PreferenceGroup(title = "显示") {
-                                    BarStylePreferences(
-                                        topBarStyle = prefs.topBarStyle,
-                                        bottomBarStyle = prefs.effectiveBottomBarStyle,
-                                        onTopBarStyleChange = viewModel::setTopBarStyle,
-                                        onBottomBarStyleChange = viewModel::setBottomBarStyle,
-                                    )
-                                    BasicListItem(
-                                        leadingImageVector = MiuixIcons.Sort,
-                                        headlineText = "底栏排序",
-                                        supportingText = "调整主页、关注与我的的顺序，也用于大屏侧栏",
-                                        onClick = onNavigationOrderClick,
-                                    )
-                                    SwitchListItem(
-                                        value = prefs.predictiveBack,
-                                        leadingImageVector = MiuixIcons.Back,
-                                        headlineText = "预测返回手势",
-                                        supportingText = "应用内返回时跟随手势预览上一页，关闭后在松手时返回",
-                                        onValueChanged = viewModel::setPredictiveBack,
-                                    )
-                                    SwitchListItem(
-                                        value = prefs.blurBars && Build.VERSION.SDK_INT >= 33,
-                                        enabled = Build.VERSION.SDK_INT >= 33,
-                                        leadingImageVector = MiuixIcons.Theme,
-                                        headlineText = "模糊效果",
-                                        supportingText =
-                                            if (Build.VERSION.SDK_INT >= 33) "模糊顶部栏和底部栏后方的内容"
-                                            else "需要 Android 13 及以上",
-                                    ) {
-                                        viewModel.setBlurBars(it)
-                                    }
-                                    SwitchListItem(
-                                        value = prefs.collapseTabsOnScroll,
-                                        leadingImageVector = MiuixIcons.ScreenMirroring,
-                                        headlineText = "滚动时收起标签栏",
-                                        supportingText = "上滑收起 Tab 栏，下滑重新展开",
-                                    ) {
-                                        viewModel.setCollapseTabsOnScroll(it)
-                                    }
-                                    DropdownListItem(
-                                        value = prefs.readingMode,
-                                        headlineText = "分栏阅读",
-                                        selections =
-                                            listOf(
-                                                SelectionItem("自动适配大屏", 0),
-                                                SelectionItem("开启（窗口足够宽时）", 1),
-                                                SelectionItem("关闭", 2),
-                                            ),
-                                        onValueChanged = { _, value ->
-                                            viewModel.setReadingMode(value)
-                                        },
-                                    )
-                                    BasicListItem(
-                                        leadingImageVector = MiuixIcons.Rename,
-                                        headlineText = "字体大小",
-                                        supportingText =
-                                            "${Formatter().format("%.2f", prefs.fontScale)}x",
-                                    ) {
-                                        showFontScaleDialog = true
-                                    }
-                                    BasicListItem(
-                                        leadingImageVector = MiuixIcons.ScreenMirroring,
-                                        headlineText = "内容大小",
-                                        supportingText =
-                                            "${Formatter().format("%.2f", prefs.contentScale)}x",
-                                    ) {
-                                        showContentScaleDialog = true
-                                    }
-                                    SwitchListItem(
-                                        value = prefs.imageFilter,
-                                        leadingImageVector = MiuixIcons.Photos,
-                                        headlineText = "压暗图片",
-                                    ) {
-                                        viewModel.setImageFilter(it)
-                                    }
-                                }
-                            }
-                            item(key = "Appearance_2") {
-                                PreferenceGroup(title = "触感") {
-                                    SwitchListItem(
-                                        value = prefs.hapticFeedback,
-                                        leadingImageVector = MiuixIcons.SelectAll,
-                                        headlineText = "触感反馈",
-                                    ) {
-                                        viewModel.setHapticFeedback(it)
-                                    }
-                                    SwitchListItem(
-                                        value = prefs.customHaptics,
-                                        leadingImageVector = MiuixIcons.SelectAll,
-                                        headlineText = "自定义触感",
-                                        supportingText = "关闭时跟随系统触感设置",
-                                    ) {
-                                        viewModel.setCustomHaptics(it)
-                                    }
-                                    if (prefs.customHaptics) {
-                                        BasicListItem(
-                                            leadingImageVector = MiuixIcons.SelectAll,
-                                            headlineText = "触感强度",
-                                            supportingText = prefs.hapticStrength.label,
-                                            onClick = showHapticStrengthDialogClick,
-                                        )
-                                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                                            SwitchListItem(
-                                                value = prefs.reverseHapticEffects,
-                                                leadingImageVector = MiuixIcons.SelectAll,
-                                                headlineText = "触感兼容模式",
-                                                supportingText = "轻重反馈与预期相反时开启",
-                                            ) {
-                                                viewModel.setReverseHapticEffects(it)
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                        SettingsSection.Appearance -> appearancePreferences(
+                            prefs = prefs,
+                            viewModel = viewModel,
+                            onCustomTheme = { showThemeTypeDialog = true },
+                            onNavigationOrder = onNavigationOrderClick,
+                            onFontSize = { showFontScaleDialog = true },
+                            onContentScale = { showContentScaleDialog = true },
+                            onHapticStrength = showHapticStrengthDialogClick,
+                        )
                         SettingsSection.Content -> {
                             item(key = "Content_0") {
                                 HomeContentPreferences(
@@ -414,10 +225,7 @@ fun SettingsScreen(
                                     BasicListItem(
                                         headlineText = "本地 / 悄悄关注",
                                         supportingText = "管理本机名单与长按关注行为",
-                                        leadingImageVector =
-                                            com.example.c001apk.compose.ui.component.icons
-                                                .FlutterProfileIcons
-                                                .Favorite,
+                                        leadingImageVector = MiuixIcons.Favorites,
                                         onClick = onLocalFollowsClick,
                                     )
                                 }
@@ -831,28 +639,3 @@ fun SliderDialog(
         },
     )
 }
-
-private fun themeTypeLabelRes(themeType: ThemeType): Int =
-    when (themeType) {
-        ThemeType.Default -> R.string.theme_type_default
-        ThemeType.Red -> R.string.theme_type_red
-        ThemeType.Pink -> R.string.theme_type_pink
-        ThemeType.Purple -> R.string.theme_type_purple
-        ThemeType.Indigo -> R.string.theme_type_indigo
-        ThemeType.Blue -> R.string.theme_type_blue
-        ThemeType.LightBlue -> R.string.theme_type_light_blue
-        ThemeType.Cyan -> R.string.theme_type_cyan
-        ThemeType.Teal -> R.string.theme_type_teal
-        ThemeType.Green -> R.string.theme_type_green
-        ThemeType.LightGreen -> R.string.theme_type_light_green
-        ThemeType.Lime -> R.string.theme_type_lime
-        ThemeType.Yellow -> R.string.theme_type_yellow
-        ThemeType.Amber -> R.string.theme_type_amber
-        ThemeType.Orange -> R.string.theme_type_orange
-        ThemeType.DeepOrange -> R.string.theme_type_deep_orange
-        ThemeType.Brown -> R.string.theme_type_brown
-        ThemeType.BlueGrey -> R.string.theme_type_blue_grey
-        ThemeType.Sakura -> R.string.theme_type_sakura
-        ThemeType.Custom -> R.string.theme_type_custom
-        ThemeType.UNRECOGNIZED -> R.string.theme_type_default
-    }

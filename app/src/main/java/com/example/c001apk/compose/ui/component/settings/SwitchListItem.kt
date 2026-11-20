@@ -9,7 +9,7 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme
 @Composable
 fun SwitchListItem(
     value: Boolean,
-    leadingImageVector: ImageVector,
+    leadingImageVector: ImageVector? = null,
     headlineText: String,
     supportingText: String? = null,
     enabled: Boolean = true,
@@ -22,12 +22,10 @@ fun SwitchListItem(
             onCheckedChange = onValueChanged,
             title = headlineText,
             summary = supportingText,
-            startAction = {
-                Icon(
-                    leadingImageVector,
-                    null,
-                    tint = MiuixTheme.colorScheme.onSurfaceVariantSummary,
-                )
+            startAction = leadingImageVector?.let { icon ->
+                {
+                    Icon(icon, null, tint = MiuixTheme.colorScheme.onSurfaceVariantSummary)
+                }
             },
         )
     }
