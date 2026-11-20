@@ -80,18 +80,14 @@ android {
     }
     packaging { jniLibs.useLegacyPackaging = true }
 
-    val disableR8 = (project.findProperty("disableR8") as? String) == "true"
-
     buildTypes {
         debug {
             resValue("string", "app_name", "c001apk")
         }
         all {
             signingConfig = config ?: signingConfigs["debug"]
-        }
-        release {
-            isMinifyEnabled = !disableR8
-            isShrinkResources = !disableR8
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",

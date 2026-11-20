@@ -5,7 +5,7 @@ on:
       variant:
         description: Build variant
         type: choice
-        options: [release, debug, release-no-r8]
+        options: [release, debug]
         default: release
       app_version:
         description: Semantic app version
@@ -88,7 +88,7 @@ jobs:
           set -euo pipefail
           case "$BUILD_VARIANT" in
             debug) extra=();;
-            release|release-no-r8) extra=(--require-release-signing);;
+            release) extra=(--require-release-signing);;
             *) exit 1;;
           esac
           python3 scripts/build.py build-apk --build-type "$BUILD_VARIANT" "${extra[@]}" --app-version "$APP_VERSION" --update-repository "$GITHUB_REPOSITORY" --jobs 2

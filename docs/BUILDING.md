@@ -40,7 +40,6 @@ python scripts/build.py build-apk --build-type release
 | --- | --- |
 | 调试安装包 | `build/apk/debug/c001apk-debug-arm64-v8a-<版本名>.<版本号>.apk` |
 | 发布安装包 | `build/apk/release/c001apk-release-arm64-v8a-<版本名>.<版本号>.apk` |
-| 关闭优化的发布包 | `build/apk/release-no-r8/` |
 | 模块中间产物与报告 | `build/gradle/<模块>/` |
 | 项目 Gradle 缓存 | `build/cache/` |
 
@@ -48,7 +47,7 @@ python scripts/build.py build-apk --build-type release
 
 需要其他任务时使用 `python scripts/build.py gradle <任务及参数>`。`clean` 只清理模块输出，不清理便携工具链和本地记录；不要删除整个 `build/` 来重新编译。
 
-调试构建不启用 R8 和资源裁剪，发布构建默认开启。排查优化相关问题时使用 `python scripts/build.py build-apk --build-type release-no-r8`。
+调试构建和发布构建均启用 R8 与资源裁剪，共用 `app/proguard-rules.pro`。排查混淆后的堆栈时，在 `build/gradle/app/outputs/mapping/<variant>/` 中查找该次构建的映射文件。
 
 版本名默认取自 [app/build.gradle.kts](../app/build.gradle.kts)，可通过 `--app-version x.y.z` 指定。构建并发用 `--jobs N` 指定，默认 12，范围 1～64；透传为 Gradle `--max-workers=N`。旧 `--max-workers N` 作为入口别名保留，Gradle 任务透传时把额度参数放在任务之前：
 

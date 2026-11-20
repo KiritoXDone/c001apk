@@ -66,7 +66,7 @@ def main() -> int:
     skills = commands.add_parser("sync-skills", help="Synchronize Codex skills to Claude")
     skills.add_argument("--check", action="store_true", help="Check file sets and bytes without writing")
     apk = commands.add_parser("build-apk", help="编译并收集安装包到 build/apk")
-    apk.add_argument("--build-type", choices=("debug", "release", "release-no-r8"), default="debug")
+    apk.add_argument("--build-type", choices=("debug", "release"), default="debug")
     apk.add_argument("--app-version", help="覆盖本次构建版本名")
     apk.add_argument("--update-repository", help="指定应用更新仓库")
     apk.add_argument("--require-release-signing", action="store_true", help="要求使用发布签名")
@@ -97,8 +97,6 @@ def main() -> int:
     if args.command == "gradle":
         return run_gradle(args.arguments, jdk, sdk, args.jobs)
     arguments = [":app:assembleDebug" if args.build_type == "debug" else ":app:assembleRelease"]
-    if args.build_type == "release-no-r8":
-        arguments.append("-PdisableR8=true")
     if args.app_version:
         arguments.append(f"-PappVersion={args.app_version}")
     if args.update_repository:
