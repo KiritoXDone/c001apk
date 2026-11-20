@@ -18,11 +18,13 @@ import com.example.c001apk.compose.ui.component.cards.MessageHeaderCard
 import com.example.c001apk.compose.ui.component.cards.MessageLevelCard
 import com.example.c001apk.compose.ui.component.cards.MessageWidgetCard
 import com.example.c001apk.compose.ui.component.cards.ProfileLayoutDefaults
-import com.example.c001apk.compose.ui.component.icons.FlutterProfileIcons
 import com.example.c001apk.compose.ui.component.TopBarScrollEffect
 import com.example.c001apk.compose.util.ReportType
 import com.example.c001apk.compose.util.makeToast
 import top.yukonga.miuix.kmp.basic.SmallTitle
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.glass.ContactsBook
+import top.yukonga.miuix.kmp.icon.glass.SettingsOutline
 
 @Composable
 fun MessageScreen(
@@ -70,14 +72,16 @@ fun MessageScreen(
                         onClick = onAccountsClick,
                     ) {
                         top.yukonga.miuix.kmp.basic.Icon(
-                            FlutterProfileIcons.Account,
+                            MiuixIcons.Glass.ContactsBook,
                             contentDescription = "账号",
+                            modifier = Modifier.size(24.dp),
                         )
                     }
                     com.example.c001apk.compose.ui.component.MiuixToolbarIconButton(onClick = onSettingsClick) {
                         top.yukonga.miuix.kmp.basic.Icon(
-                            FlutterProfileIcons.Settings,
+                            MiuixIcons.Glass.SettingsOutline,
                             contentDescription = "设置",
+                            modifier = Modifier.size(24.dp),
                         )
                     }
                 },

@@ -23,7 +23,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.c001apk.compose.ui.component.CoilLoader
-import com.example.c001apk.compose.ui.component.icons.FlutterProfileIcons
 import com.example.c001apk.compose.util.CookieUtil
 import com.example.c001apk.compose.util.decodeCookieValue
 import top.yukonga.miuix.kmp.basic.Card
@@ -32,6 +31,9 @@ import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.LinearProgressIndicator
 import top.yukonga.miuix.kmp.basic.ProgressIndicatorDefaults
 import top.yukonga.miuix.kmp.basic.Text
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.glass.ChevronForward
+import top.yukonga.miuix.kmp.icon.glass.ContactsCircle
 import top.yukonga.miuix.kmp.squircle.squircleBackground
 import top.yukonga.miuix.kmp.squircle.squircleClip
 import top.yukonga.miuix.kmp.theme.MiuixTheme
@@ -72,7 +74,7 @@ fun MessageHeaderCard(
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(
-                    FlutterProfileIcons.Account,
+                    MiuixIcons.Glass.ContactsCircle,
                     null,
                     Modifier.size(32.dp),
                     tint = MiuixTheme.colorScheme.onSecondaryContainer,
@@ -103,7 +105,7 @@ fun MessageHeaderCard(
                         modifier = Modifier.weight(1f, fill = false),
                     )
                     Icon(
-                        FlutterProfileIcons.ChevronRight,
+                        MiuixIcons.Glass.ChevronForward,
                         null,
                         Modifier.size(16.dp),
                         tint = MiuixTheme.colorScheme.onSurfaceVariantSummary,

@@ -12,13 +12,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
-import com.example.c001apk.compose.ui.component.icons.FlutterProfileIcons
 import com.example.c001apk.compose.ui.ffflist.FFFListType
 import com.example.c001apk.compose.ui.history.HistoryType
 import com.example.c001apk.compose.util.CookieUtil
 import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.Icon
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.glass.ClockOutline
+import top.yukonga.miuix.kmp.icon.glass.FavoriteOutline
+import top.yukonga.miuix.kmp.icon.glass.FolderOutline
+import top.yukonga.miuix.kmp.icon.glass.Location
+import top.yukonga.miuix.kmp.icon.glass.Reply
+import top.yukonga.miuix.kmp.icon.glass.StarOutline
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @Composable
@@ -28,12 +34,12 @@ fun MessageWidgetCard(
     onViewHistory: (String) -> Unit,
 ) {
     val tools = listOf(
-        ProfileTool("本地收藏", FlutterProfileIcons.Archive, FFFListType.FAV),
-        ProfileTool("浏览历史", FlutterProfileIcons.History, FFFListType.HISTORY),
-        ProfileTool("我的常去", FlutterProfileIcons.MyLocation, FFFListType.RECENT),
-        ProfileTool("我的收藏", FlutterProfileIcons.Star, FFFListType.COLLECTION),
-        ProfileTool("我的赞", FlutterProfileIcons.Favorite, FFFListType.LIKE),
-        ProfileTool("我的回复", FlutterProfileIcons.Reply, FFFListType.REPLY),
+        ProfileTool("本地收藏", MiuixIcons.Glass.FolderOutline, FFFListType.FAV),
+        ProfileTool("浏览历史", MiuixIcons.Glass.ClockOutline, FFFListType.HISTORY),
+        ProfileTool("我的常去", MiuixIcons.Glass.Location, FFFListType.RECENT),
+        ProfileTool("我的收藏", MiuixIcons.Glass.StarOutline, FFFListType.COLLECTION),
+        ProfileTool("我的赞", MiuixIcons.Glass.FavoriteOutline, FFFListType.LIKE),
+        ProfileTool("我的回复", MiuixIcons.Glass.Reply, FFFListType.REPLY),
     )
     Column(
         modifier = modifier.fillMaxWidth(),

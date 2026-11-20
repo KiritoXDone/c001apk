@@ -10,7 +10,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.PathParser
 import androidx.compose.ui.unit.dp
 
-/** The exact icon glyphs used by the Flutter reference profile page. */
+/** 从 Flutter 参考界面提取的 Material Icons 字形。 */
 object FlutterProfileIcons {
     val Archive: ImageVector by lazy {
         icon(
