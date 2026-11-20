@@ -5,7 +5,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import com.example.c001apk.compose.R
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.ContactsCircle
-import top.yukonga.miuix.kmp.icon.extended.Favorites
+import top.yukonga.miuix.kmp.icon.extended.FavoritesFill
 import top.yukonga.miuix.kmp.icon.extended.Home
 import top.yukonga.miuix.kmp.icon.extended.Settings
 
@@ -34,8 +34,8 @@ sealed class Router(
         Router(
             name = "FOLLOW",
             stringId = R.string.follow,
-            unselectedIcon = MiuixIcons.Favorites,
-            selectedIcon = MiuixIcons.Favorites,
+            unselectedIcon = MiuixIcons.FavoritesFill,
+            selectedIcon = MiuixIcons.FavoritesFill,
         )
 
     data object PROFILE :
