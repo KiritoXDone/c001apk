@@ -8,10 +8,11 @@ import android.content.Context
 import android.graphics.Color.parseColor
 import android.os.Build
 import android.provider.Settings
-import android.util.Log
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import com.materialkolor.hct.Hct
 import org.json.JSONObject
@@ -25,23 +26,22 @@ private data class SystemPaletteInfo(
 @Composable
 actual fun platformDynamicColors(dark: Boolean): Colors {
     val context = LocalContext.current
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-        val paletteInfo = readSystemPaletteInfo(context)
-        Log.d("DynamicColors", "System palette info: $paletteInfo")
+    val configuration = LocalConfiguration.current
+    val paletteInfo = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) readSystemPaletteInfo(context) else null
+    return remember(context, configuration, paletteInfo, dark) {
         if (paletteInfo != null) {
-            return colorsFromSeed(
+            colorsFromSeed(
                 seed = paletteInfo.seedColor,
                 colorSpec = paletteInfo.colorSpec,
                 paletteStyle = paletteInfo.paletteStyle,
                 dark = dark,
             )
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            mapMd3RolesToMiuixColorsCommon(systemMd3Roles(context, dark), dark)
+        } else {
+            monetSystemColors(dark)
         }
     }
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-        val roles = systemMd3Roles(context, dark)
-        return mapMd3RolesToMiuixColorsCommon(roles, dark)
-    }
-    return monetSystemColors(dark)
 }
 
 @SuppressLint("InlinedApi", "UseKtx")
