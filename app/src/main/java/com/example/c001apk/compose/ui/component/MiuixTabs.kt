@@ -20,10 +20,8 @@ import androidx.compose.foundation.pager.PagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -37,6 +35,7 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
 import com.example.c001apk.compose.logic.model.TopBarStyle
 import com.example.c001apk.compose.logic.providable.LocalUserPreferences
+import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.TabRow
 import top.yukonga.miuix.kmp.basic.TabRowDefaults
 import top.yukonga.miuix.kmp.basic.TabRowWithContour
@@ -51,8 +50,6 @@ import kotlin.math.roundToInt
 /** Inset the list's initial content, allowing scrolled items to pass beneath the tab bar. */
 internal val LocalTabContentPadding = staticCompositionLocalOf { PaddingValues() }
 
-private class TabPageRequest(val index: Int)
-
 @Composable
 internal fun MiuixPagerTabRow(
     tabs: List<String>,
@@ -61,25 +58,15 @@ internal fun MiuixPagerTabRow(
     withContour: Boolean = false,
     onReselect: () -> Unit = {},
 ) {
-    var requestedPage by remember(pagerState) { mutableStateOf<TabPageRequest?>(null) }
-    val destination = requestedPage
-    LaunchedEffect(pagerState, destination) {
-        if (destination != null) {
-            try {
-                pagerState.springAnimateToPage(destination.index)
-            } finally {
-                if (requestedPage == destination) requestedPage = null
-            }
-        }
-    }
+    val scope = rememberCoroutineScope()
     MiuixTabRow(
         tabs = tabs,
-        selectedTabIndex = destination?.index ?: pagerState.settledPage,
+        selectedTabIndex = pagerState.targetPage,
         onTabSelected = { index ->
-            if (requestedPage == null && !pagerState.isScrollInProgress && index == pagerState.settledPage) {
+            if (!pagerState.isScrollInProgress && index == pagerState.currentPage) {
                 onReselect()
-            } else if (requestedPage?.index != index) {
-                requestedPage = TabPageRequest(index)
+            } else {
+                scope.launch { pagerState.springAnimateToPage(index) }
             }
         },
         modifier = modifier,
