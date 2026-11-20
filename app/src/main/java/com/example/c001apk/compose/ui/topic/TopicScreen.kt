@@ -19,7 +19,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -44,7 +43,7 @@ import com.example.c001apk.compose.ui.component.MiuixHeader as TopAppBar
 import com.example.c001apk.compose.ui.component.MiuixMenu as DropdownMenu
 import com.example.c001apk.compose.ui.component.MiuixMenuItem as DropdownMenuItem
 import com.example.c001apk.compose.ui.component.MiuixScaffold as Scaffold
-import com.example.c001apk.compose.ui.component.MiuixTabRow
+import com.example.c001apk.compose.ui.component.MiuixPagerTabRow
 import com.example.c001apk.compose.ui.component.cards.LoadingCard
 import com.example.c001apk.compose.ui.component.rememberHapticClick
 import com.example.c001apk.compose.ui.component.TopBarScrollPage
@@ -53,14 +52,12 @@ import com.example.c001apk.compose.util.CookieUtil.isLogin
 import com.example.c001apk.compose.util.ReportType
 import com.example.c001apk.compose.util.ShareType
 import com.example.c001apk.compose.util.makeToast
-import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Edit
 import top.yukonga.miuix.kmp.icon.extended.ExpandMore
 import top.yukonga.miuix.kmp.icon.extended.Search
-import top.yukonga.miuix.kmp.utils.springAnimateToPage
 
 /** Created by bggRGjQaUbCoE on 2024/6/9 */
 @Composable
@@ -104,7 +101,6 @@ fun TopicScreen(
                 pageCount = { tabList.size },
             )
         } else null
-    val scope = rememberCoroutineScope()
     var refreshState by remember { mutableStateOf(false) }
 
     Scaffold(
@@ -248,13 +244,10 @@ fun TopicScreen(
                     color = Color.Transparent,
                 )
                 if (pagerState != null && tabList.size > 1) {
-                    MiuixTabRow(
+                    MiuixPagerTabRow(
                         tabs = tabList.map { it.title.orEmpty() },
-                        selectedTabIndex = pagerState.currentPage,
-                        onTabSelected = { index ->
-                            if (pagerState.currentPage == index) refreshState = true
-                            scope.launch { pagerState.springAnimateToPage(index) }
-                        },
+                        pagerState = pagerState,
+                        onReselect = { refreshState = true },
                     )
                 }
             }

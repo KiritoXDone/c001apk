@@ -23,7 +23,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -43,7 +42,7 @@ import com.example.c001apk.compose.ui.component.MiuixToolbarIconButton
 import com.example.c001apk.compose.ui.component.MiuixActionButton as TextButton
 import com.example.c001apk.compose.ui.component.MiuixScaffold as Scaffold
 import com.example.c001apk.compose.ui.component.MiuixScaffoldDefaults as ScaffoldDefaults
-import com.example.c001apk.compose.ui.component.MiuixTabRow
+import com.example.c001apk.compose.ui.component.MiuixPagerTabRow
 import com.example.c001apk.compose.ui.component.MiuixTopBar as TopAppBar
 import com.example.c001apk.compose.ui.component.rememberHapticClick
 import com.example.c001apk.compose.ui.component.TopBarScrollEffect
@@ -55,7 +54,6 @@ import com.example.c001apk.compose.ui.home.feed.HomeFeedScreen
 import com.example.c001apk.compose.ui.home.topic.HomeTopicScreen
 import com.example.c001apk.compose.util.CookieUtil.isLogin
 import com.example.c001apk.compose.util.ReportType
-import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.icon.MiuixIcons
@@ -65,7 +63,6 @@ import top.yukonga.miuix.kmp.icon.extended.Search
 import top.yukonga.miuix.kmp.icon.extended.Update
 import top.yukonga.miuix.kmp.preference.CheckboxPreference
 import top.yukonga.miuix.kmp.theme.MiuixTheme
-import top.yukonga.miuix.kmp.utils.springAnimateToPage
 
 /** Created by bggRGjQaUbCoE on 2024/6/5 */
 enum class TabType {
@@ -247,7 +244,6 @@ fun HomeScreen(
         return
     }
 
-    val scope = rememberCoroutineScope()
     val tabList =
         remember(menus) {
             menus.filter(HomeMenu::isEnable).mapNotNull { menu ->
@@ -312,16 +308,12 @@ fun HomeScreen(
                         }
                     },
                 )
-                MiuixTabRow(
+                MiuixPagerTabRow(
                     modifier = Modifier.padding(start = 12.dp, end = 12.dp, bottom = 8.dp),
                     withContour = true,
                     tabs = tabList.map(::tabTitle),
-                    selectedTabIndex = selectedTabIndex,
-                    onTabSelected = { index ->
-                        if (pagerState.currentPage == index) onRefresh()
-                        selectedTabType = tabList[index]
-                        scope.launch { pagerState.springAnimateToPage(index) }
-                    },
+                    pagerState = pagerState,
+                    onReselect = onRefresh,
                 )
             }
         },

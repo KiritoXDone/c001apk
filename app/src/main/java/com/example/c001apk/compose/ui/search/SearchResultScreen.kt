@@ -14,23 +14,20 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.c001apk.compose.ui.component.MiuixScaffold as Scaffold
-import com.example.c001apk.compose.ui.component.MiuixTabRow
+import com.example.c001apk.compose.ui.component.MiuixPagerTabRow
 import com.example.c001apk.compose.util.ReportType
-import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.DropdownEntry
 import top.yukonga.miuix.kmp.basic.DropdownItem
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.More
 import top.yukonga.miuix.kmp.menu.WindowIconCascadingDropdownMenu
-import top.yukonga.miuix.kmp.utils.springAnimateToPage
 
 /** Created by bggRGjQaUbCoE on 2024/6/9 */
 enum class SearchType {
@@ -121,7 +118,6 @@ fun SearchResultScreen(
             pageCount = { if (pageType.isNullOrEmpty()) tabList.size else 1 },
         )
     var refreshState by remember { mutableStateOf(false) }
-    val scope = rememberCoroutineScope()
     var feedType by rememberSaveable { mutableStateOf(SearchFeedType.ALL) }
     val defaultOrder = LocalUserPreferences.current.defaultSearchOrder
     var orderType by rememberSaveable {
@@ -193,13 +189,10 @@ fun SearchResultScreen(
                     },
                 )
                 if (pageType.isNullOrEmpty()) {
-                    MiuixTabRow(
+                    MiuixPagerTabRow(
                         tabs = tabList.map(::searchTypeTitle),
-                        selectedTabIndex = pagerState.currentPage,
-                        onTabSelected = { index ->
-                            if (pagerState.currentPage == index) refreshState = true
-                            scope.launch { pagerState.springAnimateToPage(index) }
-                        },
+                        pagerState = pagerState,
+                        onReselect = { refreshState = true },
                     )
                 }
             }

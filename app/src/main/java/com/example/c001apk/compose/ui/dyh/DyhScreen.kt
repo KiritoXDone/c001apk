@@ -12,17 +12,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import com.example.c001apk.compose.ui.component.BackButton
 import com.example.c001apk.compose.ui.component.MiuixScaffold as Scaffold
-import com.example.c001apk.compose.ui.component.MiuixTabRow
+import com.example.c001apk.compose.ui.component.MiuixPagerTabRow
 import com.example.c001apk.compose.ui.component.MiuixTopBar as TopAppBar
 import com.example.c001apk.compose.ui.component.TopBarScrollPage
 import com.example.c001apk.compose.util.ReportType
-import kotlinx.coroutines.launch
-import top.yukonga.miuix.kmp.utils.springAnimateToPage
 
 /** Created by bggRGjQaUbCoE on 2024/6/12 */
 @Composable
@@ -43,7 +40,6 @@ fun DyhScreen(
         rememberPagerState(
             pageCount = { tabList.size },
         )
-    val scope = rememberCoroutineScope()
     var refreshState by remember { mutableStateOf(false) }
 
     Scaffold(
@@ -60,13 +56,10 @@ fun DyhScreen(
                     },
                     title = title,
                 )
-                MiuixTabRow(
+                MiuixPagerTabRow(
                     tabs = tabList,
-                    selectedTabIndex = pagerState.currentPage,
-                    onTabSelected = { index ->
-                        if (pagerState.currentPage == index) refreshState = true
-                        scope.launch { pagerState.springAnimateToPage(index) }
-                    },
+                    pagerState = pagerState,
+                    onReselect = { refreshState = true },
                 )
             }
         },

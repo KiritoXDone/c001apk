@@ -21,6 +21,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.toPixelMap
@@ -33,10 +34,14 @@ import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.captureToImage
+import androidx.compose.ui.test.click
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performSemanticsAction
+import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.test.swipe
+import androidx.compose.ui.test.swipeLeft
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
@@ -46,6 +51,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.example.c001apk.compose.logic.datastore.UserPreferencesCompat
 import com.example.c001apk.compose.logic.model.TopBarStyle
 import com.example.c001apk.compose.logic.providable.LocalUserPreferences
+import com.example.c001apk.compose.ui.component.MiuixPagerTabRow
 import com.example.c001apk.compose.ui.component.MiuixScaffold
 import com.example.c001apk.compose.ui.component.MiuixTabRow
 import com.example.c001apk.compose.ui.component.MiuixTopBar
@@ -230,6 +236,101 @@ class TabRowBlurTest {
             assertEquals(1, pagerInstances)
             assertEquals(5, callbacks)
         }
+    }
+
+    @Test fun overflowingOs4TabsScrollWithoutSelectingAndStillRespondToTap() {
+        val labels = listOf("First long label", "Second long label", "Third long label", "Fourth long label")
+        val selected = mutableStateOf(0)
+        var selectionCount = 0
+        compose.setContent {
+            CompositionLocalProvider(
+                LocalUserPreferences provides UserPreferencesCompat.default().copy(topBarStyle = TopBarStyle.OS4),
+            ) {
+                C001apkComposeTheme(materialYou = false) {
+                    MiuixTabRow(
+                        tabs = labels,
+                        selectedTabIndex = selected.value,
+                        onTabSelected = { index ->
+                            selected.value = index
+                            selectionCount++
+                        },
+                        modifier = Modifier.width(180.dp).testTag("tabs"),
+                    )
+                }
+            }
+        }
+        repeat(3) { compose.onNodeWithTag("tabs").performTouchInput { swipeLeft() } }
+        compose.runOnIdle {
+            assertEquals(0, selected.value)
+            assertEquals(0, selectionCount)
+        }
+        compose.onNodeWithText(labels.last()).assertIsDisplayed().performTouchInput { click() }
+        compose.onNodeWithText(labels.last()).assertIsSelected()
+        compose.runOnIdle { assertEquals(1, selectionCount) }
+    }
+
+    @Test fun compactOs4TabsCanDragDirectlyToAnotherPage() {
+        val labels = listOf("One", "Two", "Three")
+        lateinit var pager: PagerState
+        compose.setContent {
+            CompositionLocalProvider(
+                LocalUserPreferences provides UserPreferencesCompat.default().copy(topBarStyle = TopBarStyle.OS4),
+            ) {
+                C001apkComposeTheme(materialYou = false) {
+                    pager = rememberPagerState { labels.size }
+                    Column {
+                        MiuixPagerTabRow(labels, pager, Modifier.width(300.dp).testTag("tabs"))
+                        HorizontalPager(pager, modifier = Modifier.width(300.dp).height(60.dp)) { page ->
+                            Text("Page $page")
+                        }
+                    }
+                }
+            }
+        }
+        compose.onNodeWithTag("tabs").performTouchInput {
+            swipe(Offset(width / 6f, centerY), Offset(width * 5f / 6f, centerY))
+        }
+        compose.onNodeWithText(labels.last()).assertIsSelected()
+        compose.runOnIdle { assertEquals(2, pager.settledPage) }
+    }
+
+    @Test fun pagerTabsKeepRequestedSelectionDuringAnimationAndAcceptAnotherTap() {
+        val labels = listOf("One", "Two", "Three", "Four")
+        var reselectCount = 0
+        lateinit var pager: PagerState
+        compose.setContent {
+            CompositionLocalProvider(
+                LocalUserPreferences provides UserPreferencesCompat.default().copy(topBarStyle = TopBarStyle.OS4),
+            ) {
+                C001apkComposeTheme(materialYou = false) {
+                    pager = rememberPagerState { labels.size }
+                    Column {
+                        MiuixPagerTabRow(labels, pager, Modifier.width(300.dp), onReselect = { reselectCount++ })
+                        HorizontalPager(pager, modifier = Modifier.width(300.dp).height(60.dp)) { page ->
+                            Text("Page $page")
+                        }
+                    }
+                }
+            }
+        }
+        compose.waitForIdle()
+        compose.mainClock.autoAdvance = false
+        try {
+            compose.onNodeWithText("Four").performClick()
+            compose.mainClock.advanceTimeUntil { pager.currentPage in 1..2 }
+            compose.onNodeWithText("Four").assertIsSelected()
+            compose.onNodeWithText("Two").performClick()
+            compose.mainClock.advanceTimeByFrame()
+            compose.onNodeWithText("Two").assertIsSelected()
+        } finally {
+            compose.mainClock.autoAdvance = true
+        }
+        compose.runOnIdle {
+            assertEquals(1, pager.settledPage)
+            assertEquals(0, reselectCount)
+        }
+        compose.onNodeWithText("Two").performClick()
+        compose.runOnIdle { assertEquals(1, reselectCount) }
     }
 
     private fun verifyBackdrop(contour: Boolean) {

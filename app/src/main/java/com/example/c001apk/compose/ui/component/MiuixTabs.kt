@@ -16,10 +16,14 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.pager.PagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -41,10 +45,47 @@ import top.yukonga.miuix.kmp.glass.GlassSegmentedTabRowDefaults
 import top.yukonga.miuix.kmp.glass.glassShadow
 import top.yukonga.miuix.kmp.material.GlassShadows
 import top.yukonga.miuix.kmp.theme.MiuixTheme
+import top.yukonga.miuix.kmp.utils.springAnimateToPage
 import kotlin.math.roundToInt
 
 /** Inset the list's initial content, allowing scrolled items to pass beneath the tab bar. */
 internal val LocalTabContentPadding = staticCompositionLocalOf { PaddingValues() }
+
+private class TabPageRequest(val index: Int)
+
+@Composable
+internal fun MiuixPagerTabRow(
+    tabs: List<String>,
+    pagerState: PagerState,
+    modifier: Modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+    withContour: Boolean = false,
+    onReselect: () -> Unit = {},
+) {
+    var requestedPage by remember(pagerState) { mutableStateOf<TabPageRequest?>(null) }
+    val destination = requestedPage
+    LaunchedEffect(pagerState, destination) {
+        if (destination != null) {
+            try {
+                pagerState.springAnimateToPage(destination.index)
+            } finally {
+                if (requestedPage == destination) requestedPage = null
+            }
+        }
+    }
+    MiuixTabRow(
+        tabs = tabs,
+        selectedTabIndex = destination?.index ?: pagerState.settledPage,
+        onTabSelected = { index ->
+            if (requestedPage == null && !pagerState.isScrollInProgress && index == pagerState.settledPage) {
+                onReselect()
+            } else if (requestedPage?.index != index) {
+                requestedPage = TabPageRequest(index)
+            }
+        },
+        modifier = modifier,
+        withContour = withContour,
+    )
+}
 
 /** Shared collapse behavior for native tab styles hosted in the page header. */
 @Composable
@@ -128,6 +169,7 @@ private fun Os4TabRow(
     BoxWithConstraints(modifier.fillMaxWidth().height(height)) {
         val viewport = if (constraints.hasBoundedWidth) constraints.maxWidth else naturalWidth
         val contentWidth = maxOf(viewport, naturalWidth)
+        val canScroll = contentWidth > viewport
         val slotWidth = (contentWidth - trackInset * 2 - gap * (tabs.size - 1)).toFloat() / tabs.size
         val center = trackInset + selected * (slotWidth + gap) + slotWidth / 2
         val targetScroll = (center - viewport / 2f).roundToInt().coerceIn(0, contentWidth - viewport)
@@ -136,7 +178,7 @@ private fun Os4TabRow(
             if (scroll.value != targetScroll) scroll.animateScrollTo(targetScroll)
         }
         Box(Modifier.fillMaxWidth().height(height).glassShadow(shape, GlassShadows.Float).clip(shape).then(surface)) {
-            Box(Modifier.horizontalScroll(scroll, overscrollEffect = null)) {
+            Box(Modifier.horizontalScroll(scroll, enabled = canScroll, overscrollEffect = null)) {
                 GlassSegmentedTabRow(
                     tabs = tabs,
                     selectedIndex = selected,
@@ -151,6 +193,7 @@ private fun Os4TabRow(
                     indicatorColor = indicator,
                     selectedContentColor = MiuixTheme.colorScheme.onSurface,
                     contentColor = MiuixTheme.colorScheme.onSurfaceVariantSummary,
+                    dragToSelect = !canScroll,
                 )
             }
         }

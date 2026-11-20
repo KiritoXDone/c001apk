@@ -12,6 +12,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
@@ -577,6 +578,7 @@ object GlassSegmentedTabRowDefaults {
  * @param indicatorColor Fill of the indicator behind the current tab.
  * @param selectedContentColor Colour of the current tab's label.
  * @param contentColor Colour of the others.
+ * @param dragToSelect Whether the track handles horizontal drags instead of its scrollable parent.
  */
 @Composable
 fun GlassSegmentedTabRow(
@@ -596,6 +598,7 @@ fun GlassSegmentedTabRow(
     indicatorColor: Color = GlassSegmentedTabRowDefaults.indicatorColor(),
     selectedContentColor: Color = if (MiuixTheme.isDynamicColor) MiuixTheme.colorScheme.primary else MiuixTheme.colorScheme.onSurface,
     contentColor: Color = MiuixTheme.colorScheme.onSurface,
+    dragToSelect: Boolean = true,
 ) {
     if (tabs.isEmpty()) return
     val index = selectedIndex.coerceIn(0, tabs.lastIndex)
@@ -727,7 +730,7 @@ fun GlassSegmentedTabRow(
                 .fillMaxHeight()
                 .padding(GlassSegmentedTabRowDefaults.TrackPadding)
                 .onSizeChanged { trackWidth = it.width }
-                .pointerInput(tabs.size, gap, layoutDirection) {
+                .pointerInput(tabs.size, gap, layoutDirection, dragToSelect) {
                     awaitEachGesture {
                         val down = awaitFirstDown(requireUnconsumed = false)
                         val width = size.width.toFloat()
@@ -737,12 +740,18 @@ fun GlassSegmentedTabRow(
                         fun indexAt(x: Float): Int = (x / (currentSlot + gap)).toInt().coerceIn(0, tabs.lastIndex)
 
                         val downX = logicalX(down.position.x)
+                        if (!dragToSelect) {
+                            waitForUpOrCancellation()?.let { up ->
+                                onSelectState(indexAt(downX))
+                                up.consume()
+                            }
+                            return@awaitEachGesture
+                        }
                         var selectionX = downX
                         var current = indexAt(downX)
                         pressedIndex = current
                         dragging.value = true
                         val pressedLeft = current * (currentSlot + gap)
-                        animateIndicator(pressedLeft, pressedLeft + currentSlot)
                         var grabOffset = Float.NaN
                         try {
                             while (true) {

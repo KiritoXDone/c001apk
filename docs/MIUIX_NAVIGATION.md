@@ -15,7 +15,7 @@
 
 Home / Following / Profile are peer sections, not entries in the back history. They use a Pager with Miuix's `springAnimateToPage`, following the upstream example's split between page navigation and main-section navigation. Main-section dragging remains disabled so nested topic/home pagers keep their existing gestures. The existing selected-section state, page saveable state, badge handling, and repeated-selection refresh are retained.
 
-Tab click animations use the same Miuix pager helper. Top tab rows remain native Miuix components. Loading states, list expansion, dialogs, and image viewers retain their component-specific behavior; they are not forced into the page back stack.
+Top tabs use the same Miuix pager helper. A tap highlights its destination without highlighting intermediate pages; a swipe on page content updates selection when the pager settles. The OS4 track scrolls when the labels overflow and otherwise supports dragging the selection indicator. Loading states, list expansion, dialogs, and image viewers retain their component-specific behavior; they are not forced into the page back stack.
 
 The bottom bar and large-screen rail share a persistent display order. Selection, refresh triggers,
 account-switch navigation and unread badges use stable page IDs rather than display positions. Sorting

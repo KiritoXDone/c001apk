@@ -14,7 +14,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -30,14 +29,12 @@ import com.example.c001apk.compose.ui.component.BackButton
 import com.example.c001apk.compose.ui.component.CommonScreen
 import com.example.c001apk.compose.ui.component.MiuixHeader as TopAppBar
 import com.example.c001apk.compose.ui.component.MiuixScaffold as Scaffold
-import com.example.c001apk.compose.ui.component.MiuixTabRow
+import com.example.c001apk.compose.ui.component.MiuixPagerTabRow
 import com.example.c001apk.compose.ui.component.cards.LoadingCard
 import com.example.c001apk.compose.ui.component.TopBarScrollPage
 import com.example.c001apk.compose.util.ReportType
 import com.example.c001apk.compose.util.makeToast
-import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.Text
-import top.yukonga.miuix.kmp.utils.springAnimateToPage
 
 /** Created by bggRGjQaUbCoE on 2024/6/11 */
 @Composable
@@ -58,7 +55,6 @@ fun CarouselScreen(
             factory.create(isInit = true, url = url, title = title)
         }
 
-    val scope = rememberCoroutineScope()
     var refreshState by remember { mutableStateOf(false) }
 
     val tabList =
@@ -97,13 +93,10 @@ fun CarouselScreen(
                     },
                 )
                 if (pagerState != null) {
-                    MiuixTabRow(
+                    MiuixPagerTabRow(
                         tabs = tabList.map { it.title },
-                        selectedTabIndex = pagerState.currentPage,
-                        onTabSelected = { index ->
-                            if (pagerState.currentPage == index) refreshState = true
-                            scope.launch { pagerState.springAnimateToPage(index) }
-                        },
+                        pagerState = pagerState,
+                        onReselect = { refreshState = true },
                     )
                 }
             }
