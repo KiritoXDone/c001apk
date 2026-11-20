@@ -35,7 +35,7 @@ require(
 
 android {
     namespace = "com.example.c001apk.compose"
-    compileSdkVersion("android-37.0")
+    compileSdkVersion("android-37.1")
     buildToolsVersion = "36.0.0"
 
     defaultConfig {

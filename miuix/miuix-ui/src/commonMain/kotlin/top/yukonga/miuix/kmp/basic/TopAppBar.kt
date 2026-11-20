@@ -33,16 +33,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.computedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
@@ -72,6 +74,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastFirst
 import androidx.compose.ui.util.fastRoundToInt
 import androidx.compose.ui.util.lerp
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.anim.folmeSpring
 import top.yukonga.miuix.kmp.basic.TopAppBarState.Companion.Saver
@@ -124,6 +130,7 @@ fun TopAppBar(
     titlePadding: Dp = TopAppBarDefaults.TitlePadding,
     navigationIconPadding: Dp = TopAppBarDefaults.NavigationIconPadding,
     actionIconPadding: Dp = TopAppBarDefaults.ActionIconPadding,
+    centerObstructionStart: Dp = Dp.Unspecified,
     bottomContent: @Composable () -> Unit = {},
 ) {
     val actionsRow =
@@ -153,6 +160,7 @@ fun TopAppBar(
         scrollBehavior = scrollBehavior,
         modifier = modifier,
         defaultWindowInsetsPadding = defaultWindowInsetsPadding,
+        centerObstructionStart = centerObstructionStart,
         bottomContent = bottomContent,
     )
 }
@@ -198,6 +206,7 @@ fun SmallTopAppBar(
     windowInsets: WindowInsets? = null,
     consumeBarTaps: Boolean = true,
     clipControlsToBounds: Boolean = true,
+    centerObstructionStart: Dp = Dp.Unspecified,
     bottomContent: @Composable () -> Unit = {},
 ) {
     SideEffect {
@@ -242,6 +251,7 @@ fun SmallTopAppBar(
         windowInsets = windowInsets,
         consumeBarTaps = consumeBarTaps,
         clipControlsToBounds = clipControlsToBounds,
+        centerObstructionStart = centerObstructionStart,
         bottomContent = bottomContent,
     )
 }
@@ -271,13 +281,17 @@ fun MiuixScrollBehavior(
     canScroll: () -> Boolean = { true },
     snapAnimationSpec: AnimationSpec<Float>? = spring(stiffness = 2500f),
     flingAnimationSpec: DecayAnimationSpec<Float>? = rememberSplineBasedDecay(),
-): ScrollBehavior = remember(state, canScroll, snapAnimationSpec, flingAnimationSpec) {
-    ExitUntilCollapsedScrollBehavior(
-        state = state,
-        snapAnimationSpec = snapAnimationSpec,
-        flingAnimationSpec = flingAnimationSpec,
-        canScroll = canScroll,
-    )
+): ScrollBehavior {
+    val coroutineScope = rememberCoroutineScope()
+    return remember(state, canScroll, snapAnimationSpec, flingAnimationSpec, coroutineScope) {
+        ExitUntilCollapsedScrollBehavior(
+            state = state,
+            snapAnimationSpec = snapAnimationSpec,
+            flingAnimationSpec = flingAnimationSpec,
+            canScroll = canScroll,
+            coroutineScope = coroutineScope,
+        )
+    }
 }
 
 /**
@@ -429,6 +443,9 @@ object TopAppBarDefaults {
     /** The default horizontal padding of the title and large title. */
     val TitlePadding = 26.dp
 
+    /** The spacing between the title and adjacent controls. */
+    val TitleControlSpacing = 12.dp
+
     /** The default start padding of the navigation icon. */
     val NavigationIconPadding = 16.dp
 
@@ -506,8 +523,29 @@ private class ExitUntilCollapsedScrollBehavior(
     override val snapAnimationSpec: AnimationSpec<Float>?,
     override val flingAnimationSpec: DecayAnimationSpec<Float>?,
     val canScroll: () -> Boolean = { true },
+    private val coroutineScope: CoroutineScope? = null,
 ) : ScrollBehavior {
     override val isPinned: Boolean = false
+    private var idleSettleJob: Job? = null
+    internal var inputTracker: TopAppBarInputTracker? = null
+
+    private fun scheduleIdleSettle() {
+        if (inputTracker?.allowIdleSettle != true) {
+            idleSettleJob?.cancel()
+            return
+        }
+        if (snapAnimationSpec == null || coroutineScope == null) return
+        if (state.collapsedFraction < 0.01f || state.collapsedFraction > 0.99f) {
+            idleSettleJob?.cancel()
+            return
+        }
+        idleSettleJob?.cancel()
+        idleSettleJob = coroutineScope.launch {
+            delay(180L)
+            settleAppBar(state, 0f, flingAnimationSpec, snapAnimationSpec)
+        }
+    }
+
     override var nestedScrollConnection =
         object : NestedScrollConnection {
             override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
@@ -516,6 +554,7 @@ private class ExitUntilCollapsedScrollBehavior(
                 val prevHeightOffset = state.heightOffset
                 state.heightOffset += available.y
                 return if (prevHeightOffset != state.heightOffset) {
+                    scheduleIdleSettle()
                     // We're in the middle of top app bar collapse or expand.
                     // Consume only the scroll on the Y axis.
                     available.copy(x = 0f)
@@ -536,6 +575,9 @@ private class ExitUntilCollapsedScrollBehavior(
                     // When scrolling up, just update the state's height offset.
                     val oldHeightOffset = state.heightOffset
                     state.heightOffset += consumed.y
+                    if (oldHeightOffset != state.heightOffset) {
+                        scheduleIdleSettle()
+                    }
                     return Offset(0f, state.heightOffset - oldHeightOffset)
                 }
 
@@ -544,12 +586,16 @@ private class ExitUntilCollapsedScrollBehavior(
                     // recorded as available delta Y in the pre-scroll.
                     val oldHeightOffset = state.heightOffset
                     state.heightOffset += available.y
+                    if (oldHeightOffset != state.heightOffset) {
+                        scheduleIdleSettle()
+                    }
                     return Offset(0f, state.heightOffset - oldHeightOffset)
                 }
                 return Offset.Zero
             }
 
             override suspend fun onPostFling(consumed: Velocity, available: Velocity): Velocity {
+                idleSettleJob?.cancel()
                 if (available.y > 0) {
                     // Reset the total content offset to zero when scrolling all the way down. This
                     // will eliminate some float precision inaccuracies.
@@ -676,9 +722,14 @@ fun TopAppBarLayout(
     titleAlignment: TopAppBarTitleAlignment = TopAppBarTitleAlignment.Native,
     windowInsets: WindowInsets? = null,
     consumeBarTaps: Boolean = true,
+    centerObstructionStart: Dp = Dp.Unspecified,
     bottomContent: @Composable () -> Unit = {},
 ) {
     val titleClip = remember { TopAppBarTitleClip() }
+    val inputTracker = LocalTopAppBarInputTracker.current
+    SideEffect {
+        (scrollBehavior as? ExitUntilCollapsedScrollBehavior)?.inputTracker = inputTracker
+    }
     // Producer lambdas — reads stay in layout/draw phases so scroll never recomposes this subtree.
     val scrolledOffset = remember(scrollBehavior) {
         { scrollBehavior?.state?.heightOffset ?: 0f }
@@ -721,20 +772,16 @@ fun TopAppBarLayout(
         }
     }
 
-    // Boolean derivedStateOf invalidates only on flip → the spring fires once per crossing, not per frame.
+    // Boolean computedStateOf invalidates only on flip → the spring fires once per crossing, not per frame.
     val smallTitleVisible by remember(scrollBehavior, expandable) {
-        derivedStateOf {
-            if (!expandable) {
-                true
-            } else {
-                scrollBehavior?.state?.let { state ->
-                    if (state.pinnedBySmallTopAppBar) {
-                        state.contentOffset < 0f
-                    } else {
-                        state.collapsedFraction * 3f >= 1f
-                    }
-                } ?: false
-            }
+        computedStateOf {
+            !expandable || scrollBehavior?.state?.let { state ->
+                if (state.pinnedBySmallTopAppBar) {
+                    state.contentOffset < 0f
+                } else {
+                    state.collapsedFraction * 3f >= 1f
+                }
+            } ?: false
         }
     }
     val smallTitleAlpha = remember { Animatable(if (smallTitleVisible) 1f else 0f) }
@@ -751,6 +798,8 @@ fun TopAppBarLayout(
             launch { smallTitleTranslationY.animateTo(20f, hideSpec) }
         }
     }
+    val alignmentState = rememberTitleAlignmentState()
+    val obstructionState = rememberTitleObstructionTransitionState()
 
     val animatedTitleColor by animateColorAsState(
         targetValue = titleColor,
@@ -778,13 +827,18 @@ fun TopAppBarLayout(
                 Modifier
                     .layoutId("title")
                     .clipTopAppBarTitle(titleClip) { titleClip.titleOrigin }
-                    .padding(horizontal = titlePadding)
+                    .padding(horizontal = if (titleAlignment == TopAppBarTitleAlignment.Native) 0.dp else titlePadding)
                     .graphicsLayer {
                         val currentAlpha = smallTitleAlpha.value
-                        alpha = currentAlpha * titleAlpha()
+                        val obstructionAlpha = obstructionState.visibilityAlpha.value
+                        alpha = currentAlpha * obstructionAlpha * titleAlpha()
                         translationY = smallTitleTranslationY.value
+                        val blurAmount = maxOf(
+                            (1f - currentAlpha).coerceIn(0f, 1f),
+                            obstructionState.blurFraction.value.coerceIn(0f, 1f),
+                        )
                         val radius = if (titleBlurRadius > 0.dp) {
-                            titleBlurRadius.toPx() * 0.5f * (1f - currentAlpha).coerceIn(0f, 1f)
+                            titleBlurRadius.toPx() * 0.5f * blurAmount
                         } else {
                             0f
                         }
@@ -802,6 +856,7 @@ fun TopAppBarLayout(
                     fontWeight = FontWeight.Medium,
                     overflow = TextOverflow.Ellipsis,
                     softWrap = false,
+                    onTextLayout = { obstructionState.hasOverflow = it.hasVisualOverflow },
                 )
             }
             Box(
@@ -866,10 +921,15 @@ fun TopAppBarLayout(
                         .clipTopAppBarTitle(titleClip) { titleClip.subtitleOrigin }
                         .graphicsLayer {
                             val currentAlpha = smallTitleAlpha.value
-                            alpha = currentAlpha * titleAlpha()
+                            val obstructionAlpha = obstructionState.visibilityAlpha.value
+                            alpha = currentAlpha * obstructionAlpha * titleAlpha()
                             translationY = smallTitleTranslationY.value
+                            val blurAmount = maxOf(
+                                (1f - currentAlpha).coerceIn(0f, 1f),
+                                obstructionState.blurFraction.value.coerceIn(0f, 1f),
+                            )
                             val radius = if (titleBlurRadius > 0.dp) {
-                                titleBlurRadius.toPx() * 0.5f * (1f - currentAlpha).coerceIn(0f, 1f)
+                                titleBlurRadius.toPx() * 0.5f * blurAmount
                             } else {
                                 0f
                             }
@@ -920,24 +980,37 @@ fun TopAppBarLayout(
             measurables
                 .fastFirst { it.layoutId == "actionIcons" }
                 .measure(constraints.copy(minWidth = 0, minHeight = 0))
-
-        val maxTitleWidth =
+        val titlePaddingPx = titlePadding.roundToPx()
+        val controlTitleSpacingPx = minOf(titlePaddingPx, TopAppBarDefaults.TitleControlSpacing.roundToPx())
+        val startInset = if (navigationIconPlaceable.width > 0) controlTitleSpacingPx else titlePaddingPx
+        val endInset = if (actionIconsPlaceable.width > 0) controlTitleSpacingPx else titlePaddingPx
+        val hasCenterObstruction = centerObstructionStart != Dp.Unspecified && constraints.maxWidth != Constraints.Infinity
+        val normalTitleMaxWidth =
             if (constraints.maxWidth == Constraints.Infinity) {
                 constraints.maxWidth
             } else {
-                (constraints.maxWidth - if (titleAlignment == TopAppBarTitleAlignment.Center)
-                    2 * maxOf(navigationIconPlaceable.width, actionIconsPlaceable.width)
-                else navigationIconPlaceable.width + actionIconsPlaceable.width)
+                val controlsWidth = when (titleAlignment) {
+                    TopAppBarTitleAlignment.Center -> 2 * maxOf(navigationIconPlaceable.width, actionIconsPlaceable.width)
+                    TopAppBarTitleAlignment.Start -> navigationIconPlaceable.width + actionIconsPlaceable.width
+                    TopAppBarTitleAlignment.Native -> navigationIconPlaceable.width + actionIconsPlaceable.width + startInset + endInset
+                }
+                (constraints.maxWidth - controlsWidth)
                     .coerceAtLeast(0)
             }
-        val titleMaxWidth =
-            if (maxTitleWidth == Constraints.Infinity) {
-                maxTitleWidth
+        val obstructedWidth =
+            if (hasCenterObstruction) {
+                val obstructionLimit = centerObstructionStart.roundToPx() - controlTitleSpacingPx
+                val startEdge = navigationIconPlaceable.width + startInset
+                val available = (obstructionLimit - startEdge).coerceAtLeast(0)
+                if (available < MinTitleWidth.roundToPx()) 0 else available
             } else {
-                if (titleAlignment == TopAppBarTitleAlignment.Native)
-                    (maxTitleWidth * TITLE_WIDTH_FRACTION).fastRoundToInt() else maxTitleWidth
+                Int.MAX_VALUE
             }
-
+        val titleMaxWidth = obstructionState.resolveMeasureMaxWidth(
+            hasCenterObstruction = hasCenterObstruction,
+            normalMaxWidth = normalTitleMaxWidth,
+            obstructedWidth = obstructedWidth,
+        )
         val titlePlaceable =
             measurables
                 .fastFirst { it.layoutId == "title" }
@@ -958,7 +1031,7 @@ fun TopAppBarLayout(
             measurables
                 .firstOrNull { it.layoutId == "smallSubtitle" }
                 ?.measure(constraints.copy(minWidth = 0, maxWidth = titleMaxWidth, minHeight = 0))
-
+        obstructionState.currentContentWidth = maxOf(titlePlaceable.width, smallSubtitlePlaceable?.width ?: 0)
         val bottomContentPlaceable =
             measurables
                 .fastFirst { it.layoutId == "bottomContent" }
@@ -986,7 +1059,8 @@ fun TopAppBarLayout(
         val verticalCenter = collapsedHeight / 2
         val smallSubtitleHeight = smallSubtitlePlaceable?.height ?: 0
         val smallTitleGroupHeight = titlePlaceable.height + smallSubtitleHeight
-        val smallTitleGroupTop = verticalCenter - if (smallSubtitlePlaceable != null) smallTitleGroupHeight / 2 else titlePlaceable.height / 2
+        val smallTitleGroupTop =
+            verticalCenter - if (smallSubtitlePlaceable != null) smallTitleGroupHeight / 2 else titlePlaceable.height / 2
         val smallSubtitleBottom = smallTitleGroupTop + smallTitleGroupHeight
         val expandedBottomPadding = if (smallSubtitlePlaceable != null) {
             TopAppBarDefaults.SubtitleBottomPadding.roundToPx()
@@ -1004,28 +1078,72 @@ fun TopAppBarLayout(
                 y = verticalCenter - navigationIconPlaceable.height / 2,
             )
 
-            val titleGroupWidth = maxOf(titlePlaceable.width, smallSubtitlePlaceable?.width ?: 0)
-            val groupX = titleAlignment.groupStart(
-                barWidth = constraints.maxWidth,
-                groupWidth = titleGroupWidth,
-                navigationWidth = navigationIconPlaceable.width,
-                actionsWidth = actionIconsPlaceable.width,
-            )
-            val titleX = groupX + titleAlignment.textOffset(titleGroupWidth, titlePlaceable.width)
-            titleClip.titleOrigin = IntOffset(
-                titleX.physicalX(layoutDirection, constraints.maxWidth, titlePlaceable.width),
-                smallTitleGroupTop,
-            )
-            titlePlaceable.placeRelative(x = titleX, y = smallTitleGroupTop)
+            if (titleAlignment == TopAppBarTitleAlignment.Native) {
+                // Center title/subtitle between side controls, or start-align if it overflows.
+                val titleGroupWidth = maxOf(titlePlaceable.width, smallSubtitlePlaceable?.width ?: 0)
+                val leadingControlBounds = if (layoutDirection == LayoutDirection.Ltr) {
+                    navigationIconPlaceable.width + startInset
+                } else {
+                    actionIconsPlaceable.width + endInset
+                }
+                val trailingControlBounds = if (layoutDirection == LayoutDirection.Ltr) {
+                    actionIconsPlaceable.width + endInset
+                } else {
+                    navigationIconPlaceable.width + startInset
+                }
+                val centeredGroupX = (constraints.maxWidth - titleGroupWidth) / 2
+                val canCenter = !hasCenterObstruction &&
+                    centeredGroupX >= leadingControlBounds &&
+                    centeredGroupX + titleGroupWidth <= constraints.maxWidth - trailingControlBounds
+                val alignmentFraction = alignmentState.resolveFraction(canCenter)
+                val centeredTitleX = centeredGroupX + (titleGroupWidth - titlePlaceable.width) / 2
+                val centeredSubtitleX = centeredGroupX + (titleGroupWidth - (smallSubtitlePlaceable?.width ?: 0)) / 2
+                val startTitleX = if (layoutDirection == LayoutDirection.Ltr) {
+                    leadingControlBounds
+                } else {
+                    constraints.maxWidth - trailingControlBounds - titlePlaceable.width
+                }
+                val startSubtitleX = if (layoutDirection == LayoutDirection.Ltr) {
+                    leadingControlBounds
+                } else {
+                    constraints.maxWidth - trailingControlBounds - (smallSubtitlePlaceable?.width ?: 0)
+                }
+                val titleX = lerp(startTitleX, centeredTitleX, alignmentFraction)
+                val subtitleX = lerp(startSubtitleX, centeredSubtitleX, alignmentFraction)
+                if (titleMaxWidth > 0 && obstructionState.visibilityAlpha.value > 0.001f) {
+                    titleClip.titleOrigin = IntOffset(titleX, smallTitleGroupTop)
+                    titlePlaceable.place(x = titleX, y = smallTitleGroupTop)
 
-            smallSubtitlePlaceable?.let { subtitle ->
-                val subtitleX = groupX + titleAlignment.textOffset(titleGroupWidth, subtitle.width)
-                val subtitleY = smallTitleGroupTop + titlePlaceable.height
-                titleClip.subtitleOrigin = IntOffset(
-                    subtitleX.physicalX(layoutDirection, constraints.maxWidth, subtitle.width),
-                    subtitleY,
+                    smallSubtitlePlaceable?.let { subtitle ->
+                        val subtitleY = smallTitleGroupTop + titlePlaceable.height
+                        titleClip.subtitleOrigin = IntOffset(subtitleX, subtitleY)
+                        subtitle.place(x = subtitleX, y = subtitleY)
+                    }
+                }
+            } else {
+                val titleGroupWidth = maxOf(titlePlaceable.width, smallSubtitlePlaceable?.width ?: 0)
+                val groupX = titleAlignment.groupStart(
+                    barWidth = constraints.maxWidth,
+                    groupWidth = titleGroupWidth,
+                    navigationWidth = navigationIconPlaceable.width,
+                    actionsWidth = actionIconsPlaceable.width,
                 )
-                subtitle.placeRelative(x = subtitleX, y = subtitleY)
+                val titleX = groupX + titleAlignment.textOffset(titleGroupWidth, titlePlaceable.width)
+                titleClip.titleOrigin = IntOffset(
+                    titleX.physicalX(layoutDirection, constraints.maxWidth, titlePlaceable.width),
+                    smallTitleGroupTop,
+                )
+                titlePlaceable.placeRelative(x = titleX, y = smallTitleGroupTop)
+
+                smallSubtitlePlaceable?.let { subtitle ->
+                    val subtitleX = groupX + titleAlignment.textOffset(titleGroupWidth, subtitle.width)
+                    val subtitleY = smallTitleGroupTop + titlePlaceable.height
+                    titleClip.subtitleOrigin = IntOffset(
+                        subtitleX.physicalX(layoutDirection, constraints.maxWidth, subtitle.width),
+                        subtitleY,
+                    )
+                    subtitle.placeRelative(x = subtitleX, y = subtitleY)
+                }
             }
 
             // Action icons
@@ -1112,6 +1230,7 @@ private fun SmallTopAppBarLayout(
     consumeBarTaps: Boolean = true,
     clipControlsToBounds: Boolean = true,
     bottomContent: @Composable () -> Unit = {},
+    centerObstructionStart: Dp = Dp.Unspecified,
 ) {
     val titleClip = remember { TopAppBarTitleClip() }
     val animatedTitleColor by animateColorAsState(
@@ -1122,6 +1241,7 @@ private fun SmallTopAppBarLayout(
         targetValue = subtitleColor,
         animationSpec = tween(durationMillis = 50),
     )
+    val alignmentState = rememberTitleAlignmentState()
 
     Layout(
         {
@@ -1136,7 +1256,7 @@ private fun SmallTopAppBarLayout(
                 Modifier
                     .layoutId("title")
                     .then(if (clipControlsToBounds) Modifier else Modifier.clipTopAppBarTitle(titleClip) { titleClip.titleOrigin })
-                    .padding(horizontal = titlePadding),
+                    .padding(horizontal = if (titleAlignment == TopAppBarTitleAlignment.Native) 0.dp else titlePadding),
             ) {
                 if (titleContent != null) titleContent() else Text(
                     text = title,
@@ -1203,23 +1323,32 @@ private fun SmallTopAppBarLayout(
                 .fastFirst { it.layoutId == "actionIcons" }
                 .measure(constraints.copy(minWidth = 0, minHeight = 0))
 
-        val maxTitleWidth =
+        val titlePaddingPx = titlePadding.roundToPx()
+        val controlTitleSpacingPx = minOf(titlePaddingPx, TopAppBarDefaults.TitleControlSpacing.roundToPx())
+        val startInset = if (navigationIconPlaceable.width > 0) controlTitleSpacingPx else titlePaddingPx
+        val endInset = if (actionIconsPlaceable.width > 0) controlTitleSpacingPx else titlePaddingPx
+        val hasCenterObstruction = centerObstructionStart != Dp.Unspecified && constraints.maxWidth != Constraints.Infinity
+        val normalTitleMaxWidth =
             if (constraints.maxWidth == Constraints.Infinity) {
                 constraints.maxWidth
             } else {
-                (constraints.maxWidth - if (titleAlignment == TopAppBarTitleAlignment.Center)
-                    2 * maxOf(navigationIconPlaceable.width, actionIconsPlaceable.width)
-                else navigationIconPlaceable.width + actionIconsPlaceable.width)
+                val controlsWidth = when (titleAlignment) {
+                    TopAppBarTitleAlignment.Center -> 2 * maxOf(navigationIconPlaceable.width, actionIconsPlaceable.width)
+                    TopAppBarTitleAlignment.Start -> navigationIconPlaceable.width + actionIconsPlaceable.width
+                    TopAppBarTitleAlignment.Native -> navigationIconPlaceable.width + actionIconsPlaceable.width + startInset + endInset
+                }
+                (constraints.maxWidth - controlsWidth)
                     .coerceAtLeast(0)
             }
         val titleMaxWidth =
-            if (maxTitleWidth == Constraints.Infinity) {
-                maxTitleWidth
+            if (hasCenterObstruction) {
+                val obstructionLimit = centerObstructionStart.roundToPx() - controlTitleSpacingPx
+                val startEdge = navigationIconPlaceable.width + startInset
+                val available = (obstructionLimit - startEdge).coerceAtLeast(0)
+                if (available < MinTitleWidth.roundToPx()) 0 else minOf(normalTitleMaxWidth, available)
             } else {
-                if (titleAlignment == TopAppBarTitleAlignment.Native)
-                    (maxTitleWidth * TITLE_WIDTH_FRACTION).fastRoundToInt() else maxTitleWidth
+                normalTitleMaxWidth
             }
-
         val titlePlaceable =
             measurables
                 .fastFirst { it.layoutId == "title" }
@@ -1229,7 +1358,6 @@ private fun SmallTopAppBarLayout(
             measurables
                 .firstOrNull { it.layoutId == "subtitle" }
                 ?.measure(constraints.copy(minWidth = 0, maxWidth = titleMaxWidth, minHeight = 0))
-
         val bottomContentPlaceable =
             measurables
                 .fastFirst { it.layoutId == "bottomContent" }
@@ -1259,37 +1387,87 @@ private fun SmallTopAppBarLayout(
                 y = verticalCenter - navigationIconPlaceable.height / 2,
             )
 
-            val titleGroupWidth = maxOf(titlePlaceable.width, subtitlePlaceable?.width ?: 0)
-            val groupX = titleAlignment.groupStart(
-                barWidth = constraints.maxWidth,
-                groupWidth = titleGroupWidth,
-                navigationWidth = navigationIconPlaceable.width,
-                actionsWidth = actionIconsPlaceable.width,
-            )
-            val titleX = groupX + titleAlignment.textOffset(titleGroupWidth, titlePlaceable.width)
-            if (!clipControlsToBounds) {
-                titleClip.titleOrigin = IntOffset(
-                    titleX.physicalX(layoutDirection, constraints.maxWidth, titlePlaceable.width),
-                    titleGroupTop,
-                )
-            }
-            titlePlaceable.placeRelative(x = titleX, y = titleGroupTop)
+            if (titleAlignment == TopAppBarTitleAlignment.Native) {
+                // Center title/subtitle between side controls, or start-align if it overflows.
+                val titleGroupWidth = maxOf(titlePlaceable.width, subtitlePlaceable?.width ?: 0)
+                val leadingControlBounds = if (layoutDirection == LayoutDirection.Ltr) {
+                    navigationIconPlaceable.width + startInset
+                } else {
+                    actionIconsPlaceable.width + endInset
+                }
+                val trailingControlBounds = if (layoutDirection == LayoutDirection.Ltr) {
+                    actionIconsPlaceable.width + endInset
+                } else {
+                    navigationIconPlaceable.width + startInset
+                }
+                val centeredGroupX = (constraints.maxWidth - titleGroupWidth) / 2
+                val canCenter = !hasCenterObstruction &&
+                    centeredGroupX >= leadingControlBounds &&
+                    centeredGroupX + titleGroupWidth <= constraints.maxWidth - trailingControlBounds
+                val alignmentFraction = alignmentState.resolveFraction(canCenter)
+                val centeredTitleX = centeredGroupX + (titleGroupWidth - titlePlaceable.width) / 2
+                val centeredSubtitleX = centeredGroupX + (titleGroupWidth - (subtitlePlaceable?.width ?: 0)) / 2
+                val startTitleX = if (layoutDirection == LayoutDirection.Ltr) {
+                    leadingControlBounds
+                } else {
+                    constraints.maxWidth - trailingControlBounds - titlePlaceable.width
+                }
+                val startSubtitleX = if (layoutDirection == LayoutDirection.Ltr) {
+                    leadingControlBounds
+                } else {
+                    constraints.maxWidth - trailingControlBounds - (subtitlePlaceable?.width ?: 0)
+                }
+                val titleX = lerp(startTitleX, centeredTitleX, alignmentFraction)
+                val subtitleX = lerp(startSubtitleX, centeredSubtitleX, alignmentFraction)
+                if (!hasCenterObstruction || titleMaxWidth > 0) {
+                    if (!clipControlsToBounds) {
+                        titleClip.titleOrigin = IntOffset(titleX, titleGroupTop)
+                        titleClip.subtitleOrigin = IntOffset(subtitleX, subtitleY)
+                    }
+                    titlePlaceable.place(
+                        x = titleX,
+                        y = titleGroupTop,
+                    )
 
+                    subtitlePlaceable?.place(
+                        x = subtitleX,
+                        y = subtitleY,
+                    )
+                }
+            } else {
+                val titleGroupWidth = maxOf(titlePlaceable.width, subtitlePlaceable?.width ?: 0)
+                val groupX = titleAlignment.groupStart(
+                    barWidth = constraints.maxWidth,
+                    groupWidth = titleGroupWidth,
+                    navigationWidth = navigationIconPlaceable.width,
+                    actionsWidth = actionIconsPlaceable.width,
+                )
+                val titleX = groupX + titleAlignment.textOffset(titleGroupWidth, titlePlaceable.width)
+                if (!clipControlsToBounds) {
+                    titleClip.titleOrigin = IntOffset(
+                        titleX.physicalX(layoutDirection, constraints.maxWidth, titlePlaceable.width),
+                        titleGroupTop,
+                    )
+                }
+                titlePlaceable.placeRelative(x = titleX, y = titleGroupTop)
+
+                subtitlePlaceable?.let { subtitle ->
+                    val subtitleX = groupX + titleAlignment.textOffset(titleGroupWidth, subtitle.width)
+                    if (!clipControlsToBounds) {
+                        titleClip.subtitleOrigin = IntOffset(
+                            subtitleX.physicalX(layoutDirection, constraints.maxWidth, subtitle.width),
+                            subtitleY,
+                        )
+                    }
+                    subtitle.placeRelative(x = subtitleX, y = subtitleY)
+                }
+            }
+
+            // Action icons
             actionIconsPlaceable.placeRelative(
                 x = constraints.maxWidth - actionIconsPlaceable.width,
                 y = verticalCenter - actionIconsPlaceable.height / 2,
             )
-
-            subtitlePlaceable?.let { subtitle ->
-                val subtitleX = groupX + titleAlignment.textOffset(titleGroupWidth, subtitle.width)
-                if (!clipControlsToBounds) {
-                    titleClip.subtitleOrigin = IntOffset(
-                        subtitleX.physicalX(layoutDirection, constraints.maxWidth, subtitle.width),
-                        subtitleY,
-                    )
-                }
-                subtitle.placeRelative(x = subtitleX, y = subtitleY)
-            }
 
             // Bottom content (below subtitle)
             bottomContentPlaceable.placeRelative(x = 0, y = contentTop)
@@ -1315,5 +1493,146 @@ private fun TopAppBarTitleAlignment.textOffset(groupWidth: Int, textWidth: Int):
 private fun Int.physicalX(layoutDirection: LayoutDirection, width: Int, childWidth: Int): Int =
     if (layoutDirection == LayoutDirection.Ltr) this else width - this - childWidth
 
-// Slack so the centred title isn't butted against nav/actions.
-private const val TITLE_WIDTH_FRACTION = 0.9
+private val MinTitleWidth = 48.dp
+
+private class TitleAlignmentState {
+    var initialized = false
+    var isCentered by mutableStateOf(false)
+    var hasAnimatedOnce = false
+    val progress = Animatable(0f, visibilityThreshold = 0.0005f)
+
+    fun resolveFraction(canCenter: Boolean): Float = if (!initialized) {
+        initialized = true
+        isCentered = canCenter
+        if (canCenter) 1f else 0f
+    } else {
+        if (isCentered != canCenter) {
+            isCentered = canCenter
+        }
+        if (hasAnimatedOnce) {
+            progress.value
+        } else if (canCenter) {
+            1f
+        } else {
+            0f
+        }
+    }
+}
+
+@Composable
+private fun rememberTitleAlignmentState(): TitleAlignmentState {
+    val state = remember { TitleAlignmentState() }
+    LaunchedEffect(state.isCentered) {
+        val target = if (state.isCentered) 1f else 0f
+        if (!state.hasAnimatedOnce) {
+            state.hasAnimatedOnce = true
+            state.progress.snapTo(target)
+        } else {
+            state.progress.animateTo(
+                target,
+                folmeSpring(damping = 1.0f, response = 0.35f, visibilityThreshold = 0.0005f),
+            )
+        }
+    }
+    return state
+}
+
+private class TitleObstructionTransitionState {
+    var initialized = false
+    var hasAnimatedOnce = false
+    var activeObstructed = false
+    var targetObstructed by mutableStateOf(false)
+    var targetObstructedWidth by mutableIntStateOf(Int.MAX_VALUE)
+    var activeLimit by mutableIntStateOf(Int.MAX_VALUE)
+    var lastVisibleLimit = Int.MAX_VALUE
+    var currentNormalMaxWidth = 0
+    var currentContentWidth = 0
+    var hasOverflow = false
+    val blurFraction = Animatable(0f)
+    val visibilityAlpha = Animatable(1f)
+
+    fun resolveMeasureMaxWidth(
+        hasCenterObstruction: Boolean,
+        normalMaxWidth: Int,
+        obstructedWidth: Int,
+    ): Int {
+        currentNormalMaxWidth = normalMaxWidth
+        if (!initialized) {
+            initialized = true
+            activeObstructed = hasCenterObstruction
+            targetObstructed = hasCenterObstruction
+            targetObstructedWidth = obstructedWidth
+            activeLimit = obstructedWidth
+            if (obstructedWidth > 0) lastVisibleLimit = obstructedWidth
+            return if (obstructedWidth == 0) 0 else minOf(normalMaxWidth, obstructedWidth)
+        }
+        if (!hasCenterObstruction && !activeObstructed && targetObstructedWidth == activeLimit) {
+            return normalMaxWidth
+        }
+        if (targetObstructed != hasCenterObstruction || targetObstructedWidth != obstructedWidth) {
+            targetObstructed = hasCenterObstruction
+            targetObstructedWidth = obstructedWidth
+        }
+        val effectiveLimit = if (activeLimit > 0) activeLimit else lastVisibleLimit
+        return minOf(normalMaxWidth, effectiveLimit)
+    }
+}
+
+@Composable
+private fun rememberTitleObstructionTransitionState(): TitleObstructionTransitionState {
+    val state = remember { TitleObstructionTransitionState() }
+    LaunchedEffect(state.targetObstructed, state.targetObstructedWidth) {
+        if (!state.hasAnimatedOnce) {
+            state.hasAnimatedOnce = true
+            state.visibilityAlpha.snapTo(if (state.targetObstructedWidth > 0) 1f else 0f)
+            state.blurFraction.snapTo(0f)
+            return@LaunchedEffect
+        }
+        val nextLimit = state.targetObstructedWidth
+        if (nextLimit == 0) {
+            val hideSpec = folmeSpring<Float>(damping = 1.0f, response = 0.15f)
+            coroutineScope {
+                launch { state.blurFraction.animateTo(1f, hideSpec) }
+                launch { state.visibilityAlpha.animateTo(0f, hideSpec) }
+            }
+            state.activeObstructed = state.targetObstructed
+            state.activeLimit = 0
+        } else if (state.activeLimit == 0) {
+            state.activeObstructed = state.targetObstructed
+            state.activeLimit = nextLimit
+            state.lastVisibleLimit = nextLimit
+            val showSpec = folmeSpring<Float>(damping = 1.0f, response = 0.3f)
+            coroutineScope {
+                launch { state.visibilityAlpha.animateTo(1f, showSpec) }
+                launch { state.blurFraction.animateTo(0f, showSpec) }
+            }
+        } else {
+            val nextMaxWidth = minOf(state.currentNormalMaxWidth, nextLimit)
+            if (state.hasOverflow || state.currentContentWidth > nextMaxWidth) {
+                state.blurFraction.snapTo(1f)
+                state.visibilityAlpha.snapTo(0.25f)
+                state.activeObstructed = state.targetObstructed
+                state.activeLimit = nextLimit
+                state.lastVisibleLimit = nextLimit
+                val restoreSpec = folmeSpring<Float>(damping = 1.0f, response = 0.35f)
+                coroutineScope {
+                    launch { state.blurFraction.animateTo(0f, restoreSpec) }
+                    launch { state.visibilityAlpha.animateTo(1f, restoreSpec) }
+                }
+            } else {
+                state.activeObstructed = state.targetObstructed
+                state.activeLimit = nextLimit
+                state.lastVisibleLimit = nextLimit
+                state.blurFraction.snapTo(0f)
+                state.visibilityAlpha.snapTo(1f)
+            }
+        }
+    }
+    return state
+}
+
+internal class TopAppBarInputTracker {
+    var allowIdleSettle: Boolean = false
+}
+
+internal val LocalTopAppBarInputTracker = staticCompositionLocalOf<TopAppBarInputTracker?> { null }

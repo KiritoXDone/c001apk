@@ -5,7 +5,7 @@
 - 上游：[frisk1127/c001apk-compose](https://github.com/frisk1127/c001apk-compose)，基线提交 `82ffea3c746955420c1d4f00380f5a6d7a6cad02`。
 - 实现采用 Kotlin 原生 Compose。
 - 设计规范参考：[Mishka UI guidelines](https://github.com/YuKongA/Mishka/blob/main/docs/ui-guidelines.md)。采用 squircle 圆角、12 dp 外边距、分段设置卡片、选中即生效的单选弹窗、窗口弹窗与毛玻璃背景采样。
-- 组件：[miuix v0.9.5-beta01](https://github.com/compose-miuix-ui/miuix/tree/6d2554a850b8960e2616c968263ff64beb5ffb03)，使用 UI、Preference、Icons、Blur、Nav 及其必要基础模块；Android 接入和许可证见 [miuix/README.md](../miuix/README.md)。
+- 组件：[miuix v0.9.5-beta02](https://github.com/compose-miuix-ui/miuix/tree/66248bacc7be29ae6bdc0957de9458b42ac67732)，Android 构建使用 Jetpack Compose 1.13.0；源码模块和许可证见 [miuix/README.md](../miuix/README.md)。
 
 ## 实现
 
@@ -35,9 +35,9 @@
 
 ## 构建
 
-应用支持 Android **7 / API 24，ARM64**；模糊效果需要 Android 13 / API 33，使用官方 miuix-blur 的 AGSL 渲染。目标 API 35，编译平台 `android-37.0`。
+应用支持 Android **7 / API 24，ARM64**；模糊效果需要 Android 13 / API 33，使用官方 miuix-blur 的 AGSL 渲染。目标 API 35，编译平台 `android-37.1`。
 
-构建工具版本已固定：JDK 21（miuix-nav 内联 API 的字节码要求）、Gradle 9.7.1、AGP 9.4.1、Kotlin 2.4.20、KSP 2.3.12、Hilt 2.60.1、Activity / Activity Compose 1.13.0。Activity 版本提供 miuix 窗口菜单要求的 NavigationEventDispatcher。Android SDK 需安装 `platforms;android-37.0` 和 `build-tools;36.0.0`，子模块还使用 API 34/35。
+构建工具版本已固定：JDK 21（miuix-nav 内联 API 的字节码要求）、Gradle 9.7.1、AGP 9.4.1、Kotlin 2.4.20、KSP 2.3.12、Hilt 2.60.1、Activity / Activity Compose 1.13.0。Activity 版本提供 miuix 窗口菜单要求的 NavigationEventDispatcher。Android SDK 需安装 `platforms;android-37.1` 和 `build-tools;36.0.0`，子模块还使用 API 34/35。
 
 工具链与 SDK 配置见[构建指南](BUILDING.md)，使用统一脚本执行：
 

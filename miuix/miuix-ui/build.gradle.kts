@@ -8,7 +8,7 @@ plugins {
 
 android {
     namespace = "top.yukonga.miuix.kmp.ui"
-    compileSdkVersion("android-37.0")
+    compileSdkVersion("android-37.1")
     buildToolsVersion = "36.0.0"
     defaultConfig { minSdk = 24 }
     compileOptions {

@@ -15,7 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.State
-import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.computedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -83,11 +83,18 @@ fun GlassIconButton(
     val interactionSource = remember { MutableInteractionSource() }
     val pressed by interactionSource.collectIsPressedAsState()
     val topBarContext = LocalGlassTopAppBarContext.current
+    val usesTopBarButtonBackdrop = topBarContext?.onButtonBackdropConsumerChange != null &&
+        (inheritTopBarMaterial || backdrop == null)
+    DisposableEffect(topBarContext, usesTopBarButtonBackdrop) {
+        val callback = if (usesTopBarButtonBackdrop) topBarContext.onButtonBackdropConsumerChange else null
+        callback?.invoke(1)
+        onDispose { callback?.invoke(-1) }
+    }
     val materialContext = topBarContext.takeIf { inheritTopBarMaterial }
     val resolvedSurfaceAlpha = surfaceAlpha * (topBarContext?.alpha ?: 1f)
-    val topBarRamp = topBarContext?.ramp
-    val shadowAlpha = remember(resolvedSurfaceAlpha, topBarRamp) {
-        { resolvedSurfaceAlpha * (topBarRamp?.value ?: 1f) }
+    val topBarProgress = topBarContext?.materialProgress
+    val shadowAlpha = remember(resolvedSurfaceAlpha, topBarProgress) {
+        { resolvedSurfaceAlpha * (topBarProgress?.value ?: 1f) }
     }
     GlassButtonSurface(
         backdrop = if (inheritTopBarMaterial) materialContext?.buttonBackdrop ?: backdrop else backdrop,
@@ -159,7 +166,7 @@ internal fun GlassButtonSurface(
         }
     }
     val keepMaterial = sharedKeepMaterial ?: remember(floating, progress) {
-        derivedStateOf { floating || progress.value > 0f }
+        computedStateOf { floating || progress.value > 0f }
     }.value
     val opacity = surfaceAlpha.coerceIn(0f, 1f)
     val effectiveBackdrop = backdrop?.takeIf { isRuntimeShaderSupported() }

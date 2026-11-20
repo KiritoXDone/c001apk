@@ -1,7 +1,7 @@
 # Miuix 源码
 
-固定来源：[compose-miuix-ui/miuix v0.9.5-beta01](https://github.com/compose-miuix-ui/miuix/releases/tag/v0.9.5-beta01)，提交
-`6d2554a850b8960e2616c968263ff64beb5ffb03`，Apache-2.0 许可证见 [LICENSE](LICENSE)。
+固定来源：[compose-miuix-ui/miuix v0.9.5-beta02](https://github.com/compose-miuix-ui/miuix/releases/tag/v0.9.5-beta02)，提交
+`66248bacc7be29ae6bdc0957de9458b42ac67732`，Apache-2.0 许可证见 [LICENSE](LICENSE)。
 
 保留应用使用的 core、material、squircle、ui、preference、icons、nav、blur、glass 和 glass-icons 模块的
 `commonMain`、`androidMain` 原始源码与基线配置；其他平台和示例不参与应用构建。每个模块的

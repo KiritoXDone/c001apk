@@ -3,14 +3,17 @@
 
 package top.yukonga.miuix.kmp.glass
 
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
@@ -26,28 +29,26 @@ import top.yukonga.miuix.kmp.material.GlassShadow
 import top.yukonga.miuix.kmp.material.GlassShadows
 import top.yukonga.miuix.kmp.material.GlassShape
 import top.yukonga.miuix.kmp.material.GlassStyle
+import top.yukonga.miuix.kmp.theme.LocalContentColor
 import top.yukonga.miuix.kmp.theme.MiuixTheme
+
 /** Default values for [GlassFloatingActionButton]. */
 object GlassFloatingActionButtonDefaults {
 
     /** Diameter of the glass floating action button. */
-    val Size: Dp = 60.dp
+    val Size: Dp = 56.dp
 
-    /** Default glass material for [GlassFloatingActionButton]. */
+    /** Glass material with a translucent primary colour layer. */
     @Composable
     fun material(): GlassMaterial {
         val base = GlassTopAppBarDefaults.buttonMaterial()
         val primary = MiuixTheme.colorScheme.primary
         return remember(base, primary) {
-            base.copy(
-                first = GlassColorLayer(primary.copy(alpha = 0.92f), GlassColorBlendMode.SrcOver),
-                second = null,
-                third = null,
-            )
+            base.copy(third = GlassColorLayer(primary.copy(alpha = 0.92f), GlassColorBlendMode.SrcOver))
         }
     }
 
-    /** Default fallback fill colour when no [Backdrop] is provided. */
+    /** Primary colour fill when backdrop rendering is unavailable. */
     @Composable
     fun fill(): Color = MiuixTheme.colorScheme.primary
 
@@ -56,18 +57,17 @@ object GlassFloatingActionButtonDefaults {
 }
 
 /**
- * A round glass floating action button with the same glass material, stroke, and shadow as
- * [GlassIconButton].
+ * A round, primary-tinted glass floating action button that scales down on press.
  *
  * @param onClick Called when the button is tapped.
  * @param modifier Modifier applied to the button.
  * @param backdrop Optional backdrop sampled behind the button; `null` uses [fill].
- * @param surfaceAlpha Opacity multiplier for the pill colour layers and stroke.
+ * @param surfaceAlpha Opacity multiplier for the glass colour layers and stroke.
  * @param style Glass style forwarded to the renderer.
  * @param material Glass material applied when [backdrop] is provided.
  * @param size Button diameter.
  * @param shape Button silhouette.
- * @param fill Fallback fill colour when [backdrop] is `null`.
+ * @param fill Fallback fill colour when backdrop rendering is unavailable.
  * @param stroke Optional bloom stroke.
  * @param shadow Shadow beneath the button; `null` disables it.
  * @param content Button content.
@@ -89,6 +89,11 @@ fun GlassFloatingActionButton(
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val pressed by interactionSource.collectIsPressedAsState()
+    val pressScale = animateFloatAsState(
+        targetValue = if (pressed) 0.9f else 1f,
+        animationSpec = GlassMotion.springOf(damping = 1f, response = if (pressed) 0.15f else 0.3f),
+        label = "glassFabPressScale",
+    )
     val shadowAlpha = remember(surfaceAlpha) { { surfaceAlpha } }
     GlassButtonSurface(
         backdrop = backdrop,
@@ -110,7 +115,16 @@ fun GlassFloatingActionButton(
                 interactionSource = interactionSource,
                 indication = null,
                 onClick = onClick,
-            ),
-        content = content,
+            )
+            .graphicsLayer {
+                val scale = pressScale.value
+                scaleX = scale
+                scaleY = scale
+            },
+        content = {
+            CompositionLocalProvider(LocalContentColor provides MiuixTheme.colorScheme.onPrimary) {
+                content()
+            }
+        },
     )
 }

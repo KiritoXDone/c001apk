@@ -15,7 +15,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
-import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.computedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -180,19 +180,26 @@ fun Modifier.glassPopupAnchorContent(anchor: GlassPopupAnchor): Modifier = this.
 fun Modifier.glassPopupAnchorRow(anchor: GlassPopupAnchor): Modifier = this.onGloballyPositioned { anchor.containerBounds = it.boundsInWindow() }
 
 /**
- * Reports a row's value bounds for dropdown positioning and fades it out while its choices are open.
+ * Anchors the dropdown to the selected value and fades that value while the popup is open.
+ * Apply to the value and chevron, not the whole row.
  *
- * Apply to the value and chevron, not the whole row. After predictive Back completes, the value
- * keeps its restored opacity through popup disposal until its fade reaches full opacity.
- *
- * @param anchor The anchor the row reported itself to.
+ * @param anchor The dropdown's anchor.
  */
 @Stable
-fun Modifier.glassPopupAnchorValue(anchor: GlassPopupAnchor): Modifier = this
-    .onGloballyPositioned { anchor.dropdownValueBounds = it.boundsInWindow() }
-    .graphicsLayer {
+fun Modifier.glassPopupAnchorValue(anchor: GlassPopupAnchor): Modifier = glassPopupAnchorValue(anchor, trackBounds = true)
+
+@Stable
+internal fun Modifier.glassPopupAnchorValue(anchor: GlassPopupAnchor, trackBounds: Boolean): Modifier {
+    val positioned = if (trackBounds) {
+        onGloballyPositioned { anchor.dropdownValueBounds = it.boundsInWindow() }
+    } else {
+        this
+    }
+    // The value can still fade after bounds tracking stops.
+    return positioned.graphicsLayer {
         alpha = maxOf(anchor.valueAlphaState?.value ?: 1f, anchor.dropdownValueAlpha)
     }
+}
 
 /**
  * A glass menu that expands from an anchored control with a content crossfade.
@@ -301,13 +308,13 @@ fun BoxScope.GlassTransformPopup(
     }
     val menuBackdrop = backdrop ?: anchorSurface?.backdrop
     val materialProgress = remember(bounds, backProgress) {
-        derivedStateOf { popupFractionWithBack(bounds.value, backProgress.value).coerceIn(0f, 1f) }
+        computedStateOf { popupFractionWithBack(bounds.value, backProgress.value).coerceIn(0f, 1f) }
     }
     val drawAnchorSurface by remember(anchorSurface, materialProgress) {
-        derivedStateOf { anchorSurface != null && materialProgress.value < 1f }
+        computedStateOf { anchorSurface != null && materialProgress.value < 1f }
     }
     val drawMenuSurface by remember(anchorSurface, materialProgress) {
-        derivedStateOf { anchorSurface == null || materialProgress.value > 0f }
+        computedStateOf { anchorSurface == null || materialProgress.value > 0f }
     }
 
     val startRect = anchor.containerBounds
@@ -328,6 +335,7 @@ fun BoxScope.GlassTransformPopup(
         geometryProgress = geometryProgress(),
         iconMaterial = iconProgress(),
     )
+
     val travel = remember { TransformTravel() }
     val hostOrigin = remember { mutableStateOf(Offset.Zero) }
 
@@ -416,7 +424,7 @@ fun BoxScope.GlassTransformPopup(
     )
 
     val renderAnchorContent by remember(simplified, show, iconMaterial, backProgress) {
-        derivedStateOf {
+        computedStateOf {
             shouldRenderAnchorContent(simplified, show && backProgress.value == 0f) &&
                 popupFractionWithBack(iconMaterial.value, backProgress.value) < 0.999f
         }

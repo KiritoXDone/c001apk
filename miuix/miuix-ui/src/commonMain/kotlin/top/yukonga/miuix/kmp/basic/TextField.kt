@@ -25,7 +25,7 @@ import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
-import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.computedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
@@ -106,7 +106,7 @@ fun TextField(
     val interactionSource = interactionSource ?: remember { MutableInteractionSource() }
     val isFocused by interactionSource.collectIsFocusedAsState()
     val labelState by remember(label, useLabelAsPlaceholder) {
-        derivedStateOf {
+        computedStateOf {
             when {
                 label.isEmpty() -> LabelAnimState.Hidden
                 useLabelAsPlaceholder && state.text.isNotEmpty() -> LabelAnimState.Placeholder
@@ -184,6 +184,19 @@ fun TextField(
  * @param interactionSource The interaction source to be applied to the [TextField].
  * @param cursorBrush The brush to be used for the cursor.
  */
+@Deprecated(
+    "Use the TextField(state: TextFieldState, ...) overload instead. To migrate: " +
+        "create a TextFieldState via rememberTextFieldState(initialText) in composition or " +
+        "TextFieldState(initialText) in a state holder; read text from state.text and update " +
+        "it programmatically via state.edit { ... } or state.setTextAndPlaceCursorAtEnd(text); " +
+        "observe text changes for side effects via snapshotFlow { state.text }.collect { ... }; " +
+        "and replace onValueChange input filtering with InputTransformation, visualTransformation " +
+        "with OutputTransformation, singleLine/maxLines/minLines with TextFieldLineLimits, and " +
+        "keyboardActions with onKeyboardAction. See " +
+        "https://developer.android.com/develop/ui/compose/text/migrate-state-based for full " +
+        "migration guidance.",
+)
+@Suppress("DEPRECATION")
 @Composable
 fun TextField(
     value: TextFieldValue,
@@ -290,6 +303,19 @@ fun TextField(
  * @param interactionSource The interaction source to be applied to the [TextField].
  * @param cursorBrush The brush to be used for the cursor.
  */
+@Deprecated(
+    "Use the TextField(state: TextFieldState, ...) overload instead. To migrate: " +
+        "create a TextFieldState via rememberTextFieldState(initialText) in composition or " +
+        "TextFieldState(initialText) in a state holder; read text from state.text and update " +
+        "it programmatically via state.edit { ... } or state.setTextAndPlaceCursorAtEnd(text); " +
+        "observe text changes for side effects via snapshotFlow { state.text }.collect { ... }; " +
+        "and replace onValueChange input filtering with InputTransformation, visualTransformation " +
+        "with OutputTransformation, singleLine/maxLines/minLines with TextFieldLineLimits, and " +
+        "keyboardActions with onKeyboardAction. See " +
+        "https://developer.android.com/develop/ui/compose/text/migrate-state-based for full " +
+        "migration guidance.",
+)
+@Suppress("DEPRECATION")
 @Composable
 fun TextField(
     value: String,
