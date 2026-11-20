@@ -23,6 +23,10 @@ on:
         description: Git ref to build; defaults to the workflow ref
         type: string
         default: ''
+      focused_checks:
+        description: Run only the v1.6.1 regression tests
+        type: boolean
+        default: false
     secrets:
       KEYSTORE_BASE64: { required: false }
       KEYSTORE_PASSWORD: { required: false }
@@ -66,12 +70,22 @@ jobs:
           printf '%s' "$SIGNING_KEY_BASE64" | base64 --decode > "$RUNNER_TEMP/c001apk-signing.jks"
           chmod 600 "$RUNNER_TEMP/c001apk-signing.jks"
           echo "C001APK_KEYSTORE_PATH=$RUNNER_TEMP/c001apk-signing.jks" >> "$GITHUB_ENV"
-      - name: Validate and build
+      - name: Run full validation
+        if: ${{ !inputs.focused_checks }}
         run: |
           set -euo pipefail
           python3 -B -m unittest discover -s tools -p 'test_*.py'
           python3 scripts/prebuild.py
           python3 scripts/build.py gradle --jobs 2 :app:testDebugUnitTest :media-support:testDebugUnitTest :mojito:testDebugUnitTest :app:lintDebug
+      - name: Run focused validation
+        if: inputs.focused_checks
+        run: |
+          set -euo pipefail
+          python3 scripts/build.py gradle --jobs 2 :app:testDebugUnitTest \
+            --tests '*BarPreferencesTest' --tests '*HomeMenuOrderTest' --tests '*MainStartupStateTest'
+      - name: Build APK
+        run: |
+          set -euo pipefail
           case "$BUILD_VARIANT" in
             debug) extra=();;
             release|release-no-r8) extra=(--require-release-signing);;

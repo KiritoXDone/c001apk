@@ -48,6 +48,7 @@ jobs:
       variant: release
       app_version: ${{ needs.version.outputs.version }}
       source_ref: refs/tags/${{ needs.version.outputs.tag }}
+      focused_checks: ${{ needs.version.outputs.tag == 'v1.6.1' }}
     secrets: inherit
 
   publish:
