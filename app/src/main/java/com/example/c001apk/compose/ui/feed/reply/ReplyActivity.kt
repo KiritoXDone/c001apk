@@ -873,10 +873,19 @@ class ReplyActivity :
 
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
+        // 导航栏透明沉浸：输入面板底部已按导航栏高度留白，导航栏区域透出底层遮罩，
+        // 不再用不透明的 surfaceContainer 画一条白条。
         @Suppress("DEPRECATION")
         window.statusBarColor = Color.TRANSPARENT
         @Suppress("DEPRECATION")
-        window.navigationBarColor = resolveSurfaceContainerColor()
+        window.navigationBarColor = Color.TRANSPARENT
+        if (SDK_INT >= 29) {
+            @Suppress("DEPRECATION")
+            window.isNavigationBarContrastEnforced = false
+        }
+        WindowCompat.getInsetsController(window, window.decorView)
+            .isAppearanceLightNavigationBars =
+            !com.example.c001apk.compose.util.CookieUtil.isDarkMode
     }
 
     private fun showInput() {

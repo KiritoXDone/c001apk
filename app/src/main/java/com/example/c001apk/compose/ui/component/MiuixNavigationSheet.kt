@@ -81,17 +81,20 @@ internal fun MiuixNavigationSheet(
                 ))
                 Column(Modifier.fillMaxSize()) {
                     Spacer(Modifier.windowInsetsTopHeight(WindowInsets.statusBars))
+                    // 背景铺满到底部导航栏区域实现沉浸，导航栏内边距只作用于内容，
+                    // 避免背景在导航栏处断开、露出一截空白条。
                     Box(
                         Modifier.fillMaxSize().padding(top = 12.dp)
                             .squircleClip(24.dp, 24.dp, 0.dp, 0.dp)
-                            .background(MiuixTheme.colorScheme.surface)
-                            .navigationBarsPadding(),
+                            .background(MiuixTheme.colorScheme.surface),
                     ) {
                         Box(Modifier.matchParentSize().clickable(
                             interactionSource = remember { MutableInteractionSource() }, indication = null,
                             onClick = {},
                         ).clearAndSetSemantics {})
-                        content { controller.pop() }
+                        Box(Modifier.fillMaxSize().navigationBarsPadding()) {
+                            content { controller.pop() }
+                        }
                     }
                 }
             }
