@@ -873,12 +873,12 @@ class ReplyActivity :
 
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
-        // 导航栏透明沉浸：输入面板底部已按导航栏高度留白，导航栏区域透出底层遮罩，
-        // 不再用不透明的 surfaceContainer 画一条白条。
+        // 导航栏与输入面板同色：透明会透出底层遮罩变暗的页面，反而留下一截深色条；
+        // 与面板同色且关掉对比度强制后，手势条悬浮在面板上，不再有可见的接缝。
         @Suppress("DEPRECATION")
         window.statusBarColor = Color.TRANSPARENT
         @Suppress("DEPRECATION")
-        window.navigationBarColor = Color.TRANSPARENT
+        window.navigationBarColor = resolveSurfaceContainerColor()
         if (SDK_INT >= 29) {
             @Suppress("DEPRECATION")
             window.isNavigationBarContrastEnforced = false
