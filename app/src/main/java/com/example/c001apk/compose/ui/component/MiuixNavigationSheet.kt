@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.isImeVisible
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsTopHeight
@@ -81,17 +80,20 @@ internal fun MiuixNavigationSheet(
                 ))
                 Column(Modifier.fillMaxSize()) {
                     Spacer(Modifier.windowInsetsTopHeight(WindowInsets.statusBars))
+                    // 背景和内容都铺满到底边，手势条悬浮在内容之上，不在底部
+                    // 预留一截固定空白条；导航栏高度由滚动内容自身的底边距消化。
                     Box(
                         Modifier.fillMaxSize().padding(top = 12.dp)
                             .squircleClip(24.dp, 24.dp, 0.dp, 0.dp)
-                            .background(MiuixTheme.colorScheme.surface)
-                            .navigationBarsPadding(),
+                            .background(MiuixTheme.colorScheme.surface),
                     ) {
                         Box(Modifier.matchParentSize().clickable(
                             interactionSource = remember { MutableInteractionSource() }, indication = null,
                             onClick = {},
                         ).clearAndSetSemantics {})
-                        content { controller.pop() }
+                        Box(Modifier.fillMaxSize()) {
+                            content { controller.pop() }
+                        }
                     }
                 }
             }

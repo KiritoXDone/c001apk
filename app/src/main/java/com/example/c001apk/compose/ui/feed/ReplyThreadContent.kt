@@ -57,7 +57,16 @@ fun ReplyThreadContent(
                     Modifier.fillMaxSize(),
                     state = listState,
                     contentPadding =
-                        PaddingValues(start = inset, end = inset, top = 4.dp, bottom = 24.dp),
+                        PaddingValues(
+                            start = inset,
+                            end = inset,
+                            top = 4.dp,
+                            // 导航栏高度只作为滚动内容的底边距：滑到底时最后一条能完整
+                            // 露出手势条上方，平时滚动内容直接贴到底边，不留固定空白条。
+                            bottom = 24.dp +
+                                WindowInsets.navigationBars.asPaddingValues()
+                                    .calculateBottomPadding(),
+                        ),
                 ) {
                     if (state is LoadingState.Success) {
                         if (original != null) {
