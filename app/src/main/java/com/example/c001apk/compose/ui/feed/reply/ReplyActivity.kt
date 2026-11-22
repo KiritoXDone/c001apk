@@ -195,7 +195,6 @@ class ReplyActivity :
                     runningAnimations: MutableList<WindowInsetsAnimationCompat>,
                 ): WindowInsetsCompat {
                     val imeInset = insets.getInsets(WindowInsetsCompat.Type.ime()).bottom
-                    val navInset = insets.getInsets(WindowInsetsCompat.Type.navigationBars()).bottom
                     val useImeInset =
                         insets.isVisible(WindowInsetsCompat.Type.ime()) || imeInset > 0
                     val imeAnimation = runningAnimations.lastOrNull {
@@ -208,7 +207,6 @@ class ReplyActivity :
                         } else {
                             calculateInputTranslation(
                                 imeInset = if (useImeInset) imeInset else 0,
-                                navInset = navInset,
                             )
                         }
                     updateReplyPanelTranslation(translation)
@@ -218,9 +216,11 @@ class ReplyActivity :
                             binding.bottomLayout == null &&
                             !isEmojiPanelVisible
                     ) {
+                        // 遮罩盖住键盘背后的整段区域：原来顶端留了导航栏高度的缺口，
+                        // 半透明键盘透过来就是一截透明条。
                         imeScrimDrawable.setBounds(
                             0,
-                            binding.main.height - (imeInset - navInset),
+                            binding.main.height - imeInset,
                             binding.main.width,
                             binding.main.height,
                         )
@@ -260,14 +260,13 @@ class ReplyActivity :
             val useImeInset = isImeVisible || imeInset > 0
             if (isImeVisible) {
                 if (!imeAnimating && !isEmojiPanelRequested && binding.bottomLayout == null) {
-                    closeEmojiPanelForIme(imeInset, navInset)
+                    closeEmojiPanelForIme(imeInset)
                 }
             }
             if (!imeAnimating) {
                 val translation =
                     calculateInputTranslation(
                         imeInset = if (useImeInset) imeInset else 0,
-                        navInset = navInset,
                     )
                 updateReplyPanelTranslation(translation)
                 if (
@@ -278,7 +277,7 @@ class ReplyActivity :
                 ) {
                     imeScrimDrawable.setBounds(
                         0,
-                        binding.main.height - (imeInset - navInset),
+                        binding.main.height - imeInset,
                         binding.main.width,
                         binding.main.height,
                     )
@@ -288,10 +287,17 @@ class ReplyActivity :
                     binding.main.overlay.remove(imeScrimDrawable)
                 }
             }
+            // 竖屏：导航栏高度不再留在根布局底部，改由输入面板自身的底边距消化，
+            // 面板背景随之铺到底边，手势条悬浮在面板上；横屏沿用原来的留白。
             binding.main.updatePadding(
-                bottom = baseRootPaddingBottom + navInset,
+                bottom =
+                    baseRootPaddingBottom +
+                        if (binding.bottomLayout == null) 0 else navInset,
                 top = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top,
             )
+            if (binding.bottomLayout == null) {
+                binding.inputLayout.updatePadding(bottom = navInset)
+            }
             insets
         }
         ViewCompat.requestApplyInsets(binding.main)
@@ -873,10 +879,19 @@ class ReplyActivity :
 
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
+        // 输入面板背景已铺到底边，手势条悬浮在面板上；导航栏颜色与面板同色，
+        // 只是让仍按旧规则画导航栏的版本没有接缝，对比度强制保持关闭。
         @Suppress("DEPRECATION")
         window.statusBarColor = Color.TRANSPARENT
         @Suppress("DEPRECATION")
         window.navigationBarColor = resolveSurfaceContainerColor()
+        if (SDK_INT >= 29) {
+            @Suppress("DEPRECATION")
+            window.isNavigationBarContrastEnforced = false
+        }
+        WindowCompat.getInsetsController(window, window.decorView)
+            .isAppearanceLightNavigationBars =
+            !com.example.c001apk.compose.util.CookieUtil.isDarkMode
     }
 
     private fun showInput() {
@@ -930,8 +945,6 @@ class ReplyActivity :
                     updateReplyPanelTranslation(
                         calculateInputTranslation(
                             imeInset = insets.getInsets(WindowInsetsCompat.Type.ime()).bottom,
-                            navInset =
-                                insets.getInsets(WindowInsetsCompat.Type.navigationBars()).bottom,
                         ),
                     )
                 }
@@ -952,18 +965,15 @@ class ReplyActivity :
             ViewCompat.getRootWindowInsets(binding.editText)
                 ?.getInsets(WindowInsetsCompat.Type.ime())
                 ?.bottom ?: 0,
-        navInset: Int =
-            ViewCompat.getRootWindowInsets(binding.editText)
-                ?.getInsets(WindowInsetsCompat.Type.navigationBars())
-                ?.bottom ?: 0,
     ) {
         (binding.main as? SmoothInputLayout)?.closeEmojiPanel()
-        updateReplyPanelTranslation(-max(0, imeInset - navInset).toFloat())
+        updateReplyPanelTranslation(-max(0, imeInset).toFloat())
     }
 
-    private fun calculateInputTranslation(imeInset: Int, navInset: Int): Float {
+    private fun calculateInputTranslation(imeInset: Int): Float {
         if (binding.bottomLayout != null) return 0f
-        val imeHeight = max(0, imeInset - navInset)
+        // 面板底部已贴到底边，上移量按整段键盘高度算，不再扣导航栏高度。
+        val imeHeight = max(0, imeInset)
         val emojiHeight =
             if (isEmojiPanelVisible) {
                 max(binding.emojiLayout.measuredHeight, binding.emojiLayout.layoutParams.height)
