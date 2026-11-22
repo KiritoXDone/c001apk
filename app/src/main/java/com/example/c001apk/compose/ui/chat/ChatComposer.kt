@@ -44,8 +44,6 @@ import com.example.c001apk.compose.constant.Constants.EMPTY_STRING
 import com.example.c001apk.compose.logic.model.StringEntity
 import com.example.c001apk.compose.ui.component.ChatEditText
 import com.example.c001apk.compose.ui.component.cards.CardIndicator
-import com.example.c001apk.compose.ui.component.icons.Backspace
-import com.example.c001apk.compose.ui.component.icons.EmojiEmotions
 import com.example.c001apk.compose.util.EmojiUtils
 import com.example.c001apk.compose.util.EmojiUtils.pickerCategories
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
@@ -54,11 +52,13 @@ import top.yukonga.miuix.kmp.basic.HorizontalDivider
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.Text
-import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Image
-import top.yukonga.miuix.kmp.icon.extended.Send
 import top.yukonga.miuix.kmp.squircle.squircleSurface
 import top.yukonga.miuix.kmp.theme.MiuixTheme
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteDeleteBackLine
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteEmojiLine
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCutePhotoAlbumLine
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteSendLine
 
 @Composable
 fun ChatBottom(
@@ -120,7 +120,7 @@ internal fun ChatComposerContent(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             ChatComposerIcon(
-                icon = MiuixIcons.EmojiEmotions,
+                icon = MingCuteEmojiLine,
                 description = if (showEmojiPanel) "收起表情" else "选择表情",
                 selected = showEmojiPanel,
                 onClick = {
@@ -153,7 +153,7 @@ internal fun ChatComposerContent(
             )
             if (!shouldShowSendBtn) {
                 Row {
-                    ChatComposerIcon(MiuixIcons.Image, "选择图片", onClick = onPickImage)
+                    ChatComposerIcon(MingCutePhotoAlbumLine, "选择图片", onClick = onPickImage)
                     IconButton(
                         onClick = onPickOtherImage,
                         modifier = Modifier.size(44.dp),
@@ -169,7 +169,7 @@ internal fun ChatComposerContent(
                 }
             } else {
                 ChatComposerIcon(
-                    icon = MiuixIcons.Send,
+                    icon = MingCuteSendLine,
                     description = "发送",
                     primary = true,
                     onClick = { onSendMessage(textInput) },
@@ -234,7 +234,7 @@ internal fun ChatComposerContent(
                                         )
                                     } else if (it == 27) {
                                         Icon(
-                                            imageVector = MiuixIcons.Backspace,
+                                            imageVector = MingCuteDeleteBackLine,
                                             contentDescription = "删除表情",
                                             modifier = Modifier.size(28.dp),
                                         )

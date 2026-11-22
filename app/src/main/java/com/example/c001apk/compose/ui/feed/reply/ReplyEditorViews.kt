@@ -50,11 +50,10 @@ import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.Surface
 import top.yukonga.miuix.kmp.basic.Text
-import top.yukonga.miuix.kmp.icon.MiuixIcons
-import top.yukonga.miuix.kmp.icon.extended.Forward
-import top.yukonga.miuix.kmp.icon.extended.Lock
 import top.yukonga.miuix.kmp.squircle.addSquircleRect
 import top.yukonga.miuix.kmp.theme.MiuixTheme
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteLockLine
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteShare2Line
 
 internal object ReplyEditorDefaults {
     val CardRadius = 16.dp
@@ -143,7 +142,7 @@ class ReplyVisibilityChipView @JvmOverloads constructor(context: Context, attrs:
                     horizontalArrangement = Arrangement.spacedBy(ReplyEditorDefaults.ChipSpacing),
                 ) {
                     Icon(
-                        if (isReply) MiuixIcons.Forward else MiuixIcons.Lock,
+                        if (isReply) MingCuteShare2Line else MingCuteLockLine,
                         null,
                         Modifier.size(ReplyEditorDefaults.ChipIconSize),
                     )

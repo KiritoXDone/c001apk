@@ -30,7 +30,6 @@ import com.example.c001apk.compose.ui.component.IconText
 import com.example.c001apk.compose.ui.component.LinkText
 import com.example.c001apk.compose.ui.component.MiuixMenuItem as DropdownMenuItem
 import com.example.c001apk.compose.ui.component.MiuixMoreMenu
-import com.example.c001apk.compose.ui.component.icons.Smartphone
 import com.example.c001apk.compose.ui.theme.cardBg
 import com.example.c001apk.compose.util.CookieUtil.isLogin
 import com.example.c001apk.compose.util.DateUtils.fromToday
@@ -40,9 +39,9 @@ import com.example.c001apk.compose.util.Utils.richToString
 import com.example.c001apk.compose.util.copyText
 import com.example.c001apk.compose.util.getShareText
 import top.yukonga.miuix.kmp.basic.Text
-import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.squircle.squircleSurface
 import top.yukonga.miuix.kmp.theme.MiuixTheme
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteCellphone2Line
 
 /** Created by bggRGjQaUbCoE on 2024/6/17 */
 @OptIn(ExperimentalFoundationApi::class)
@@ -162,7 +161,7 @@ fun HistoryHeader(
                     end.linkTo(parent.end)
                     width = Dimension.fillToConstraints
                 },
-            imageVector = MiuixIcons.Smartphone,
+            imageVector = MingCuteCellphone2Line,
             title = data.device.richToString(),
             textSize = 13f,
         )

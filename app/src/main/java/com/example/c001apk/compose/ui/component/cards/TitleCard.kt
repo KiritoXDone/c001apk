@@ -13,10 +13,9 @@ import androidx.compose.ui.unit.sp
 import com.example.c001apk.compose.util.noRippleClickable
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.Text
-import top.yukonga.miuix.kmp.icon.MiuixIcons
-import top.yukonga.miuix.kmp.icon.extended.ChevronForward
 import top.yukonga.miuix.kmp.squircle.squircleClip
 import top.yukonga.miuix.kmp.theme.MiuixTheme
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteRightLine
 
 /** Created by bggRGjQaUbCoE on 2024/6/6 */
 @Composable
@@ -47,7 +46,7 @@ fun TitleCard(
 
         if (url.isNotEmpty()) {
             Icon(
-                imageVector = MiuixIcons.ChevronForward,
+                imageVector = MingCuteRightLine,
                 contentDescription = null,
                 tint = MiuixTheme.colorScheme.onSurfaceVariantSummary,
                 modifier = Modifier.size(15.dp),

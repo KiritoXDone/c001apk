@@ -35,17 +35,17 @@ import com.example.c001apk.compose.constant.Constants.URL_SOURCE_CODE
 import com.example.c001apk.compose.constant.Constants.URL_SOURCE_CODE_FORK
 import com.example.c001apk.compose.ui.component.MiuixScaffold as Scaffold
 import com.example.c001apk.compose.ui.component.MiuixToolbarIconButton
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteArrowLeftLine
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteFolderLine
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteGlobeLine
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteInformationLine
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteTagLine
 import com.example.c001apk.compose.ui.component.settings.BasicListItem
 import com.example.c001apk.compose.ui.component.settings.PreferenceGroup
 import com.example.c001apk.compose.util.openInBrowser
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.theme.MiuixTheme
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteArrowLeftLine
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteFolderLine
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteGlobeLine
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteInformationLine
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteTagLine
 
 /** Created by bggRGjQaUbCoE on 2024/6/2 */
 @Composable

@@ -54,13 +54,12 @@ import com.example.c001apk.compose.ui.home.feed.HomeFeedScreen
 import com.example.c001apk.compose.ui.home.topic.HomeTopicScreen
 import com.example.c001apk.compose.util.CookieUtil.isLogin
 import com.example.c001apk.compose.util.ReportType
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteArrowLeftLine
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteClockwiseLine
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteEdit2Line
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteSearchLine
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.Text
-import top.yukonga.miuix.kmp.icon.MiuixIcons
-import top.yukonga.miuix.kmp.icon.extended.Back
-import top.yukonga.miuix.kmp.icon.extended.Edit
-import top.yukonga.miuix.kmp.icon.extended.Search
-import top.yukonga.miuix.kmp.icon.extended.Update
 import top.yukonga.miuix.kmp.preference.CheckboxPreference
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
@@ -120,7 +119,7 @@ fun HomeTabEditorScreen(
                 title = "首页板块",
                 navigationIcon = {
                     MiuixToolbarIconButton(onClick = { if (!saving) onBackClick() }, enabled = !saving) {
-                        Icon(MiuixIcons.Back, contentDescription = "返回")
+                        Icon(MingCuteArrowLeftLine, contentDescription = "返回")
                     }
                 },
                 actions = {
@@ -296,13 +295,13 @@ fun HomeScreen(
                                     ContextCompat.startActivity(context, intent, animationBundle)
                                 },
                             ) {
-                                Icon(MiuixIcons.Edit, contentDescription = "发布动态", modifier = Modifier.size(24.dp))
+                                Icon(MingCuteEdit2Line, contentDescription = "发布动态", modifier = Modifier.size(24.dp))
                             }
                         }
                         if (currentTabType == TabType.APP) {
                             updateAction?.let { onUpdate ->
                                 MiuixToolbarIconButton(onClick = onUpdate) {
-                                    Icon(MiuixIcons.Update, contentDescription = "检查应用更新", modifier = Modifier.size(24.dp))
+                                    Icon(MingCuteClockwiseLine, contentDescription = "检查应用更新", modifier = Modifier.size(24.dp))
                                 }
                             }
                         }
@@ -382,7 +381,7 @@ private fun HomeTopBar(
 ) {
     TopAppBar(title = "主页", actions = {
         MiuixToolbarIconButton(onClick = onSearch) {
-            Icon(MiuixIcons.Search, contentDescription = "搜索", modifier = Modifier.size(24.dp))
+            Icon(MingCuteSearchLine, contentDescription = "搜索", modifier = Modifier.size(24.dp))
         }
         actions()
     })

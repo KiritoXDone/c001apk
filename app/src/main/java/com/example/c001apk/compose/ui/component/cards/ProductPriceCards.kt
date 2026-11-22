@@ -30,9 +30,8 @@ import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.Text
-import top.yukonga.miuix.kmp.icon.MiuixIcons
-import top.yukonga.miuix.kmp.icon.extended.Link
 import top.yukonga.miuix.kmp.theme.MiuixTheme
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteLinkLine
 
 @Composable
 fun FeedProductInfo(
@@ -91,7 +90,7 @@ private fun TradeLinkIcon(link: TradeLink, clickable: Boolean, onOpenLink: (Stri
         if (link.isXianyu) {
             Image(painterResource(R.drawable.ic_xianyu), description, Modifier.size(size))
         } else {
-            Icon(MiuixIcons.Link, description, Modifier.size(size), tint = MiuixTheme.colorScheme.primary)
+            Icon(MingCuteLinkLine, description, Modifier.size(size), tint = MiuixTheme.colorScheme.primary)
         }
     }
     if (clickable) IconButton(onClick = { onOpenLink(link.url) }, minWidth = 40.dp, minHeight = 40.dp) { graphic() }

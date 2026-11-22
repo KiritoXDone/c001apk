@@ -1,0 +1,35 @@
+// SPDX-License-Identifier: Apache-2.0
+// 来源：https://github.com/mingcute-design/mingcute-icons/blob/9dc7d3ad074fb16477096a6a8109a6467d0e2fe3/assets/svg/core/regular/communication/comment.svg
+package com.example.c001apk.compose.ui.component.icons.mingcute
+
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.PathFillType
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.vector.PathParser
+import androidx.compose.ui.unit.dp
+
+val MingCuteCommentLine: ImageVector by lazy {
+    ImageVector.Builder(
+        name = "MingCuteCommentLine",
+        defaultWidth = 24f.dp,
+        defaultHeight = 24f.dp,
+        viewportWidth = 24f,
+        viewportHeight = 24f,
+    ).apply {
+        addPath(
+            pathData = PathParser().parsePathString("M19 19c0 .386.044.777-.019 1.159a1.25 1.25 0 0 1-.547.85c-.464.312-1.05.245-1.484-.082l-2.268-1.89-.046-.031L14.58 19H11c-1.697-.051-2.949-1.303-3-3v-4c.023-.778.294-1.493.827-2.065.564-.607 1.356-.91 2.173-.935h8c.778.023 1.493.294 2.065.827.607.564.91 1.356.935 2.173v4c-.053 1.763-1.276 2.896-3 3m-1.99-.627c.106-.73.576-1.269 1.331-1.36.273-.033.55.015.823-.029.515-.085.816-.527.836-1.024v-3.92c-.009-.23-.057-.44-.195-.628-.204-.28-.509-.398-.845-.412h-7.92c-.283.011-.54.09-.745.295s-.284.462-.295.745v3.92c.025.622.418 1.015 1.04 1.04h3.598c1.012.037 1.627.753 2.372 1.373M7 17.769c.268.173.453.408.493.736.044.367-.118.689-.393.92-.471.395-1.14.431-1.628.049-.305-.238-.454-.595-.472-.974V17c-1.724-.104-2.947-1.237-3-3V7c.025-.817.328-1.609.935-2.173C3.507 4.294 4.222 4.023 5 4h11c.778.023 1.493.294 2.065.827.657.61 1.46 2.335.503 2.996a1 1 0 0 1-.488.174 1.01 1.01 0 0 1-1.022-.661c-.086-.241-.035-.257-.074-.5a1.01 1.01 0 0 0-.82-.82L15.96 6H5.04c-.23.009-.44.057-.628.195-.28.204-.398.509-.412.845v6.92l.016.204c.069.415.405.751.82.82.273.044.55-.004.823.029.261.031.513.12.727.276.797.583.614 1.619.614 2.48").toNodes(),
+            pathFillType = PathFillType.NonZero,
+            fill = SolidColor(Color(0xFF000000)),
+            fillAlpha = 1f,
+            stroke = null,
+            strokeAlpha = 1f,
+            strokeLineWidth = 1f,
+            strokeLineCap = StrokeCap.Butt,
+            strokeLineJoin = StrokeJoin.Miter,
+            strokeLineMiter = 4f,
+        )
+    }.build()
+}

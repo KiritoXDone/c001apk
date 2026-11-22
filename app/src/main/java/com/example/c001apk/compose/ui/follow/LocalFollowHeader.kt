@@ -7,10 +7,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.c001apk.compose.ui.component.MiuixActionButton
 import top.yukonga.miuix.kmp.basic.*
-import top.yukonga.miuix.kmp.icon.MiuixIcons
-import top.yukonga.miuix.kmp.icon.extended.ChevronForward
-import top.yukonga.miuix.kmp.icon.extended.Hide
 import top.yukonga.miuix.kmp.theme.MiuixTheme
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteEyeOffLine
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteRightLine
 
 @Composable
 internal fun LocalFollowHeader(warning: String?, onManage: () -> Unit, onRetry: () -> Unit) {
@@ -22,14 +21,14 @@ internal fun LocalFollowHeader(warning: String?, onManage: () -> Unit, onRetry: 
             insideMargin = PaddingValues(16.dp),
         ) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                Icon(MiuixIcons.Hide, null, Modifier.size(24.dp), tint = MiuixTheme.colorScheme.onSurfaceVariantSummary)
+                Icon(MingCuteEyeOffLine, null, Modifier.size(24.dp), tint = MiuixTheme.colorScheme.onSurfaceVariantSummary)
                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Text("仅保存在本机", style = MiuixTheme.textStyles.headline2)
                     Text("不会同步账号关注", style = MiuixTheme.textStyles.footnote1,
                         color = MiuixTheme.colorScheme.onSurfaceVariantSummary)
                 }
                 Text("管理", style = MiuixTheme.textStyles.body2, color = MiuixTheme.colorScheme.primary)
-                Icon(MiuixIcons.ChevronForward, null, Modifier.size(14.dp), tint = MiuixTheme.colorScheme.onSurfaceVariantActions)
+                Icon(MingCuteRightLine, null, Modifier.size(14.dp), tint = MiuixTheme.colorScheme.onSurfaceVariantActions)
             }
         }
         warning?.let {

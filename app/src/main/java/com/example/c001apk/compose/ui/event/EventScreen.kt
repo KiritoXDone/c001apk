@@ -48,14 +48,13 @@ import top.yukonga.miuix.kmp.basic.HorizontalDivider
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.Surface
 import top.yukonga.miuix.kmp.basic.Text
-import top.yukonga.miuix.kmp.icon.MiuixIcons
-import top.yukonga.miuix.kmp.icon.extended.Alarm
-import top.yukonga.miuix.kmp.icon.extended.ChevronForward
-import top.yukonga.miuix.kmp.icon.extended.Community
-import top.yukonga.miuix.kmp.icon.extended.Help
-import top.yukonga.miuix.kmp.icon.extended.Info
-import top.yukonga.miuix.kmp.icon.extended.Promotions
 import top.yukonga.miuix.kmp.theme.MiuixTheme
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteAlarm1Line
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteAnnouncementLine
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteGroup2Line
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteInformationLine
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteQuestionLine
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteRightLine
 
 private const val EVENT_RULE_URL = "/page?url=V8_GOODS_ZHONGCE_README"
 private const val EVENT_RULE_TITLE = "酷品-众测规则"
@@ -170,7 +169,7 @@ private fun EventContent(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
                         Icon(
-                            imageVector = MiuixIcons.Alarm,
+                            imageVector = MingCuteAlarm1Line,
                             contentDescription = null,
                             tint = MiuixTheme.colorScheme.onSurfaceVariantSummary,
                             modifier = Modifier.size(20.dp),
@@ -213,7 +212,7 @@ private fun EventContent(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
                         Icon(
-                            imageVector = MiuixIcons.Help,
+                            imageVector = MingCuteQuestionLine,
                             contentDescription = null,
                             tint = MiuixTheme.colorScheme.onSurfaceVariantSummary,
                             modifier = Modifier.size(20.dp),
@@ -232,7 +231,7 @@ private fun EventContent(
             ?.takeIf { it.isNotBlank() }
             ?.let { notice ->
                 item(key = "notice") {
-                    EventSection(title = "报名须知", icon = MiuixIcons.Info) {
+                    EventSection(title = "报名须知", icon = MingCuteInformationLine) {
                         Text(
                             text = notice.trim(),
                             style = MiuixTheme.textStyles.main,
@@ -246,7 +245,7 @@ private fun EventContent(
             ?.takeIf { it.isNotEmpty() }
             ?.let { sponsors ->
                 item(key = "sponsors") {
-                    EventSection(title = "主办方", icon = MiuixIcons.Community) {
+                    EventSection(title = "主办方", icon = MingCuteGroup2Line) {
                         sponsors.forEachIndexed { index, sponsor ->
                             SponsorRow(sponsor = sponsor, onViewUser = onViewUser)
                             if (index != sponsors.lastIndex) HorizontalDivider()
@@ -259,7 +258,7 @@ private fun EventContent(
             ?.takeIf { it.isNotEmpty() }
             ?.let { prizes ->
                 item(key = "prizes") {
-                    EventSection(title = "活动奖品", icon = MiuixIcons.Promotions) {
+                    EventSection(title = "活动奖品", icon = MingCuteAnnouncementLine) {
                         prizes.forEachIndexed { index, prize ->
                             PrizeRow(prize)
                             if (index != prizes.lastIndex) HorizontalDivider()
@@ -294,7 +293,7 @@ private fun EventContent(
                                     modifier = Modifier.weight(1f),
                                 )
                                 Icon(
-                                    imageVector = MiuixIcons.ChevronForward,
+                                    imageVector = MingCuteRightLine,
                                     contentDescription = null,
                                     tint = MiuixTheme.colorScheme.onSurfaceVariantSummary,
                                 )
@@ -371,7 +370,7 @@ private fun SponsorRow(
             modifier = Modifier.weight(1f),
         )
         Icon(
-            imageVector = MiuixIcons.ChevronForward,
+            imageVector = MingCuteRightLine,
             contentDescription = null,
             tint = MiuixTheme.colorScheme.onSurfaceVariantSummary,
         )

@@ -24,9 +24,8 @@ import com.example.c001apk.compose.util.makeToast
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import top.yukonga.miuix.kmp.basic.*
-import top.yukonga.miuix.kmp.icon.MiuixIcons
-import top.yukonga.miuix.kmp.icon.extended.Update
-import top.yukonga.miuix.kmp.icon.glass.More
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteClockwiseLine
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteMore2Line
 
 @HiltViewModel class AppUpdateViewModel @Inject constructor(val updates: AppUpdates) : ViewModel()
 
@@ -70,7 +69,7 @@ fun AppUpdateHost(navigator: AppNavigator, model: AppUpdateViewModel = hiltViewM
                     Box(Modifier.align(Alignment.CenterEnd)) {
                         IconButton(onClick = { isMenuExpanded = true }) {
                             Icon(
-                                imageVector = MiuixIcons.Glass.More,
+                                imageVector = MingCuteMore2Line,
                                 contentDescription = "更多操作",
                                 modifier = Modifier.size(24.dp),
                             )
@@ -145,14 +144,14 @@ fun AppUpdateSettings(model: AppUpdateViewModel = hiltViewModel()) {
     val state by model.updates.state.collectAsStateWithLifecycle()
     SwitchListItem(
         value = prefs.automatic,
-        leadingImageVector = MiuixIcons.Update,
+        leadingImageVector = MingCuteClockwiseLine,
         headlineText = "自动检查更新",
         supportingText = "每次启动检查一次正式版本",
         onValueChanged = model.updates::setAutomatic,
     )
     BasicListItem(
         headlineText = if (state.checking) "正在检查更新…" else "检查更新",
-        leadingImageVector = MiuixIcons.Update,
+        leadingImageVector = MingCuteClockwiseLine,
         enabled = !state.checking,
         onClick = { model.updates.check() },
     )

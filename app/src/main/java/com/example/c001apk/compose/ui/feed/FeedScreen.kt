@@ -79,10 +79,9 @@ import com.example.c001apk.compose.util.makeToast
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.Text
-import top.yukonga.miuix.kmp.icon.MiuixIcons
-import top.yukonga.miuix.kmp.icon.extended.ExpandMore
-import top.yukonga.miuix.kmp.icon.extended.Reply
 import top.yukonga.miuix.kmp.theme.MiuixTheme
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteArrowLeftUpLine
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteDownLine
 
 /** Created by bggRGjQaUbCoE on 2024/6/4 */
 @Composable
@@ -290,7 +289,7 @@ fun FeedScreen(
                                             launchReply()
                                         },
                                     ) {
-                                        Icon(MiuixIcons.Reply, contentDescription = "回复动态", modifier = Modifier.size(24.dp))
+                                        Icon(MingCuteArrowLeftUpLine, contentDescription = "回复动态", modifier = Modifier.size(24.dp))
                                     }
                                 }
                                 val feed = (viewModel.feedState as LoadingState.Success).response
@@ -305,7 +304,7 @@ fun FeedScreen(
                                         },
                                         holdDownState = menuHeld,
                                     ) {
-                                        Icon(MiuixIcons.ExpandMore, contentDescription = "更多操作", modifier = Modifier.size(24.dp))
+                                        Icon(MingCuteDownLine, contentDescription = "更多操作", modifier = Modifier.size(24.dp))
                                     }
                                     DropdownMenu(
                                         expanded = dropdownMenuExpanded,

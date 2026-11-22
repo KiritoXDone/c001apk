@@ -23,10 +23,9 @@ import com.example.c001apk.compose.ui.component.TopBarScrollEffect
 import com.example.c001apk.compose.ui.component.cards.LoadingCard
 import com.example.c001apk.compose.ui.component.settings.PreferenceGroup
 import top.yukonga.miuix.kmp.basic.*
-import top.yukonga.miuix.kmp.icon.MiuixIcons
-import top.yukonga.miuix.kmp.icon.extended.Contacts
 import top.yukonga.miuix.kmp.squircle.squircleSurface
 import top.yukonga.miuix.kmp.theme.MiuixTheme
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteUser3Line
 
 @Composable
 internal fun BlackListContent(
@@ -100,7 +99,7 @@ internal fun BlackListContent(
                                 Modifier.size(40.dp).squircleSurface(MiuixTheme.colorScheme.surfaceContainerHigh, 12.dp),
                                 contentAlignment = Alignment.Center,
                             ) {
-                                if (users) Icon(MiuixIcons.Contacts, null, Modifier.size(24.dp))
+                                if (users) Icon(MingCuteUser3Line, null, Modifier.size(24.dp))
                                 else Text("#", style = MiuixTheme.textStyles.title3)
                             }
                         },

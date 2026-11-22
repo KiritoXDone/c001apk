@@ -29,17 +29,15 @@ import com.example.c001apk.compose.logic.providable.LocalUserPreferences
 import com.example.c001apk.compose.ui.base.LikeType
 import com.example.c001apk.compose.ui.component.CoilLoader
 import com.example.c001apk.compose.ui.component.icons.FlutterProfileIcons
-import com.example.c001apk.compose.ui.component.icons.ThumbUpAlt
-import com.example.c001apk.compose.ui.component.icons.ThumbUpOffAlt
 import com.example.c001apk.compose.ui.component.rememberHapticClick
 import com.example.c001apk.compose.util.DateUtils.fromToday
 import com.example.c001apk.compose.util.ReportType
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.Text
-import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.squircle.squircleClip
 import top.yukonga.miuix.kmp.theme.MiuixTheme
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteThumbUpLine
 
 @Composable
 internal fun VoteCommentCard(
@@ -124,7 +122,7 @@ internal fun VoteCommentCard(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             VoteCommentAction(
-                icon = if (liked) MiuixIcons.ThumbUpAlt else MiuixIcons.ThumbUpOffAlt,
+                icon = if (liked) MingCuteThumbUpLine else MingCuteThumbUpLine,
                 label = if (liked) "取消点赞" else "点赞",
                 text = data.likenum?.takeIf(String::isNotBlank) ?: "0",
                 enabled = LocalUserPreferences.current.isLogin && onLike != null && feedId.isNotBlank(),

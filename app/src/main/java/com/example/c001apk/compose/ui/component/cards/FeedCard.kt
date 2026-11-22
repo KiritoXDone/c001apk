@@ -52,9 +52,6 @@ import com.example.c001apk.compose.ui.component.MiuixMenuItem as DropdownMenuIte
 import com.example.c001apk.compose.ui.component.MiuixMoreMenu
 import com.example.c001apk.compose.ui.component.NineImageView
 import com.example.c001apk.compose.ui.component.RichPostText
-import com.example.c001apk.compose.ui.component.icons.Smartphone
-import com.example.c001apk.compose.ui.component.icons.ThumbUpAlt
-import com.example.c001apk.compose.ui.component.icons.ThumbUpOffAlt
 import com.example.c001apk.compose.ui.theme.cardBg
 import com.example.c001apk.compose.util.CookieUtil
 import com.example.c001apk.compose.util.CookieUtil.isLogin
@@ -65,10 +62,11 @@ import com.example.c001apk.compose.util.Utils.richToString
 import com.example.c001apk.compose.util.copyText
 import com.example.c001apk.compose.util.getShareText
 import com.example.c001apk.compose.ui.component.icons.FlutterProfileIcons
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteCellphone2Line
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteLinkLine
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteThumbUpLine
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.Text
-import top.yukonga.miuix.kmp.icon.MiuixIcons
-import top.yukonga.miuix.kmp.icon.extended.Link
 import top.yukonga.miuix.kmp.squircle.squircleClip
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
@@ -247,7 +245,7 @@ fun FeedBottomInfo(
 
         IconText(
             modifier = Modifier.padding(start = 10.dp),
-            imageVector = if (like == 1) MiuixIcons.ThumbUpAlt else MiuixIcons.ThumbUpOffAlt,
+            imageVector = MingCuteThumbUpLine,
             title = likeNum,
             onClick = onLike,
             isLike = like == 1,
@@ -460,7 +458,7 @@ fun FeedMessage(
                     contentAlignment = Alignment.Center,
                 ) {
                     Image(
-                        imageVector = MiuixIcons.Link,
+                        imageVector = MingCuteLinkLine,
                         contentDescription = null,
                         colorFilter = ColorFilter.tint(MiuixTheme.colorScheme.onPrimary),
                     )
@@ -656,7 +654,7 @@ fun FeedHeader(
                         end.linkTo(parent.end)
                         width = Dimension.fillToConstraints
                     },
-            imageVector = MiuixIcons.Smartphone,
+            imageVector = MingCuteCellphone2Line,
             title = data.deviceTitle?.richToString().orEmpty(),
             textSize = 13f,
         )

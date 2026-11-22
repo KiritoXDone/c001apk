@@ -29,10 +29,9 @@ import top.yukonga.miuix.kmp.basic.InputField
 import top.yukonga.miuix.kmp.basic.TextField
 import top.yukonga.miuix.kmp.basic.TextFieldDefaults
 import top.yukonga.miuix.kmp.glass.GlassIconButton
-import top.yukonga.miuix.kmp.icon.MiuixIcons
-import top.yukonga.miuix.kmp.icon.glass.Close
-import top.yukonga.miuix.kmp.icon.glass.Search
 import top.yukonga.miuix.kmp.theme.MiuixTheme
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteCloseLine
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteSearchLine
 
 @Composable
 fun MiuixSearchField(
@@ -113,7 +112,7 @@ fun MiuixSearchTextField(
 @Composable
 private fun SearchFieldIcon() {
     Icon(
-        imageVector = MiuixIcons.Glass.Search,
+        imageVector = MingCuteSearchLine,
         contentDescription = null,
         modifier = Modifier.padding(start = 16.dp, end = 8.dp).size(28.dp)
             .testTag("miuix_search_icon"),
@@ -136,7 +135,7 @@ private fun SearchFieldClearButton(value: String, enabled: Boolean, onValueChang
             shadow = null,
         ) {
             Icon(
-                imageVector = MiuixIcons.Glass.Close,
+                imageVector = MingCuteCloseLine,
                 contentDescription = "清空搜索",
                 modifier = Modifier.size(24.dp),
                 tint = MiuixTheme.colorScheme.onSurfaceContainerHigh,

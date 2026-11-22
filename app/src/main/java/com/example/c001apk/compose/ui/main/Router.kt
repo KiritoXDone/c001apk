@@ -3,11 +3,10 @@ package com.example.c001apk.compose.ui.main
 import androidx.annotation.StringRes
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.example.c001apk.compose.R
-import top.yukonga.miuix.kmp.icon.MiuixIcons
-import top.yukonga.miuix.kmp.icon.extended.ContactsCircle
-import top.yukonga.miuix.kmp.icon.extended.FavoritesFill
-import top.yukonga.miuix.kmp.icon.extended.Home
-import top.yukonga.miuix.kmp.icon.extended.Settings
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteHeartLine
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteHome4Line
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteSettings2Line
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteUser3Line
 
 /** Created by bggRGjQaUbCoE on 2024/5/30 */
 sealed class Router(
@@ -26,32 +25,32 @@ sealed class Router(
         Router(
             name = "HOME",
             stringId = R.string.home,
-            unselectedIcon = MiuixIcons.Home,
-            selectedIcon = MiuixIcons.Home,
+            unselectedIcon = MingCuteHome4Line,
+            selectedIcon = MingCuteHome4Line,
         )
 
     data object FOLLOW :
         Router(
             name = "FOLLOW",
             stringId = R.string.follow,
-            unselectedIcon = MiuixIcons.FavoritesFill,
-            selectedIcon = MiuixIcons.FavoritesFill,
+            unselectedIcon = MingCuteHeartLine,
+            selectedIcon = MingCuteHeartLine,
         )
 
     data object PROFILE :
         Router(
             name = "PROFILE",
             stringId = R.string.profile,
-            unselectedIcon = MiuixIcons.ContactsCircle,
-            selectedIcon = MiuixIcons.ContactsCircle,
+            unselectedIcon = MingCuteUser3Line,
+            selectedIcon = MingCuteUser3Line,
         )
 
     data object SETTINGS :
         Router(
             name = "SETTINGS",
             stringId = R.string.settings,
-            unselectedIcon = MiuixIcons.Settings,
-            selectedIcon = MiuixIcons.Settings,
+            unselectedIcon = MingCuteSettings2Line,
+            selectedIcon = MingCuteSettings2Line,
         )
 
     data object LOCAL_FOLLOWS : Router(name = "LOCAL_FOLLOWS")

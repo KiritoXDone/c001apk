@@ -34,12 +34,11 @@ import com.example.c001apk.compose.ui.theme.cardBg
 import com.example.c001apk.compose.util.ImageShowUtil
 import com.example.c001apk.compose.util.longClick
 import top.yukonga.miuix.kmp.basic.Icon
-import top.yukonga.miuix.kmp.icon.MiuixIcons
-import top.yukonga.miuix.kmp.icon.extended.Contacts
 import top.yukonga.miuix.kmp.squircle.squircleClip
 import top.yukonga.miuix.kmp.squircle.squircleSurface
 import top.yukonga.miuix.kmp.theme.LocalContentColor
 import top.yukonga.miuix.kmp.theme.MiuixTheme
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteUser3Line
 
 @Composable
 internal fun ChatMessageBubble(
@@ -130,7 +129,7 @@ private fun ChatAvatar(avatar: String?, onClick: () -> Unit) {
             CoilLoader(modifier = Modifier.fillMaxSize(), url = avatar)
         } else {
             Icon(
-                MiuixIcons.Contacts,
+                MingCuteUser3Line,
                 contentDescription = null,
                 modifier = Modifier.size(22.dp),
                 tint = MiuixTheme.colorScheme.onSurfaceVariantSummary,

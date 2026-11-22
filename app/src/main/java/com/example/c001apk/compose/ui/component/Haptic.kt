@@ -13,9 +13,7 @@ import com.example.c001apk.compose.logic.model.TopBarStyle
 import com.example.c001apk.compose.logic.providable.LocalUserPreferences
 import com.example.c001apk.compose.util.performConfiguredHapticFeedback
 import top.yukonga.miuix.kmp.basic.Icon
-import top.yukonga.miuix.kmp.icon.MiuixIcons
-import top.yukonga.miuix.kmp.icon.glass.More as GlassMore
-import top.yukonga.miuix.kmp.icon.extended.More
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteMore2Line
 
 @Composable
 fun rememberHapticClick(
@@ -57,7 +55,7 @@ fun MoreMenuButton(onClick: () -> Unit) {
     MiuixToolbarIconButton(onClick = rememberHapticClick(onClick = onClick)) {
         Icon(
             imageVector = if (LocalUserPreferences.current.topBarStyle == TopBarStyle.OS4)
-                MiuixIcons.Glass.GlassMore else MiuixIcons.More,
+                MingCuteMore2Line else MingCuteMore2Line,
             contentDescription = "更多操作",
             modifier = Modifier.size(21.dp),
         )

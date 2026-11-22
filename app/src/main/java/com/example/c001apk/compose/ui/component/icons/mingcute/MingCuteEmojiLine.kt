@@ -1,0 +1,35 @@
+// SPDX-License-Identifier: Apache-2.0
+// 来源：https://github.com/mingcute-design/mingcute-icons/blob/9dc7d3ad074fb16477096a6a8109a6467d0e2fe3/assets/svg/core/regular/emoji/emoji.svg
+package com.example.c001apk.compose.ui.component.icons.mingcute
+
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.PathFillType
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.vector.PathParser
+import androidx.compose.ui.unit.dp
+
+val MingCuteEmojiLine: ImageVector by lazy {
+    ImageVector.Builder(
+        name = "MingCuteEmojiLine",
+        defaultWidth = 24f.dp,
+        defaultHeight = 24f.dp,
+        viewportWidth = 24f,
+        viewportHeight = 24f,
+    ).apply {
+        addPath(
+            pathData = PathParser().parsePathString("M8.697 13.59c.357.072.555.336.829.552.702.553 1.58.856 2.474.856s1.772-.303 2.474-.856c.274-.216.472-.48.829-.552a1.01 1.01 0 0 1 1.195 1.045c-.031.487-.43.8-.784 1.08a6 6 0 0 1-1.106.691 6.05 6.05 0 0 1-6.322-.691c-.268-.212-.616-.477-.733-.824-.242-.716.403-1.449 1.144-1.301m7.278-5.526.418.216c.985.72.742 2.274-.418 2.656l-.475.077-.475-.077-.418-.216c-.985-.72-.742-2.274.418-2.656l.475-.077Zm-7 0 .418.216c.985.72.742 2.274-.418 2.656l-.475.077-.475-.077-.418-.216c-.985-.72-.742-2.274.418-2.656l.475-.077Zm3.805-6.035c1.747.135 3.445.737 4.888 1.731 5.51 3.795 5.807 11.855.587 16.043a10 10 0 0 1-3.237 1.734 10.016 10.016 0 0 1-8.686-1.296C.822 16.445.525 8.385 5.745 4.197a10 10 0 0 1 3.237-1.734 10.1 10.1 0 0 1 3.798-.434m-1.406 1.996a8 8 0 0 0-4.377 1.733C2.03 9.744 3.51 17.709 9.585 19.629a8.006 8.006 0 0 0 7.418-1.387c4.967-3.985 3.487-11.951-2.588-13.871a8.1 8.1 0 0 0-3.041-.346").toNodes(),
+            pathFillType = PathFillType.NonZero,
+            fill = SolidColor(Color(0xFF000000)),
+            fillAlpha = 1f,
+            stroke = null,
+            strokeAlpha = 1f,
+            strokeLineWidth = 1f,
+            strokeLineCap = StrokeCap.Butt,
+            strokeLineJoin = StrokeJoin.Miter,
+            strokeLineMiter = 4f,
+        )
+    }.build()
+}

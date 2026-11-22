@@ -41,9 +41,8 @@ import com.example.c001apk.compose.ui.component.cards.LoadingCard
 import com.example.c001apk.compose.util.ReportType
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.Text
-import top.yukonga.miuix.kmp.icon.MiuixIcons
-import top.yukonga.miuix.kmp.icon.extended.Delete
 import top.yukonga.miuix.kmp.theme.MiuixTheme
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteDelete2Line
 
 /** Created by bggRGjQaUbCoE on 2024/6/17 */
 enum class HistoryType {
@@ -91,7 +90,7 @@ fun HistoryScreen(
                         enter = fadeIn(), exit = fadeOut(),
                     ) {
                         MiuixToolbarIconButton(onClick = { showClearDialog = true }, enabled = dataList.isNotEmpty()) {
-                            Icon(MiuixIcons.Delete, contentDescription = "清除本地记录")
+                            Icon(MingCuteDelete2Line, contentDescription = "清除本地记录")
                         }
                     }
                     if (type == HistoryType.HISTORY.name) {

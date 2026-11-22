@@ -54,10 +54,9 @@ import com.example.c001apk.compose.util.ShareType
 import com.example.c001apk.compose.util.makeToast
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.Text
-import top.yukonga.miuix.kmp.icon.MiuixIcons
-import top.yukonga.miuix.kmp.icon.extended.Edit
-import top.yukonga.miuix.kmp.icon.extended.ExpandMore
-import top.yukonga.miuix.kmp.icon.extended.Search
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteDownLine
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteEdit2Line
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteSearchLine
 
 /** Created by bggRGjQaUbCoE on 2024/6/9 */
 @Composable
@@ -140,7 +139,7 @@ fun TopicScreen(
                                     },
                                 ) {
                                     Icon(
-                                        MiuixIcons.Search,
+                                        MingCuteSearchLine,
                                         contentDescription =
                                             if (viewModel.entityType == "topic") "搜索此话题的动态"
                                             else "搜索此产品的动态",
@@ -168,7 +167,7 @@ fun TopicScreen(
                                             ContextCompat.startActivity(context, intent, animationBundle)
                                         },
                                     ) {
-                                        Icon(MiuixIcons.Edit, contentDescription = "发布动态", modifier = Modifier.size(24.dp))
+                                        Icon(MingCuteEdit2Line, contentDescription = "发布动态", modifier = Modifier.size(24.dp))
                                     }
                                 }
                                 Box {
@@ -179,7 +178,7 @@ fun TopicScreen(
                                         },
                                         holdDownState = menuHeld,
                                     ) {
-                                        Icon(MiuixIcons.ExpandMore, contentDescription = "更多操作", modifier = Modifier.size(24.dp))
+                                        Icon(MingCuteDownLine, contentDescription = "更多操作", modifier = Modifier.size(24.dp))
                                     }
                                     DropdownMenu(
                                         expanded = dropdownMenuExpanded,

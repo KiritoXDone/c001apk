@@ -1,0 +1,35 @@
+// SPDX-License-Identifier: Apache-2.0
+// 来源：https://github.com/mingcute-design/mingcute-icons/blob/9dc7d3ad074fb16477096a6a8109a6467d0e2fe3/assets/svg/core/regular/locations/clock.svg
+package com.example.c001apk.compose.ui.component.icons.mingcute
+
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.PathFillType
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.vector.PathParser
+import androidx.compose.ui.unit.dp
+
+val MingCuteClockLine: ImageVector by lazy {
+    ImageVector.Builder(
+        name = "MingCuteClockLine",
+        defaultWidth = 24f.dp,
+        defaultHeight = 24f.dp,
+        viewportWidth = 24f,
+        viewportHeight = 24f,
+    ).apply {
+        addPath(
+            pathData = PathParser().parsePathString("m10.835 12.227 4.244-4.244c.482-.423 1.234-.381 1.573.207.235.406.139.867-.158 1.207l-4.952 4.952-.207.158c-.407.235-.868.139-1.207-.158l-2.475-2.475c-.238-.272-.355-.607-.259-.966.092-.342.365-.616.707-.707.359-.097.695.021.966.258Zm.813 9.902c-.418-.082-.777-.319-1.135-.537a22 22 0 0 1-2.883-2.087c-2.111-1.81-4.008-4.188-4.493-6.998C2.191 7.034 6.468 1.944 12.04 2.001c5.258.053 9.346 4.488 8.926 9.74-.195 2.444-1.522 4.64-3.161 6.396-1.17 1.253-2.535 2.327-3.98 3.245-.384.244-.79.535-1.225.681a1.9 1.9 0 0 1-.952.066M12 20.147c2.646-1.522 5.509-3.895 6.578-6.833C20.224 8.792 16.782 4.001 12 4.001s-8.224 4.791-6.578 9.313c1.069 2.938 3.932 5.311 6.578 6.833").toNodes(),
+            pathFillType = PathFillType.NonZero,
+            fill = SolidColor(Color(0xFF000000)),
+            fillAlpha = 1f,
+            stroke = null,
+            strokeAlpha = 1f,
+            strokeLineWidth = 1f,
+            strokeLineCap = StrokeCap.Butt,
+            strokeLineJoin = StrokeJoin.Miter,
+            strokeLineMiter = 4f,
+        )
+    }.build()
+}

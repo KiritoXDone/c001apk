@@ -15,9 +15,8 @@ import com.example.c001apk.compose.ui.component.settings.*
 import java.util.UUID
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TextField
-import top.yukonga.miuix.kmp.icon.MiuixIcons
-import top.yukonga.miuix.kmp.icon.extended.Blocklist
 import top.yukonga.miuix.kmp.theme.MiuixTheme
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteUserForbidLine
 
 @Composable
 fun ContentRuleScreen(id: String?, onBack: () -> Unit) {
@@ -39,7 +38,7 @@ fun ContentRuleScreen(id: String?, onBack: () -> Unit) {
         Column(Modifier.fillMaxSize().padding(padding).imePadding().verticalScroll(rememberScrollState()).padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             TextField(value = title, onValueChange = { title = it.take(80) }, label = "规则名称")
             PreferenceGroup(title = "匹配方式") {
-                SelectionListItem(leadingImageVector = MiuixIcons.Blocklist, title = "规则类型", value = kind.ordinal,
+                SelectionListItem(leadingImageVector = MingCuteUserForbidLine, title = "规则类型", value = kind.ordinal,
                     selections = FilterKind.entries.map { SelectionItem(it.title, it.ordinal) },
                     onSelected = { value -> kind = FilterKind.entries[value] })
             }
@@ -54,10 +53,10 @@ fun ContentRuleScreen(id: String?, onBack: () -> Unit) {
                 Text("同一句包含例外词时放行，不影响其他句子的匹配。", color = MiuixTheme.colorScheme.onSurfaceVariantSummary)
             }
             PreferenceGroup(title = "生效范围") {
-                SwitchListItem(enabled, MiuixIcons.Blocklist, "启用此规则") { enabled = it }
-                SwitchListItem(feed, MiuixIcons.Blocklist, "动态") { feed = it }
-                SwitchListItem(comment, MiuixIcons.Blocklist, "评论") { comment = it }
-                SwitchListItem(user, MiuixIcons.Blocklist, "用户卡片") { user = it }
+                SwitchListItem(enabled, MingCuteUserForbidLine, "启用此规则") { enabled = it }
+                SwitchListItem(feed, MingCuteUserForbidLine, "动态") { feed = it }
+                SwitchListItem(comment, MingCuteUserForbidLine, "评论") { comment = it }
+                SwitchListItem(user, MingCuteUserForbidLine, "用户卡片") { user = it }
             }
             model.error?.let { Text(it, color = MiuixTheme.colorScheme.error) }
             top.yukonga.miuix.kmp.basic.Button(enabled = !model.saving, onClick = {

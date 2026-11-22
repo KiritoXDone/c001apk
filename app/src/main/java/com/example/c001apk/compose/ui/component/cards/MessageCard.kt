@@ -34,10 +34,9 @@ import com.example.c001apk.compose.util.DateUtils.fromToday
 import top.yukonga.miuix.kmp.basic.Badge
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.Text
-import top.yukonga.miuix.kmp.icon.MiuixIcons
-import top.yukonga.miuix.kmp.icon.extended.Contacts
 import top.yukonga.miuix.kmp.squircle.squircleSurface
 import top.yukonga.miuix.kmp.theme.MiuixTheme
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteUser3Line
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -81,7 +80,7 @@ fun MessageCard(
                 CoilLoader(modifier = Modifier.fillMaxSize(), url = data.messageUserAvatar)
             } else {
                 Icon(
-                    MiuixIcons.Contacts,
+                    MingCuteUser3Line,
                     contentDescription = null,
                     modifier = Modifier.size(26.dp),
                     tint = MiuixTheme.colorScheme.onSurfaceVariantSummary,

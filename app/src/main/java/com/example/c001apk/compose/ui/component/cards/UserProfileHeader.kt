@@ -41,12 +41,11 @@ import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TextButton
-import top.yukonga.miuix.kmp.icon.MiuixIcons
-import top.yukonga.miuix.kmp.icon.extended.Add
-import top.yukonga.miuix.kmp.icon.extended.Email
 import top.yukonga.miuix.kmp.squircle.squircleBackground
 import top.yukonga.miuix.kmp.squircle.squircleClip
 import top.yukonga.miuix.kmp.theme.MiuixTheme
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteAddLine
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteMailLine
 
 internal object UserProfileDefaults {
     val CoverHeight = 232.dp
@@ -185,7 +184,7 @@ fun UserProfileHeader(
                         colors = if (followed) ButtonDefaults.buttonColors() else ButtonDefaults.buttonColorsPrimary(),
                     ) {
                         if (!followed) {
-                            Icon(MiuixIcons.Add, null, Modifier.size(18.dp))
+                            Icon(MingCuteAddLine, null, Modifier.size(18.dp))
                             Spacer(Modifier.width(6.dp))
                         }
                         Text(
@@ -201,7 +200,7 @@ fun UserProfileHeader(
                         onClick = { onPMUser(data.uid.orEmpty(), data.username.orEmpty()) },
                         enabled = prefs.isLogin,
                     ) {
-                        Icon(MiuixIcons.Email, null, Modifier.size(18.dp))
+                        Icon(MingCuteMailLine, null, Modifier.size(18.dp))
                         Spacer(Modifier.width(6.dp))
                         Text("私信", fontSize = 16.sp, fontWeight = FontWeight.Medium)
                     }

@@ -16,10 +16,9 @@ import com.example.c001apk.compose.logic.providable.LocalUserPreferences
 import com.example.c001apk.compose.ui.component.*
 import com.example.c001apk.compose.ui.component.settings.PreferenceGroup
 import top.yukonga.miuix.kmp.basic.*
-import top.yukonga.miuix.kmp.icon.MiuixIcons
-import top.yukonga.miuix.kmp.icon.extended.Contacts
 import top.yukonga.miuix.kmp.preference.SwitchPreference
 import top.yukonga.miuix.kmp.theme.MiuixTheme
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteUser3Line
 
 @Composable
 fun LocalFollowListScreen(onBack: () -> Unit, onUser: (String) -> Unit) {
@@ -95,7 +94,7 @@ internal fun LocalFollowUserRow(user: LocalFollowUser, onUser: () -> Unit, onRem
     BasicComponent(
         onClick = onUser,
         startAction = {
-            if (user.avatar.isBlank()) Icon(MiuixIcons.Contacts, null, Modifier.size(40.dp))
+            if (user.avatar.isBlank()) Icon(MingCuteUser3Line, null, Modifier.size(40.dp))
             else CoilLoader(url = user.avatar, modifier = Modifier.size(40.dp).clip(CircleShape))
         },
         endActions = {

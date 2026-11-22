@@ -12,9 +12,8 @@ import com.example.c001apk.compose.logic.providable.LocalUserPreferences
 import com.example.c001apk.compose.ui.component.*
 import com.example.c001apk.compose.ui.component.settings.*
 import top.yukonga.miuix.kmp.basic.Text
-import top.yukonga.miuix.kmp.icon.MiuixIcons
-import top.yukonga.miuix.kmp.icon.extended.Blocklist
 import top.yukonga.miuix.kmp.theme.MiuixTheme
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteUserForbidLine
 
 @Composable
 fun ContentFilterScreen(onBack: () -> Unit, onEdit: (String?) -> Unit, onRemoteRules: () -> Unit) {
@@ -25,11 +24,11 @@ fun ContentFilterScreen(onBack: () -> Unit, onEdit: (String?) -> Unit, onRemoteR
         LazyColumn(contentPadding = PaddingValues(top = padding.calculateTopPadding(), bottom = padding.calculateBottomPadding() + 24.dp)) {
             item {
                 PreferenceGroup(title = "本机过滤") {
-                    SwitchListItem(prefs.enabled, MiuixIcons.Blocklist, "启用内容过滤", "只影响本机显示，可随时查看被过滤内容", enabled = !model.saving) {
+                    SwitchListItem(prefs.enabled, MingCuteUserForbidLine, "启用内容过滤", "只影响本机显示，可随时查看被过滤内容", enabled = !model.saving) {
                         enabled -> model.update { it.copy(enabled = enabled) }
                     }
                     FilterScope.entries.forEach { scope ->
-                        SwitchListItem(scope in prefs.scopes, MiuixIcons.Blocklist, scope.title, enabled = !model.saving) { enabled ->
+                        SwitchListItem(scope in prefs.scopes, MingCuteUserForbidLine, scope.title, enabled = !model.saving) { enabled ->
                             model.update { it.copy(scopes = if (enabled) it.scopes + scope else it.scopes - scope) }
                         }
                     }

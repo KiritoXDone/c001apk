@@ -3,10 +3,10 @@ package com.example.c001apk.compose.ui.settings
 import androidx.compose.runtime.Composable
 import com.example.c001apk.compose.logic.model.BottomBarStyle
 import com.example.c001apk.compose.logic.model.TopBarStyle
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteLayoutBottomLine
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteLayoutTopLine
 import com.example.c001apk.compose.ui.component.settings.SelectionItem
 import com.example.c001apk.compose.ui.component.settings.SelectionListItem
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteLayoutBottomLine
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteLayoutTopLine
 
 private val topBarStyles = listOf(
     SelectionItem("经典", TopBarStyle.Classic),

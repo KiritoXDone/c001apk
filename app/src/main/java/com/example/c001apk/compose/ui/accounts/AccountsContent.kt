@@ -16,10 +16,9 @@ import com.example.c001apk.compose.ui.component.icons.FlutterProfileIcons
 import com.example.c001apk.compose.ui.component.settings.PreferenceGroup
 import com.example.c001apk.compose.util.decodeCookieValue
 import top.yukonga.miuix.kmp.basic.*
-import top.yukonga.miuix.kmp.icon.MiuixIcons
-import top.yukonga.miuix.kmp.icon.extended.Contacts
 import top.yukonga.miuix.kmp.preference.ArrowPreference
 import top.yukonga.miuix.kmp.theme.MiuixTheme
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteUser3Line
 
 @Composable
 internal fun AccountsContent(
@@ -70,7 +69,7 @@ internal fun AccountsContent(
                     summary = if (activeUid == null) "当前使用游客模式" else "保留账号，下次可以直接切换",
                     enabled = !busy && activeUid != null,
                     onClick = onGuest,
-                    startAction = { Icon(MiuixIcons.Contacts, null, Modifier.size(24.dp)) },
+                    startAction = { Icon(MingCuteUser3Line, null, Modifier.size(24.dp)) },
                 )
             }
             Text(
@@ -102,7 +101,7 @@ private fun AccountRow(
         enabled = !busy,
         onClick = onSelect,
         startAction = {
-            if (account.avatar.isBlank()) Icon(MiuixIcons.Contacts, null, Modifier.size(40.dp))
+            if (account.avatar.isBlank()) Icon(MingCuteUser3Line, null, Modifier.size(40.dp))
             else CoilLoader(url = account.avatar, modifier = Modifier.size(40.dp).clip(CircleShape))
         },
         endActions = {

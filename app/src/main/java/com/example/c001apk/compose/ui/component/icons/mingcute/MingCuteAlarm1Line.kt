@@ -1,0 +1,35 @@
+// SPDX-License-Identifier: Apache-2.0
+// 来源：https://github.com/mingcute-design/mingcute-icons/blob/9dc7d3ad074fb16477096a6a8109a6467d0e2fe3/assets/svg/core/regular/devices/alarm_1.svg
+package com.example.c001apk.compose.ui.component.icons.mingcute
+
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.PathFillType
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.vector.PathParser
+import androidx.compose.ui.unit.dp
+
+val MingCuteAlarm1Line: ImageVector by lazy {
+    ImageVector.Builder(
+        name = "MingCuteAlarm1Line",
+        defaultWidth = 24f.dp,
+        defaultHeight = 24f.dp,
+        viewportWidth = 24f,
+        viewportHeight = 24f,
+    ).apply {
+        addPath(
+            pathData = PathParser().parsePathString("m13 12.586 1.707 1.707a1 1 0 0 1-1.414 1.414l-2-2a1 1 0 0 1-.217-.324A1 1 0 0 1 11 13V9c.026-.46.305-.865.771-.974.645-.15 1.193.344 1.229.974Zm7.019-3.664a9.8 9.8 0 0 1 .704 1.853c.805 3.169-.206 6.688-2.663 8.871.014.014.666.608.81.86.43.753-.287 1.681-1.124 1.461-.197-.051-.301-.127-.453-.26l-.872-.872c-2.859 1.552-5.983 1.552-8.842 0l-.872.872c-.152.133-.256.209-.453.26-.837.22-1.554-.708-1.124-1.461.144-.252.796-.846.81-.86-2.457-2.183-3.468-5.702-2.663-8.871a9.8 9.8 0 0 1 .704-1.853 3.48 3.48 0 0 1-.571-4.067c1.221-2.291 4.337-2.476 5.895-.438 1.832-.537 3.558-.537 5.39 0 1.558-2.038 4.673-1.853 5.895.438a3.482 3.482 0 0 1-.571 4.067M8.19 7.127a7 7 0 0 0-2.081 2.09C3.126 13.872 6.486 20 12 20a7 7 0 0 0 3.997-1.252c2.455-1.712 3.568-4.882 2.712-7.754C17.834 8.062 15.055 6 12 6c-1.348 0-2.68.392-3.81 1.127m-3.03.035a8.6 8.6 0 0 1 2.214-1.874c-1.294-.879-2.875.451-2.214 1.874m11.466-1.874a8.6 8.6 0 0 1 2.214 1.874c.661-1.423-.92-2.753-2.214-1.874").toNodes(),
+            pathFillType = PathFillType.NonZero,
+            fill = SolidColor(Color(0xFF000000)),
+            fillAlpha = 1f,
+            stroke = null,
+            strokeAlpha = 1f,
+            strokeLineWidth = 1f,
+            strokeLineCap = StrokeCap.Butt,
+            strokeLineJoin = StrokeJoin.Miter,
+            strokeLineMiter = 4f,
+        )
+    }.build()
+}
