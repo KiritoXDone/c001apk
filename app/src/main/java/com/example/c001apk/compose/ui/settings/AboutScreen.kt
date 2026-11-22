@@ -1,7 +1,6 @@
 package com.example.c001apk.compose.ui.settings
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -18,7 +17,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
@@ -33,6 +31,7 @@ import com.example.c001apk.compose.R
 import com.example.c001apk.compose.constant.Constants.URL_PROJECT
 import com.example.c001apk.compose.constant.Constants.URL_SOURCE_CODE
 import com.example.c001apk.compose.constant.Constants.URL_SOURCE_CODE_FORK
+import com.example.c001apk.compose.ui.component.FlowLightBackground
 import com.example.c001apk.compose.ui.component.MiuixScaffold as Scaffold
 import com.example.c001apk.compose.ui.component.MiuixToolbarIconButton
 import com.example.c001apk.compose.ui.component.settings.BasicListItem
@@ -56,17 +55,11 @@ fun AboutScreen(
     val context = LocalContext.current
     val colors = MiuixTheme.colorScheme
     val safeTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
-    val background =
-        Brush.verticalGradient(
-            listOf(
-                colors.primary.copy(alpha = 0.16f),
-                colors.secondaryContainer.copy(alpha = 0.28f),
-                colors.surface,
-            ),
-        )
-
-    Scaffold(modifier = Modifier.fillMaxSize()) { paddingValues ->
-        Box(Modifier.fillMaxSize().background(background)) {
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        containerColor = Color.Transparent,
+    ) { paddingValues ->
+        FlowLightBackground(Modifier.fillMaxSize()) {
             Column(
                 Modifier.fillMaxSize()
                     .verticalScroll(rememberScrollState())
