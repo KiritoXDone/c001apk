@@ -1,0 +1,35 @@
+// SPDX-License-Identifier: Apache-2.0
+// 来源：https://github.com/mingcute-design/mingcute-icons/blob/9dc7d3ad074fb16477096a6a8109a6467d0e2fe3/assets/svg/core/regular/design/clockwise.svg
+package com.example.c001apk.compose.ui.component.icons.mingcute
+
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.PathFillType
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.vector.PathParser
+import androidx.compose.ui.unit.dp
+
+val MingCuteClockwiseLine: ImageVector by lazy {
+    ImageVector.Builder(
+        name = "MingCuteClockwiseLine",
+        defaultWidth = 24f.dp,
+        defaultHeight = 24f.dp,
+        viewportWidth = 24f,
+        viewportHeight = 24f,
+    ).apply {
+        addPath(
+            pathData = PathParser().parsePathString("M9.886 20.993C8.798 20.894 8.04 20.092 8 19v-9c.018-.494.18-.961.513-1.333.384-.428.918-.646 1.487-.667h10c.494.018.961.18 1.333.513.428.384.646.918.667 1.487v9c-.042 1.135-.865 1.958-2 2H10Zm.12-10.987v8.988h9.988v-8.988ZM6.999 5c-.353 0-1.101.096-1.499-.134-.755-.436-.601-1.606.241-1.832L6 3h5.056c.539.024.997.396 1.088.938.198 1.189-1.046 1.337-1.855 1.659-1.361.541-2.668 1.259-3.79 2.207-.792.669-1.491 1.455-2.008 2.357l-.298.571c-.257.552-.35 1.166-1.063 1.259h-.261a1 1 0 0 1-.478-.198c-.676-.518-.308-1.247-.029-1.866l.373-.726C3.722 7.437 5.282 6.035 6.999 5").toNodes(),
+            pathFillType = PathFillType.NonZero,
+            fill = SolidColor(Color(0xFF000000)),
+            fillAlpha = 1f,
+            stroke = null,
+            strokeAlpha = 1f,
+            strokeLineWidth = 1f,
+            strokeLineCap = StrokeCap.Butt,
+            strokeLineJoin = StrokeJoin.Miter,
+            strokeLineMiter = 4f,
+        )
+    }.build()
+}

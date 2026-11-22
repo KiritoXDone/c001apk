@@ -1,44 +1,35 @@
 package com.example.c001apk.compose.ui.settings
 
 import android.os.Build
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.semantics.stateDescription
-import androidx.compose.ui.unit.dp
 import com.example.c001apk.compose.R
 import com.example.c001apk.compose.ThemeMode
 import com.example.c001apk.compose.ThemeType
 import com.example.c001apk.compose.logic.datastore.UserPreferencesCompat
 import com.example.c001apk.compose.ui.component.settings.BasicListItem
-import com.example.c001apk.compose.ui.component.settings.DropdownListItem
 import com.example.c001apk.compose.ui.component.settings.PreferenceGroup
 import com.example.c001apk.compose.ui.component.settings.SelectionItem
+import com.example.c001apk.compose.ui.component.settings.SelectionListItem
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteArrowLeftCircleLine
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteCellphoneVibrationLine
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteClockwiseLine
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteColorPickerLine
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteColumns2Line
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteContrastLine
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteDashboardLine
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteDropletsLine
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteFontSizeLine
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteMoonLine
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCutePaletteLine
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteBrightnessLine
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteListCollapseLine
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteSettings2Line
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteLayersLine
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteSortAscendingLine
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteText2Line
 import com.example.c001apk.compose.ui.component.settings.SwitchListItem
 import com.example.c001apk.compose.ui.theme.paletteStyleOptions
-import top.yukonga.miuix.kmp.basic.BasicComponent
-import top.yukonga.miuix.kmp.basic.Icon
-import top.yukonga.miuix.kmp.icon.MiuixIcons
-import top.yukonga.miuix.kmp.icon.extended.Back
-import top.yukonga.miuix.kmp.icon.extended.ExpandLess
-import top.yukonga.miuix.kmp.icon.extended.ExpandMore
-import top.yukonga.miuix.kmp.icon.extended.HorizontalSplit
-import top.yukonga.miuix.kmp.icon.extended.Rename
-import top.yukonga.miuix.kmp.icon.extended.Theme
-import top.yukonga.miuix.kmp.icon.extended.VerticalSplit
-import top.yukonga.miuix.kmp.icon.glass.DisplayBrightness
-import top.yukonga.miuix.kmp.icon.glass.SoundVibration
-import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 private val themeModes = listOf(
     SelectionItem("跟随系统", ThemeMode.FOLLOW_SYSTEM),
@@ -61,137 +52,126 @@ internal fun LazyListScope.appearancePreferences(
     onContentScale: () -> Unit,
     onHapticStrength: () -> Unit,
 ) {
-    item(key = "Appearance_0") {
-        PreferenceGroup(title = "主题") {
+    item(key = "Appearance_theme") {
+        PreferenceGroup {
             SwitchListItem(
                 value = prefs.materialYou,
-                leadingImageVector = MiuixIcons.Theme,
+                leadingImageVector = MingCutePaletteLine,
                 headlineText = "系统主题色",
                 onValueChanged = viewModel::setMaterialYou,
             )
             if (!prefs.materialYou) {
-                DropdownListItem(
-                    headlineText = "主题颜色",
+                SelectionListItem(
+                    leadingImageVector = MingCuteColorPickerLine,
+                    title = "主题颜色",
                     value = prefs.themeType,
-                    selections = ThemeType.entries.filterNot { it == ThemeType.UNRECOGNIZED }.map { type ->
-                        SelectionItem(stringResource(themeTypeLabelRes(type)), type)
+                    selections =
+                        ThemeType.entries.filterNot { it == ThemeType.UNRECOGNIZED }.map { type ->
+                            SelectionItem(stringResource(themeTypeLabelRes(type)), type)
+                        },
+                    onSelected = { type ->
+                        if (type == ThemeType.Custom) onCustomTheme()
+                        viewModel.setThemeType(type)
                     },
-                    onValueChanged = { _, value ->
-                        if (value == ThemeType.Custom) onCustomTheme()
-                        viewModel.setThemeType(value)
-                    },
-                    useWindowPopup = true,
                 )
                 if (prefs.themeType != ThemeType.Default && prefs.themeType != ThemeType.UNRECOGNIZED) {
-                    DropdownListItem(
-                        headlineText = "调色风格",
+                    SelectionListItem(
+                        leadingImageVector = MingCuteDropletsLine,
+                        title = "调色风格",
                         value = prefs.paletteStyle,
-                        selections = paletteStyleOptions.mapIndexed { index, option ->
-                            SelectionItem(stringResource(option.label), index)
-                        },
-                        onValueChanged = { _, value -> viewModel.setPaletteStyle(value) },
-                        useWindowPopup = true,
+                        selections =
+                            paletteStyleOptions.mapIndexed { index, option ->
+                                SelectionItem(stringResource(option.label), index)
+                            },
+                        onSelected = viewModel::setPaletteStyle,
                     )
                 }
             }
-            DropdownListItem(
-                leadingImageVector = MiuixIcons.Glass.DisplayBrightness,
-                headlineText = "深色主题",
+            SelectionListItem(
+                leadingImageVector = MingCuteMoonLine,
+                title = "深色主题",
                 value = prefs.themeMode,
                 selections = themeModes,
-                onValueChanged = { _, value -> viewModel.setDarkTheme(value) },
-                useWindowPopup = true,
+                onSelected = viewModel::setDarkTheme,
             )
             if (prefs.themeMode != ThemeMode.ALWAYS_OFF) {
                 SwitchListItem(
                     value = prefs.pureBlack,
+                    leadingImageVector = MingCuteContrastLine,
                     headlineText = "纯黑背景",
                     onValueChanged = viewModel::setPureBlack,
                 )
                 SwitchListItem(
                     value = prefs.imageFilter,
+                    leadingImageVector = MingCuteBrightnessLine,
                     headlineText = "压暗图片",
                     onValueChanged = viewModel::setImageFilter,
                 )
             }
         }
     }
-    item(key = "Appearance_1") {
-        PreferenceGroup(title = "显示") {
-            AppearanceDisclosure(
-                title = "栏与标签",
-                summary = "栏样式、排序与模糊",
-                icon = MiuixIcons.HorizontalSplit,
-            ) {
-                BarStylePreferences(
-                    topBarStyle = prefs.topBarStyle,
-                    bottomBarStyle = prefs.effectiveBottomBarStyle,
-                    onTopBarStyleChange = viewModel::setTopBarStyle,
-                    onBottomBarStyleChange = viewModel::setBottomBarStyle,
-                )
-                BasicListItem(headlineText = "底栏排序", onClick = onNavigationOrder)
-                SwitchListItem(
-                    value = prefs.blurBars && Build.VERSION.SDK_INT >= 33,
-                    enabled = Build.VERSION.SDK_INT >= 33,
-                    headlineText = "栏背景模糊",
-                    supportingText = if (Build.VERSION.SDK_INT < 33) "需要 Android 13 及以上" else null,
-                    onValueChanged = viewModel::setBlurBars,
-                )
-                SwitchListItem(
-                    value = prefs.collapseTabsOnScroll,
-                    headlineText = "滚动时收起标签栏",
-                    onValueChanged = viewModel::setCollapseTabsOnScroll,
-                )
-            }
-            AppearanceDisclosure(
-                title = "字号与缩放",
-                icon = MiuixIcons.Rename,
-            ) {
-                BasicListItem(
-                    headlineText = "字体大小",
-                    supportingText = scaleLabel(prefs.fontScale),
-                    onClick = onFontSize,
-                )
-                BasicListItem(
-                    headlineText = "内容大小",
-                    supportingText = scaleLabel(prefs.contentScale),
-                    onClick = onContentScale,
-                )
-            }
-            DropdownListItem(
-                headlineText = "分栏阅读",
-                leadingImageVector = MiuixIcons.VerticalSplit,
-                value = prefs.readingMode,
-                selections = readingModes,
-                onValueChanged = { _, value -> viewModel.setReadingMode(value) },
-                useWindowPopup = true,
+    item(key = "Appearance_bars") {
+        PreferenceGroup {
+            BarStylePreferences(
+                topBarStyle = prefs.topBarStyle,
+                bottomBarStyle = prefs.effectiveBottomBarStyle,
+                onTopBarStyleChange = viewModel::setTopBarStyle,
+                onBottomBarStyleChange = viewModel::setBottomBarStyle,
+            )
+            BasicListItem(headlineText = "底栏排序", leadingImageVector = MingCuteSortAscendingLine, onClick = onNavigationOrder)
+            SwitchListItem(
+                value = prefs.blurBars && Build.VERSION.SDK_INT >= 33,
+                enabled = Build.VERSION.SDK_INT >= 33,
+                leadingImageVector = MingCuteLayersLine,
+                headlineText = "栏背景模糊",
+                supportingText = if (Build.VERSION.SDK_INT < 33) "需要 Android 13 及以上" else null,
+                onValueChanged = viewModel::setBlurBars,
+            )
+            SwitchListItem(
+                value = prefs.collapseTabsOnScroll,
+                leadingImageVector = MingCuteListCollapseLine,
+                headlineText = "滚动时收起标签栏",
+                onValueChanged = viewModel::setCollapseTabsOnScroll,
             )
         }
     }
-    item(key = "Appearance_2") {
-        PreferenceGroup(title = "手势与触感") {
+    item(key = "Appearance_scale") {
+        PreferenceGroup {
+            BasicListItem(headlineText = "字体大小", leadingImageVector = MingCuteFontSizeLine, onClick = onFontSize)
+            BasicListItem(headlineText = "内容大小", leadingImageVector = MingCuteText2Line, onClick = onContentScale)
+            SelectionListItem(
+                leadingImageVector = MingCuteColumns2Line,
+                title = "分栏阅读",
+                value = prefs.readingMode,
+                selections = readingModes,
+                onSelected = viewModel::setReadingMode,
+            )
+        }
+    }
+    item(key = "Appearance_gesture") {
+        PreferenceGroup {
             SwitchListItem(
                 value = prefs.predictiveBack,
-                leadingImageVector = MiuixIcons.Back,
+                leadingImageVector = MingCuteArrowLeftCircleLine,
                 headlineText = "预测返回手势",
-                supportingText = "滑动返回时预览上一页",
                 onValueChanged = viewModel::setPredictiveBack,
             )
             SwitchListItem(
                 value = prefs.hapticFeedback,
-                leadingImageVector = MiuixIcons.Glass.SoundVibration,
+                leadingImageVector = MingCuteCellphoneVibrationLine,
                 headlineText = "触感反馈",
                 onValueChanged = viewModel::setHapticFeedback,
             )
             if (prefs.hapticFeedback) {
                 SwitchListItem(
                     value = prefs.customHaptics,
+                    leadingImageVector = MingCuteSettings2Line,
                     headlineText = "自定义触感",
-                    supportingText = "关闭时跟随系统触感设置",
                     onValueChanged = viewModel::setCustomHaptics,
                 )
                 if (prefs.customHaptics) {
                     BasicListItem(
+                        leadingImageVector = MingCuteDashboardLine,
                         headlineText = "触感强度",
                         supportingText = prefs.hapticStrength.label,
                         onClick = onHapticStrength,
@@ -199,45 +179,14 @@ internal fun LazyListScope.appearancePreferences(
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                         SwitchListItem(
                             value = prefs.reverseHapticEffects,
+                            leadingImageVector = MingCuteClockwiseLine,
                             headlineText = "触感兼容模式",
-                            supportingText = "轻重反馈与预期相反时开启",
                             onValueChanged = viewModel::setReverseHapticEffects,
                         )
                     }
                 }
             }
         }
-    }
-}
-
-@Composable
-private fun AppearanceDisclosure(
-    title: String,
-    icon: ImageVector,
-    summary: String? = null,
-    content: @Composable () -> Unit,
-) {
-    var expanded by rememberSaveable { mutableStateOf(false) }
-    BasicComponent(
-        modifier = Modifier.semantics {
-            stateDescription = if (expanded) "已展开" else "已收起"
-        },
-        title = title,
-        summary = summary,
-        startAction = { Icon(icon, null, tint = MiuixTheme.colorScheme.onSurfaceVariantSummary) },
-        endActions = {
-            Icon(
-                if (expanded) MiuixIcons.ExpandLess else MiuixIcons.ExpandMore,
-                null,
-                tint = MiuixTheme.colorScheme.onSurfaceVariantActions,
-            )
-        },
-        onClick = { expanded = !expanded },
-        onClickLabel = if (expanded) "收起" else "展开",
-        role = Role.Button,
-    )
-    if (expanded) {
-        Column(Modifier.padding(start = 32.dp)) { content() }
     }
 }
 

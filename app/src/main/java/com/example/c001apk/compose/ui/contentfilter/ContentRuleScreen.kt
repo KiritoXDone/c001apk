@@ -39,9 +39,9 @@ fun ContentRuleScreen(id: String?, onBack: () -> Unit) {
         Column(Modifier.fillMaxSize().padding(padding).imePadding().verticalScroll(rememberScrollState()).padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             TextField(value = title, onValueChange = { title = it.take(80) }, label = "规则名称")
             PreferenceGroup(title = "匹配方式") {
-                DropdownListItem(leadingImageVector = MiuixIcons.Blocklist, headlineText = "规则类型", value = kind.ordinal,
+                SelectionListItem(leadingImageVector = MiuixIcons.Blocklist, title = "规则类型", value = kind.ordinal,
                     selections = FilterKind.entries.map { SelectionItem(it.title, it.ordinal) },
-                    onValueChanged = { index, _ -> kind = FilterKind.entries[index] })
+                    onSelected = { value -> kind = FilterKind.entries[value] })
             }
             TextField(value = terms, onValueChange = { terms = it.take(6500) }, label = when (kind) {
                 FilterKind.TEXT -> "关键词，每行一项"

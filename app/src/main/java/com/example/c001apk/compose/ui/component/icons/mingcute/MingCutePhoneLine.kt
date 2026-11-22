@@ -1,0 +1,35 @@
+// SPDX-License-Identifier: Apache-2.0
+// 来源：https://github.com/mingcute-design/mingcute-icons/blob/9dc7d3ad074fb16477096a6a8109a6467d0e2fe3/assets/svg/core/regular/communication/phone.svg
+package com.example.c001apk.compose.ui.component.icons.mingcute
+
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.PathFillType
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.vector.PathParser
+import androidx.compose.ui.unit.dp
+
+val MingCutePhoneLine: ImageVector by lazy {
+    ImageVector.Builder(
+        name = "MingCutePhoneLine",
+        defaultWidth = 24f.dp,
+        defaultHeight = 24f.dp,
+        viewportWidth = 24f,
+        viewportHeight = 24f,
+    ).apply {
+        addPath(
+            pathData = PathParser().parsePathString("m13.944 15.005 1.418-1.417.362-.253.503-.133.518.043c.355.093.87.507 1.104.67l1.28.92c.653.498 1.283 1.029 1.842 1.633l.597.698.214.412.061.521c-.021.358-.237.752-.4 1.045a6 6 0 0 1-1.1 1.413c-.905.853-2.142 1.467-3.394 1.567-1.378.11-3.264-.446-4.51-.966-4.088-1.707-7.89-5.509-9.597-9.597-.621-1.488-1.239-3.588-.845-5.21a5.96 5.96 0 0 1 2.867-3.798c.286-.159.678-.374 1.029-.398l.505.05c.382.107.784.48 1.048.711.732.641 1.347 1.402 1.918 2.186l.789 1.135c.165.242.517.685.604 1.021l.041.516-.133.502-.252.361-1.418 1.418c1.032 2.249 2.701 3.918 4.949 4.95M8.645 7.577C7.844 6.398 7.048 5.162 5.926 4.26c-.853.463-1.517 1.195-1.85 2.113a3.4 3.4 0 0 0-.204.837c-.083 1.039.426 2.645.816 3.58 1.56 3.737 5.187 7.298 8.995 8.708.828.306 2.205.701 3.107.629.28-.022.584-.111.846-.205.911-.331 1.628-.986 2.094-1.828-.938-1.098-2.131-1.92-3.31-2.736l-1.362 1.362c-.314.273-.687.427-1.111.392-.446-.035-.915-.315-1.306-.513-1.998-1.013-3.656-2.53-4.807-4.454a13 13 0 0 1-.599-1.126c-.21-.449-.43-.887-.317-1.399.065-.298.17-.457.362-.678Z").toNodes(),
+            pathFillType = PathFillType.NonZero,
+            fill = SolidColor(Color(0xFF000000)),
+            fillAlpha = 1f,
+            stroke = null,
+            strokeAlpha = 1f,
+            strokeLineWidth = 1f,
+            strokeLineCap = StrokeCap.Butt,
+            strokeLineJoin = StrokeJoin.Miter,
+            strokeLineMiter = 4f,
+        )
+    }.build()
+}

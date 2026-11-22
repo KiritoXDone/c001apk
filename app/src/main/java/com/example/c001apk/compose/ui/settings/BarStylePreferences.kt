@@ -3,8 +3,10 @@ package com.example.c001apk.compose.ui.settings
 import androidx.compose.runtime.Composable
 import com.example.c001apk.compose.logic.model.BottomBarStyle
 import com.example.c001apk.compose.logic.model.TopBarStyle
-import com.example.c001apk.compose.ui.component.settings.DropdownListItem
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteLayoutBottomLine
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteLayoutTopLine
 import com.example.c001apk.compose.ui.component.settings.SelectionItem
+import com.example.c001apk.compose.ui.component.settings.SelectionListItem
 
 private val topBarStyles = listOf(
     SelectionItem("经典", TopBarStyle.Classic),
@@ -25,18 +27,18 @@ internal fun BarStylePreferences(
     onTopBarStyleChange: (TopBarStyle) -> Unit,
     onBottomBarStyleChange: (BottomBarStyle) -> Unit,
 ) {
-    DropdownListItem(
+    SelectionListItem(
+        leadingImageVector = MingCuteLayoutTopLine,
+        title = "顶栏样式",
         value = topBarStyle,
-        headlineText = "顶栏样式",
         selections = topBarStyles,
-        onValueChanged = { _, value -> onTopBarStyleChange(value) },
-        useWindowPopup = true,
+        onSelected = onTopBarStyleChange,
     )
-    DropdownListItem(
+    SelectionListItem(
+        leadingImageVector = MingCuteLayoutBottomLine,
+        title = "底栏样式",
         value = bottomBarStyle,
-        headlineText = "底栏样式",
         selections = bottomBarStyles,
-        onValueChanged = { _, value -> onBottomBarStyleChange(value) },
-        useWindowPopup = true,
+        onSelected = onBottomBarStyleChange,
     )
 }

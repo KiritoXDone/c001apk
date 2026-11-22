@@ -1,12 +1,28 @@
 package com.example.c001apk.compose.ui.settings
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.SizeTransform
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.union
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
@@ -17,11 +33,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextRange
@@ -29,8 +47,10 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigationevent.NavigationEventInfo
+import androidx.navigationevent.compose.NavigationBackHandler
+import androidx.navigationevent.compose.rememberNavigationEventState
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.c001apk.compose.BuildConfig
 import com.example.c001apk.compose.R
 import com.example.c001apk.compose.logic.model.HapticStrength
 import com.example.c001apk.compose.logic.providable.LocalUserPreferences
@@ -40,39 +60,53 @@ import com.example.c001apk.compose.ui.component.MiuixAlertDialog as AlertDialog
 import com.example.c001apk.compose.ui.component.MiuixDialogButton as TextButton
 import com.example.c001apk.compose.ui.component.MiuixScaffold as Scaffold
 import com.example.c001apk.compose.ui.component.currentWindowSize
-import com.example.c001apk.compose.ui.component.icons.Smartphone
+import com.example.c001apk.compose.ui.component.MiuixSearchField
 import com.example.c001apk.compose.ui.component.rememberHapticClick
 import com.example.c001apk.compose.ui.component.settings.BasicListItem
-import com.example.c001apk.compose.ui.component.settings.DropdownListItem
 import com.example.c001apk.compose.ui.component.settings.PreferenceGroup
 import com.example.c001apk.compose.ui.component.settings.SelectionItem
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteAddSquareLine
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteArrowLeftLine
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteCardSimLine
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteCellphone2Line
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteClockwiseLine
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteCloseLine
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteDelete2Line
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteEye2Line
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteFilterLine
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteFolderLine
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteGlobeLine
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteHeartLine
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteHistoryLine
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteInformationLine
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCutePaletteLine
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCutePhotoAlbumLine
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteSearchLine
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteTagLine
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteUser3Line
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteUserFollowLine
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteUserForbidLine
+import com.example.c001apk.compose.ui.component.settings.SelectionListItem
 import com.example.c001apk.compose.ui.component.settings.SwitchListItem
 import com.example.c001apk.compose.ui.component.TopBarScrollEffect
 import com.example.c001apk.compose.util.CacheDataManager.clearAllCache
 import com.example.c001apk.compose.util.CacheDataManager.getTotalCacheSize
 import java.util.Formatter
 import top.yukonga.miuix.kmp.basic.Icon
-import com.example.c001apk.compose.ui.component.MiuixTopBar as TopAppBar
+import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
+import top.yukonga.miuix.kmp.basic.SearchBar
+import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.basic.Text
+import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.basic.TextField
-import top.yukonga.miuix.kmp.icon.MiuixIcons
-import top.yukonga.miuix.kmp.icon.extended.Back
-import top.yukonga.miuix.kmp.icon.extended.Blocklist
-import top.yukonga.miuix.kmp.icon.extended.Delete
-import top.yukonga.miuix.kmp.icon.extended.Favorites
-import top.yukonga.miuix.kmp.icon.extended.Image
-import top.yukonga.miuix.kmp.icon.extended.Recent
-import top.yukonga.miuix.kmp.icon.extended.Rename
-import top.yukonga.miuix.kmp.icon.extended.Update
-import top.yukonga.miuix.kmp.icon.extended.WorldClock
 import top.yukonga.miuix.kmp.utils.scrollEndHaptic
 
-private enum class SettingsSection(val title: String, val summary: String) {
-    Appearance("外观与字号", "主题、字号、分栏与触感"),
-    Content("关注与内容", "首页板块、本地关注和屏蔽"),
-    Privacy("浏览与隐私", "图片、链接和浏览记录"),
-    Storage("存储与应用", "图片缓存与已安装应用更新"),
-    Device("协议与设备", "数盟 ID、设备和接口参数"),
+private enum class SettingsSection(val title: String, val icon: ImageVector) {
+    Appearance("外观", MingCutePaletteLine),
+    Content("关注与内容", MingCuteHeartLine),
+    Privacy("浏览与隐私", MingCuteEye2Line),
+    Storage("存储与应用", MingCuteFolderLine),
+    Device("协议与设备", MingCuteCellphone2Line),
 }
 
 /** Created by bggRGjQaUbCoE on 2024/5/30 */
@@ -104,7 +138,22 @@ fun SettingsScreen(
         }
     // Narrow categories use the app navigation stack, including its predictive back preview.
     val activeSection = if (wide) wideSection else routeSection
+    var searchExpanded by rememberSaveable { mutableStateOf(false) }
+    var searchQuery by rememberSaveable { mutableStateOf("") }
+    val closeSearch = {
+        searchExpanded = false
+        searchQuery = ""
+    }
+    NavigationBackHandler(
+        state = rememberNavigationEventState(NavigationEventInfo.None),
+        isBackEnabled = searchExpanded,
+        onBackCompleted = closeSearch,
+    )
+    val matchesSearch: (String) -> Boolean = { text ->
+        searchQuery.isBlank() || text.contains(searchQuery.trim(), ignoreCase = true)
+    }
 
+    val topBarScrollBehavior = MiuixScrollBehavior()
     val imageQualityList by lazy { listOf("网络自适应", "原图", "普清") }
     val hapticStrengthList by lazy { HapticStrength.options.map { it.label } }
 
@@ -122,15 +171,74 @@ fun SettingsScreen(
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
-            TopAppBar(
-                color = com.example.c001apk.compose.ui.component.LocalBarColor.current,
-                title = if (wide) "设置" else activeSection?.title ?: "设置",
-                navigationIcon = {
-                    MiuixToolbarIconButton(onClick = onBackClick) {
-                        Icon(MiuixIcons.Back, contentDescription = "返回")
-                    }
+            AnimatedContent(
+                targetState = searchExpanded,
+                transitionSpec = {
+                    (fadeIn(tween(180, delayMillis = 60)) +
+                        slideInVertically(tween(300, easing = FastOutSlowInEasing)) { it / 12 })
+                        .togetherWith(
+                            fadeOut(tween(120)) +
+                                slideOutVertically(tween(300, easing = FastOutSlowInEasing)) { it / 12 },
+                        )
+                        .using(
+                            SizeTransform(clip = false) { _, _ ->
+                                tween(300, easing = FastOutSlowInEasing)
+                            },
+                        )
                 },
-            )
+                label = "settingsSearch",
+            ) { expanded ->
+                if (expanded) {
+                    Box(
+                        Modifier
+                            .fillMaxWidth()
+                            .windowInsetsPadding(
+                                WindowInsets.statusBars.union(WindowInsets.displayCutout),
+                            ),
+                    ) {
+                    SearchBar(
+                        inputField = {
+                            MiuixSearchField(
+                                query = searchQuery,
+                                onQueryChange = { searchQuery = it },
+                                onSearch = {},
+                                expanded = true,
+                                onExpandedChange = { if (!it) closeSearch() },
+                                modifier = Modifier.testTag("settings-search"),
+                                label = "",
+                                shouldAutoFocus = true,
+                            )
+                        },
+                        onExpandedChange = { if (!it) closeSearch() },
+                        expanded = true,
+                        outsideEndAction = {
+                            MiuixToolbarIconButton(onClick = closeSearch) {
+                                Icon(MingCuteCloseLine, contentDescription = "关闭搜索")
+                            }
+                        },
+                    ) {}
+                    }
+                } else {
+                    TopAppBar(
+                        color = com.example.c001apk.compose.ui.component.LocalBarColor.current,
+                        title = if (wide) "设置" else activeSection?.title ?: "设置",
+                        largeTitle = if (wide) "设置" else activeSection?.title ?: "设置",
+                        scrollBehavior = topBarScrollBehavior,
+                        navigationIcon = {
+                            MiuixToolbarIconButton(onClick = onBackClick) {
+                                Icon(MingCuteArrowLeftLine, contentDescription = "返回")
+                            }
+                        },
+                        actions = {
+                            if (activeSection == null) {
+                                MiuixToolbarIconButton(onClick = { searchExpanded = true }) {
+                                    Icon(MingCuteSearchLine, contentDescription = "搜索设置")
+                                }
+                            }
+                        },
+                    )
+                }
+            }
         },
     ) { paddingValues ->
         Row(Modifier.fillMaxSize()) {
@@ -141,35 +249,60 @@ fun SettingsScreen(
                     state = topBarListState,
                     modifier =
                         if (wide) Modifier.width(260.dp).fillMaxHeight()
-                        else Modifier.fillMaxSize(),
+                        else Modifier.fillMaxSize().nestedScroll(topBarScrollBehavior.nestedScrollConnection),
                     contentPadding = paddingValues,
                 ) {
-                    SettingsSection.entries.forEach { section ->
+                    val visibleSections = SettingsSection.entries.filter { matchesSearch(it.title) }
+                    visibleSections.forEach { section ->
                         item(key = section.name) {
                             BasicListItem(
                                 headlineText = section.title,
-                                supportingText = section.summary,
+                                leadingImageVector = section.icon,
                                 holdDownState = wide && activeSection == section,
                                 onClick = {
                                     if (wide) wideSection = section
-                                    else onSectionClick(section.name)
+                                    else {
+                                        closeSearch()
+                                        onSectionClick(section.name)
+                                    }
                                 },
                             )
                         }
                     }
-                    item(key = "accounts") {
-                        BasicListItem(
-                            headlineText = "账号管理",
-                            supportingText = "切换账号、添加账号与游客模式",
-                            onClick = onAccountsClick,
-                        )
+                    if (matchesSearch("账号管理")) {
+                        item(key = "accounts") {
+                            BasicListItem(
+                                headlineText = "账号管理",
+                                leadingImageVector = MingCuteUser3Line,
+                                onClick = {
+                                    closeSearch()
+                                    onAccountsClick()
+                                },
+                            )
+                        }
                     }
-                    item(key = "about") {
-                        BasicListItem(
-                            headlineText = "关于",
-                            supportingText = BuildConfig.VERSION_NAME,
-                            onClick = onAboutClick,
-                        )
+                    if (matchesSearch("关于")) {
+                        item(key = "about") {
+                            BasicListItem(
+                                headlineText = "关于",
+                                leadingImageVector = MingCuteInformationLine,
+                                onClick = {
+                                    closeSearch()
+                                    onAboutClick()
+                                },
+                            )
+                        }
+                    }
+                    if (searchQuery.isNotBlank() && visibleSections.isEmpty() &&
+                        !matchesSearch("账号管理") && !matchesSearch("关于")
+                    ) {
+                        item(key = "no-results") {
+                            Text(
+                                text = "没有匹配的设置",
+                                modifier = Modifier.fillMaxWidth().padding(28.dp),
+                                color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
+                            )
+                        }
                     }
                 }
             }
@@ -178,7 +311,11 @@ fun SettingsScreen(
                 TopBarScrollEffect { topBarListState.animateScrollToItem(0) }
                 LazyColumn(
                     state = topBarListState,
-                    modifier = Modifier.weight(1f).fillMaxHeight().scrollEndHaptic(),
+                    modifier =
+                        Modifier.weight(1f)
+                            .fillMaxHeight()
+                            .scrollEndHaptic()
+                            .nestedScroll(topBarScrollBehavior.nestedScrollConnection),
                     contentPadding =
                         PaddingValues(
                             top = paddingValues.calculateTopPadding(),
@@ -216,32 +353,32 @@ fun SettingsScreen(
                             }
                             item(key = "publish") {
                                 PreferenceGroup(title = "发布") {
-                                    SwitchListItem(prefs.hideHomePublishButton, MiuixIcons.Rename, "隐藏首页发布按钮",
+                                    SwitchListItem(prefs.hideHomePublishButton, MingCuteAddSquareLine, "隐藏首页发布按钮",
                                         "关闭后可在首页动态页发布") { viewModel.setHideHomePublishButton(it) }
                                 }
                             }
                             item(key = "Content_1") {
                                 PreferenceGroup(title = "关注") {
                                     BasicListItem(
+                                        leadingImageVector = MingCuteUserFollowLine,
                                         headlineText = "本地 / 悄悄关注",
                                         supportingText = "管理本机名单与长按关注行为",
-                                        leadingImageVector = MiuixIcons.Favorites,
                                         onClick = onLocalFollowsClick,
                                     )
                                 }
                             }
                             item(key = "Content_2") {
                                 PreferenceGroup(title = "屏蔽") {
-                                    BasicListItem(headlineText = "内容过滤", supportingText = "个人规则、匹配范围与例外", leadingImageVector = MiuixIcons.Blocklist, onClick = onContentFilters)
+                                    BasicListItem(headlineText = "内容过滤", supportingText = "个人规则、匹配范围与例外", leadingImageVector = MingCuteFilterLine, onClick = onContentFilters)
 
                                     BasicListItem(
-                                        leadingImageVector = MiuixIcons.Blocklist,
+                                        leadingImageVector = MingCuteUserForbidLine,
                                         headlineText = "用户黑名单",
                                     ) {
                                         onViewBlackList(BlackListType.USER.name)
                                     }
                                     BasicListItem(
-                                        leadingImageVector = MiuixIcons.Blocklist,
+                                        leadingImageVector = MingCuteTagLine,
                                         headlineText = "话题黑名单",
                                     ) {
                                         onViewBlackList(BlackListType.TOPIC.name)
@@ -252,17 +389,15 @@ fun SettingsScreen(
                         SettingsSection.Privacy -> {
                             item(key = "Privacy_0") {
                                 PreferenceGroup(title = "图片") {
-                                    DropdownListItem(
-                                        leadingImageVector = MiuixIcons.Image,
-                                        headlineText = "图片画质",
+                                    SelectionListItem(
+                                        leadingImageVector = MingCutePhotoAlbumLine,
+                                        title = "图片画质",
                                         value = prefs.imageQuality,
                                         selections =
                                             imageQualityList.mapIndexed { index, label ->
                                                 SelectionItem(label, index)
                                             },
-                                        onValueChanged = { index, _ ->
-                                            viewModel.setImageQuality(index)
-                                        },
+                                        onSelected = viewModel::setImageQuality,
                                     )
                                 }
                             }
@@ -270,14 +405,14 @@ fun SettingsScreen(
                                 PreferenceGroup(title = "浏览") {
                                     SwitchListItem(
                                         value = prefs.openInBrowser,
-                                        leadingImageVector = MiuixIcons.WorldClock,
+                                        leadingImageVector = MingCuteGlobeLine,
                                         headlineText = "使用外部浏览器打开链接",
                                     ) {
                                         viewModel.setOpenInBrowser(it)
                                     }
                                     SwitchListItem(
                                         value = prefs.recordHistory,
-                                        leadingImageVector = MiuixIcons.Recent,
+                                        leadingImageVector = MingCuteHistoryLine,
                                         headlineText = "记录本地浏览历史",
                                     ) {
                                         viewModel.setRecordHistory(it)
@@ -289,7 +424,7 @@ fun SettingsScreen(
                             item(key = "Storage_0") {
                                 PreferenceGroup(title = "缓存与应用") {
                                     BasicListItem(
-                                        leadingImageVector = MiuixIcons.Delete,
+                                        leadingImageVector = MingCuteDelete2Line,
                                         headlineText = "清理缓存",
                                         supportingText = cacheSize,
                                     ) {
@@ -298,7 +433,7 @@ fun SettingsScreen(
                                     }
                                     SwitchListItem(
                                         value = prefs.autoClearImageCache,
-                                        leadingImageVector = MiuixIcons.Delete,
+                                        leadingImageVector = MingCuteDelete2Line,
                                         headlineText = "退出时清除图片缓存",
                                         supportingText = "下次启动时自动清除图片缓存",
                                     ) {
@@ -306,7 +441,7 @@ fun SettingsScreen(
                                     }
                                     SwitchListItem(
                                         value = prefs.checkUpdate,
-                                        leadingImageVector = MiuixIcons.Update,
+                                        leadingImageVector = MingCuteClockwiseLine,
                                         headlineText = "检查已安装应用更新",
                                     ) {
                                         viewModel.setCheckUpdate(it)
@@ -318,7 +453,7 @@ fun SettingsScreen(
                             item(key = "Device_0") {
                                 PreferenceGroup(title = "协议与设备") {
                                     BasicListItem(
-                                        leadingImageVector = MiuixIcons.Smartphone,
+                                        leadingImageVector = MingCuteCardSimLine,
                                         headlineText = "数字联盟ID",
                                         supportingText =
                                             if (prefs.szlmId.isBlank()) "尚未生成，点击获取" else "已保存，点击管理",
@@ -326,7 +461,7 @@ fun SettingsScreen(
                                         showSZLMIDDialog = true
                                     }
                                     BasicListItem(
-                                        leadingImageVector = MiuixIcons.Smartphone,
+                                        leadingImageVector = MingCuteCellphone2Line,
                                         headlineText = "机型参数",
                                     ) {
                                         onParamsClick()

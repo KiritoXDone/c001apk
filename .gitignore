@@ -41,6 +41,7 @@
 !/app/src/**/res/**/*.xml
 !/app/src/**/res/**/*.png
 !/app/src/**/res/**/*.webp
+!/app/src/**/icons/mingcute/MingCute-LICENSE.txt
 !/mojito/
 !/mojito/build.gradle.kts
 !/mojito/proguard-rules.pro
