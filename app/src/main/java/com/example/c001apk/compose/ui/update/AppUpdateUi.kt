@@ -8,6 +8,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -15,6 +16,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.c001apk.compose.R
 import com.example.c001apk.compose.ui.main.AppNavigator
 import com.example.c001apk.compose.ui.main.AppDestination
 import com.example.c001apk.compose.logic.update.AppUpdates
@@ -36,7 +38,7 @@ private fun Context.openUpdate(url: String, fallback: String = url) {
         try {
             startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(fallback)))
         } catch (_: Exception) {
-            makeToast("无法打开发布页，请检查浏览器设置")
+            makeToast(getString(R.string.update_cannot_open))
         }
     }
 }
@@ -57,12 +59,13 @@ fun AppUpdateHost(navigator: AppNavigator, model: AppUpdateViewModel = hiltViewM
     val release = state.release
     if (release != null) {
         var isMenuExpanded by remember { mutableStateOf(false) }
+        val skippedMessage = stringResource(R.string.update_skipped, release.version)
         MiuixAlertDialog(
             onDismissRequest = { model.updates.dismiss() },
             title = {
                 Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                     Text(
-                        text = "发现新版本 ${release.version}",
+                        text = stringResource(R.string.update_new_version, release.version),
                         modifier = Modifier.fillMaxWidth().padding(horizontal = 48.dp),
                         textAlign = TextAlign.Center,
                     )
@@ -70,7 +73,7 @@ fun AppUpdateHost(navigator: AppNavigator, model: AppUpdateViewModel = hiltViewM
                         IconButton(onClick = { isMenuExpanded = true }) {
                             Icon(
                                 imageVector = MingCuteMore2Line,
-                                contentDescription = "更多操作",
+                                contentDescription = stringResource(R.string.update_more),
                                 modifier = Modifier.size(24.dp),
                             )
                         }
@@ -80,18 +83,18 @@ fun AppUpdateHost(navigator: AppNavigator, model: AppUpdateViewModel = hiltViewM
                             alignment = PopupPositionProvider.Align.End,
                         ) {
                             MiuixMenuItem(
-                                text = { Text("查看发布页") },
+                                text = { Text(stringResource(R.string.update_view_page)) },
                                 onClick = {
                                     isMenuExpanded = false
                                     context.openUpdate(release.page)
                                 },
                             )
                             MiuixMenuItem(
-                                text = { Text("跳过此版本") },
+                                text = { Text(stringResource(R.string.update_skip_version)) },
                                 onClick = {
                                     isMenuExpanded = false
                                     model.updates.dismiss(skip = true)
-                                    context.makeToast("已跳过 ${release.version}")
+                                    context.makeToast(skippedMessage)
                                 },
                             )
                         }
@@ -101,9 +104,14 @@ fun AppUpdateHost(navigator: AppNavigator, model: AppUpdateViewModel = hiltViewM
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     if (release.publishedAt.isNotEmpty())
-                        Text("发布于 ${release.publishedAt.replace('T', ' ').removeSuffix("Z")}")
+                        Text(
+                            stringResource(
+                                R.string.update_published_at,
+                                release.publishedAt.replace('T', ' ').removeSuffix("Z"),
+                            ),
+                        )
                     RichPostText(
-                        text = release.notes.ifBlank { "该版本未提供更新说明。" },
+                        text = release.notes.ifBlank { stringResource(R.string.update_notes_empty) },
                         explicit = true,
                         coolapk = false,
                         selectable = true,
@@ -112,7 +120,7 @@ fun AppUpdateHost(navigator: AppNavigator, model: AppUpdateViewModel = hiltViewM
                 }
             },
             dismissButton = {
-                MiuixDialogButton(onClick = { model.updates.dismiss() }) { Text("取消") }
+                MiuixDialogButton(onClick = { model.updates.dismiss() }) { Text(stringResource(android.R.string.cancel)) }
             },
             confirmButton = {
                 MiuixDialogButton(
@@ -121,7 +129,7 @@ fun AppUpdateHost(navigator: AppNavigator, model: AppUpdateViewModel = hiltViewM
                         model.updates.dismiss()
                     },
                 ) {
-                    Text("更新")
+                    Text(stringResource(R.string.update_title))
                 }
             },
         )
@@ -129,10 +137,10 @@ fun AppUpdateHost(navigator: AppNavigator, model: AppUpdateViewModel = hiltViewM
         state.message?.let { message ->
             MiuixAlertDialog(
                 onDismissRequest = { model.updates.dismiss() },
-                title = { Text("检查 c001apk 更新") },
+                title = { Text(stringResource(R.string.update_check_title)) },
                 text = { Text(message) },
                 confirmButton = {
-                    MiuixDialogButton(onClick = { model.updates.dismiss() }) { Text("知道了") }
+                    MiuixDialogButton(onClick = { model.updates.dismiss() }) { Text(stringResource(R.string.update_got_it)) }
                 },
             )
         }
@@ -145,12 +153,14 @@ fun AppUpdateSettings(model: AppUpdateViewModel = hiltViewModel()) {
     SwitchListItem(
         value = prefs.automatic,
         leadingImageVector = MingCuteClockwiseLine,
-        headlineText = "自动检查更新",
-        supportingText = "每次启动检查一次正式版本",
+        headlineText = stringResource(R.string.update_auto_check),
+        supportingText = stringResource(R.string.update_auto_check_summary),
         onValueChanged = model.updates::setAutomatic,
     )
     BasicListItem(
-        headlineText = if (state.checking) "正在检查更新…" else "检查更新",
+        headlineText =
+            if (state.checking) stringResource(R.string.update_checking)
+            else stringResource(R.string.update_check),
         leadingImageVector = MingCuteClockwiseLine,
         enabled = !state.checking,
         onClick = { model.updates.check() },

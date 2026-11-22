@@ -205,4 +205,24 @@
     <string name="sort_dateline">Newest</string>
     <string name="about_source_code"><![CDATA[Source: %1$s]]></string>
     <string name="about_source_code_fork"><![CDATA[Fork: %1$s]]></string>
+    <string name="update_new_version">New version %1$s</string>
+    <string name="update_more">More actions</string>
+    <string name="update_view_page">View release page</string>
+    <string name="update_skip_version">Skip this version</string>
+    <string name="update_skipped">Skipped %1$s</string>
+    <string name="update_published_at">Published %1$s</string>
+    <string name="update_notes_empty">This release has no notes.</string>
+    <string name="update_check_title">Check for c001apk updates</string>
+    <string name="update_got_it">Got it</string>
+    <string name="update_auto_check">Check for updates automatically</string>
+    <string name="update_auto_check_summary">Check the latest stable release on every launch</string>
+    <string name="update_checking">Checking for updates…</string>
+    <string name="update_check">Check for updates</string>
+    <string name="update_latest">You are on the latest version</string>
+    <string name="update_network_error">Cannot reach the update service. Check the network and try again.</string>
+    <string name="update_format_error">The release data is not supported. Check the release page.</string>
+    <string name="update_no_release">This repository has no stable release, or it is not reachable.</string>
+    <string name="update_rate_limited">Too many update requests. Try again later.</string>
+    <string name="update_service_unavailable">The update service is unavailable (%1$d)</string>
+    <string name="update_cannot_open">Cannot open the release page. Check the browser settings.</string>
 </resources>

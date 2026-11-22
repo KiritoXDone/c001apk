@@ -3,6 +3,7 @@ package com.example.c001apk.compose.logic.update
 import android.content.Context
 import android.os.Build
 import com.example.c001apk.compose.BuildConfig
+import com.example.c001apk.compose.R
 import com.example.c001apk.compose.util.readAtMost
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.io.IOException
@@ -17,7 +18,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import okhttp3.*
 
 @Singleton
-class AppUpdates @Inject constructor(@param:ApplicationContext context: Context) {
+class AppUpdates @Inject constructor(@param:ApplicationContext private val context: Context) {
     data class Preferences(val automatic: Boolean)
 
     data class State(
@@ -85,7 +86,7 @@ class AppUpdates @Inject constructor(@param:ApplicationContext context: Context)
                         State(release = release, manual = manualRequested)
                     else
                         State(
-                            message = if (manualRequested) "当前已是最新版本" else null,
+                            message = if (manualRequested) context.getString(R.string.update_latest) else null,
                             manual = manualRequested,
                         )
             } catch (e: CancellationException) {
@@ -97,8 +98,8 @@ class AppUpdates @Inject constructor(@param:ApplicationContext context: Context)
                             if (manualRequested)
                                 when (e) {
                                     is ReleaseFailure -> e.message
-                                    is IOException -> "无法连接更新服务，请检查网络后重试"
-                                    else -> "发布信息格式不受支持，请查看发布页"
+                                    is IOException -> context.getString(R.string.update_network_error)
+                                    else -> context.getString(R.string.update_format_error)
                                 }
                             else null,
                         manual = manualRequested,
@@ -144,10 +145,10 @@ class AppUpdates @Inject constructor(@param:ApplicationContext context: Context)
                                 if (!it.isSuccessful)
                                     throw ReleaseFailure(
                                         when (it.code) {
-                                            404 -> "该仓库尚无正式版本，或仓库地址不可访问"
+                                            404 -> context.getString(R.string.update_no_release)
                                             403,
-                                            429 -> "更新服务请求过于频繁，请稍后重试"
-                                            else -> "更新服务暂不可用（${it.code}）"
+                                            429 -> context.getString(R.string.update_rate_limited)
+                                            else -> context.getString(R.string.update_service_unavailable, it.code)
                                         },
                                     )
                                 val bytes =
