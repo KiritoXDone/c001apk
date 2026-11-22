@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <application>
+        <!-- Debug 调试通道：仅 Debug 变体打包，Release 不包含该 Provider。 -->
+        <provider
+            android:name=".debug.AppDebugProvider"
+            android:authorities="${applicationId}.debug"
+            android:enabled="true"
+            android:exported="true"
+            android:grantUriPermissions="false" />
+    </application>
+
+</manifest>
