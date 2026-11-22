@@ -8,11 +8,13 @@
 python .codex/skills/app-debug/scripts/run.py screenshot.take
 python .codex/skills/app-debug/scripts/run.py screenshot.take --high-quality
 python .codex/skills/app-debug/scripts/run.py screenshot.sequence --count 6 --interval-ms 150
+python .codex/skills/app-debug/scripts/run.py screenshot.display
 ```
 
 - 目标为主 Activity 所在窗口，按窗口像素 1:1 输出；`PixelCopy` 不可用时回退到 `decorView.draw`。
 - `screenshot.take` 返回 `path`（项目相对路径）、`format`、`lossless`、`quality`、`width`、`height`、`bytes`、`captured_at`。
 - `screenshot.sequence` 逐帧调用同一捕获逻辑，`--count` 取值 1–30，`--interval-ms` 取值 0–5000，返回每帧的时间与路径。
+- `screenshot.display` 截取整个显示，覆盖对话框、菜单、输入法与其他窗口；脚本读取 `SurfaceFlinger` 的 display id 后直接 `exec-out screencap -p -d <id>` 写入 `build/screenshots/`，校验 PNG 头后返回 `path`、`display_id`、`bytes`。
 
 ## 格式与用途
 
@@ -34,4 +36,4 @@ python .codex/skills/app-debug/scripts/run.py animation.set --speed 0.05 + contr
 
 `render_ready` 与 `transition_complete` 分别对应「已取到实际渲染帧」和「本次有限过渡结束」。连续截图逐帧记录 `captured_at`、倍率与当前页面状态，作为过渡证据引用实际文件路径。
 
-截图只覆盖应用窗口，不含状态栏与输入法等系统窗口；需要系统层画面时使用 `adb exec-out screencap`，并注意该命令在多显示器环境需要显式 `-d` 参数。
+`screenshot.take` 只覆盖应用窗口，不含对话框、菜单、输入法等独立窗口；需要这些画面时用 `screenshot.display`，不要手工拼 `screencap` 与 `pull`。多显示器环境下不带 `-d` 时 `screencap` 的告警会混进输出流并破坏 PNG，脚本已固定带 display id。

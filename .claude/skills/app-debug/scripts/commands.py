@@ -178,6 +178,10 @@ def configure_screenshot(parser: argparse.ArgumentParser) -> None:
     )
 
 
+def configure_display_screenshot(parser: argparse.ArgumentParser) -> None:
+    add_device_argument(parser)
+
+
 def configure_screenshot_sequence(parser: argparse.ArgumentParser) -> None:
     configure_screenshot(parser)
     parser.add_argument("--count", type=int, default=4, help="Number of frames (1-30).")
@@ -314,6 +318,12 @@ COMMANDS: tuple[Command, ...] = (
         "screenshot.take", "Save screenshot",
         "app_debug.captures:capture", configure_screenshot,
         examples=("run.py screenshot.take", "run.py screenshot.take --high-quality"),
+        target_fields=("device",),
+    ),
+    Command(
+        "screenshot.display", "Save the whole display, including dialogs and overlays",
+        "app_debug.captures:display_capture", configure_display_screenshot,
+        examples=("run.py screenshot.display",),
         target_fields=("device",),
     ),
     Command(
