@@ -5,8 +5,10 @@ import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
@@ -24,6 +26,7 @@ import javax.inject.Inject
 import top.yukonga.miuix.kmp.basic.*
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Update
+import top.yukonga.miuix.kmp.icon.glass.More
 
 @HiltViewModel class AppUpdateViewModel @Inject constructor(val updates: AppUpdates) : ViewModel()
 
@@ -53,10 +56,49 @@ fun AppUpdateHost(navigator: AppNavigator, model: AppUpdateViewModel = hiltViewM
     )
         return
     val release = state.release
-    if (release != null)
+    if (release != null) {
+        var menuExpanded by remember { mutableStateOf(false) }
         MiuixAlertDialog(
             onDismissRequest = { model.updates.dismiss() },
-            title = { Text("发现新版本 ${release.version}") },
+            title = {
+                Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                    Text(
+                        text = "发现新版本 ${release.version}",
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 48.dp),
+                        textAlign = TextAlign.Center,
+                    )
+                    Box(Modifier.align(Alignment.CenterEnd)) {
+                        IconButton(onClick = { menuExpanded = true }) {
+                            Icon(
+                                imageVector = MiuixIcons.Glass.More,
+                                contentDescription = "更多操作",
+                                modifier = Modifier.size(24.dp),
+                            )
+                        }
+                        MiuixMenu(
+                            expanded = menuExpanded,
+                            onDismissRequest = { menuExpanded = false },
+                            alignment = PopupPositionProvider.Align.End,
+                        ) {
+                            MiuixMenuItem(
+                                text = { Text("查看发布页") },
+                                onClick = {
+                                    menuExpanded = false
+                                    context.openUpdate(release.page)
+                                },
+                            )
+                            MiuixMenuItem(
+                                text = { Text("跳过此版本") },
+                                onClick = {
+                                    menuExpanded = false
+                                    model.updates.dismiss(skip = true)
+                                    context.makeToast("已跳过 ${release.version}")
+                                },
+                            )
+                        }
+                    }
+                }
+            },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     if (release.publishedAt.isNotEmpty())
@@ -68,34 +110,23 @@ fun AppUpdateHost(navigator: AppNavigator, model: AppUpdateViewModel = hiltViewM
                         selectable = true,
                         onOpenLink = { url, _ -> context.openUpdate(url) },
                     )
-                    Button(onClick = { context.openUpdate(release.page) }) { Text("查看发布页") }
                 }
             },
             dismissButton = {
-                MiuixDialogButton(onClick = { model.updates.dismiss() }) { Text("稍后") }
+                MiuixDialogButton(onClick = { model.updates.dismiss() }) { Text("取消") }
             },
             confirmButton = {
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    MiuixDialogButton(
-                        onClick = { model.updates.dismiss(skip = true) },
-                        modifier = Modifier.weight(1f),
-                        primary = false,
-                    ) {
-                        Text("跳过")
-                    }
-                    MiuixDialogButton(
-                        onClick = {
-                            context.openUpdate(release.download ?: release.page, release.page)
-                            model.updates.dismiss()
-                        },
-                        modifier = Modifier.weight(1f),
-                    ) {
-                        Text("更新")
-                    }
+                MiuixDialogButton(
+                    onClick = {
+                        context.openUpdate(release.download ?: release.page, release.page)
+                        model.updates.dismiss()
+                    },
+                ) {
+                    Text("更新")
                 }
             },
         )
-    else
+    } else
         state.message?.let { message ->
             MiuixAlertDialog(
                 onDismissRequest = { model.updates.dismiss() },

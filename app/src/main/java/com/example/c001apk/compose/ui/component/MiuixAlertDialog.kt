@@ -47,10 +47,10 @@ fun MiuixAlertDialog(
                 ) {
                     text()
                 }
-                Spacer(Modifier.height(20.dp))
+                Spacer(Modifier.height(12.dp))
             }
             CompositionLocalProvider(LocalDialogActions provides true) {
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     if (dismissButton != null) Box(Modifier.weight(1f)) { dismissButton() }
                     Box(Modifier.weight(1f)) {
                         CompositionLocalProvider(LocalDialogPrimaryAction provides true) {

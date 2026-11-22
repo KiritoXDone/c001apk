@@ -79,7 +79,7 @@ jobs:
           changelog = Path('CHANGELOG.md').read_text()
           section = re.search(r'^## ' + re.escape(version) + r'(?:\s[^\n]*)?\n(.*?)(?=^## |\Z)', changelog, re.M | re.S)
           notes = section[1].strip() if section else f'c001apk {version}'
-          notes += '\n\nAndroid 7+ · ARM64；模糊效果需要 Android 13+。\n\n包名：`com.example.c001apk.compose`。\n'
+          notes += '\n\nAndroid 7+ · ARM64；模糊效果需要 Android 13+。\n'
           Path('build/release-notes.md').write_text(notes)
           apks = sorted(Path('build/release-assets').glob('*.apk'))
           if len(apks) != 1:
