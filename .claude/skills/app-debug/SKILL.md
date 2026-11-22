@@ -19,7 +19,7 @@ description: 调试 c001apk（com.example.c001apk.compose）的 Debug 构建，�
 
 | 需要做的事 | 指南 |
 | --- | --- |
-| 启动、查询、退出应用，抓取日志，串联命令，写调试记录 | [运行](guides/runtime.md) |
+| 启动、查询、退出应用，抓取日志，串联命令 | [运行](guides/runtime.md) |
 | 查看控件、点击、长按、滚动、输入文本、等待控件 | [控件交互](guides/controls.md) |
 | 打开指定页面、查询当前页、返回上一页 | [页面导航](guides/pages.md) |
 | 截图、连续截图、查看细节 | [截图与查阅](guides/screenshots.md) |
@@ -28,14 +28,13 @@ description: 调试 c001apk（com.example.c001apk.compose）的 Debug 构建，�
 
 ## 执行流程
 
-1. 接手已有调试任务时先读最大序号的 `build/record/` 记录，核对阶段与现场。
-2. 确认目标是 Debug 构建；Release 包没有调试通道，装 Release 会覆盖 Debug 包。
-3. 代码改动按 `AGENTS.md` 核对分层与约束；应用源码或构建配置变化后先构建 Debug（`python scripts/build.py gradle --jobs 12 :app:assembleDebug`），其他操作复用当前产物。
-4. 每次调用先 `app.status` 确认 `device` 与 `resumed`，再执行动作；同一实例的启动、交互与截图串行。
-5. 控件交互用应用内模拟，经真实输入路由并核对事件、状态与渲染。
-6. 业务指令调用真实业务对象；设置项传显式值。未知命令与解析失败按失败处理。
-7. 分别记录控件事件链、业务状态与页面就绪结果。
-8. 退出用 `app.quit`，并核对进程终态；改过动画倍率先恢复。
+1. 确认目标是 Debug 构建；Release 包没有调试通道，装 Release 会覆盖 Debug 包。
+2. 代码改动按 `AGENTS.md` 核对分层与约束；应用源码或构建配置变化后，用项目构建入口重新生成 Debug 产物，其余操作复用当前产物。
+3. 每次调用先 `app.status` 确认 `device` 与 `resumed`，再执行动作；同一实例的启动、交互与截图串行。
+4. 控件交互用应用内模拟，经真实输入路由并核对事件、状态与渲染。
+5. 业务指令调用真实业务对象；设置项传显式值。未知命令与解析失败按失败处理。
+6. 分别核对控件事件链、业务状态与页面就绪结果。
+7. 退出用 `app.quit`，并核对进程终态；改过动画倍率先恢复。
 
 ## 命令与返回
 

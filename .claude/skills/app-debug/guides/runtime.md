@@ -48,9 +48,3 @@ python .codex/skills/app-debug/scripts/run.py page.open --destination settings -
 ## 关闭范围与完成条件
 
 `app.quit` 只结束本应用进程，不清理模拟器其他状态。使用 `animation.set` 改过倍率时，退出前按 [动画指南](animations.md) 恢复原值。截图文件保留在 `build/screenshots/`，按任务需要决定是否保留。
-
-## 调试探索与验收记录
-
-需要复现、验收或交接时，按项目规范写 `build/record/YYYYMMDD-简体中文标题-序号.md`，附件放同名目录，单份不超过 300 行。顶部记录目标、状态、更新时间、分支与提交、未提交改动、下一步；验收逐项标记未执行、通过或失败并引用实际证据（命令、返回值、截图路径）。
-
-普通修改不单独建记录，用提交说明与回复交代结果即可。
