@@ -1,10 +1,12 @@
 package com.example.c001apk.compose.ui.settings
 
+import android.content.Context
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.viewModelScope
 import com.example.c001apk.compose.FollowType
+import com.example.c001apk.compose.R
 import com.example.c001apk.compose.ThemeMode
 import com.example.c001apk.compose.ThemeType
 import com.example.c001apk.compose.logic.model.BottomBarStyle
@@ -14,6 +16,7 @@ import com.example.c001apk.compose.logic.repository.UserPreferencesRepository
 import com.example.c001apk.compose.logic.smid.DigitalUnionRepository
 import com.example.c001apk.compose.ui.base.PrefsViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 
@@ -24,6 +27,7 @@ class SettingsViewModel
 constructor(
     private val userPreferencesRepository: UserPreferencesRepository,
     private val digitalUnion: DigitalUnionRepository,
+    @ApplicationContext private val context: Context,
 ) : PrefsViewModel(userPreferencesRepository) {
 
     fun setPredictiveBack(value: Boolean) {
@@ -46,7 +50,7 @@ constructor(
             } catch (e: kotlinx.coroutines.CancellationException) {
                 throw e
             } catch (_: Exception) {
-                navigationOrderError = "排序保存失败，请重试"
+                navigationOrderError = context.getString(R.string.settings_bar_order_save_failed)
             } finally {
                 savingNavigationOrder = false
             }
@@ -144,7 +148,7 @@ constructor(
             } catch (e: kotlinx.coroutines.CancellationException) {
                 throw e
             } catch (_: Exception) {
-                idError = "数盟 ID 格式不正确或保存失败，请检查后重试"
+                idError = context.getString(R.string.settings_szlm_save_failed)
             }
         }
     }
