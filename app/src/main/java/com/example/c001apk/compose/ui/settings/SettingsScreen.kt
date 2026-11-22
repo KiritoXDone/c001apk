@@ -194,7 +194,8 @@ fun SettingsScreen(
                             .fillMaxWidth()
                             .windowInsetsPadding(
                                 WindowInsets.statusBars.union(WindowInsets.displayCutout),
-                            ),
+                            )
+                            .padding(bottom = 12.dp),
                     ) {
                     SearchBar(
                         inputField = {
