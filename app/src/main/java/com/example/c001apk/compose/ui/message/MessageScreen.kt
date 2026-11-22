@@ -22,7 +22,7 @@ import com.example.c001apk.compose.ui.component.TopBarScrollEffect
 import com.example.c001apk.compose.util.ReportType
 import com.example.c001apk.compose.util.makeToast
 import top.yukonga.miuix.kmp.basic.SmallTitle
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteSettings2Line
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteSettings3Line
 import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteUser3Line
 
 @Composable
@@ -78,7 +78,7 @@ fun MessageScreen(
                     }
                     com.example.c001apk.compose.ui.component.MiuixToolbarIconButton(onClick = onSettingsClick) {
                         top.yukonga.miuix.kmp.basic.Icon(
-                            MingCuteSettings2Line,
+                            MingCuteSettings3Line,
                             contentDescription = "设置",
                             modifier = Modifier.size(24.dp),
                         )
