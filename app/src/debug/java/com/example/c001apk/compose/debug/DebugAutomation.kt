@@ -13,6 +13,8 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
+import android.view.inputmethod.ExtractedTextRequest
+import android.view.inputmethod.InputConnection
 import androidx.compose.ui.semantics.SemanticsOwner
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsNode
@@ -45,6 +47,7 @@ internal class DebugAutomation(
             "controls" -> listControls(request)
             "pointer" -> handlePointer(request)
             "text" -> handleText(request)
+            "wait" -> handleWait(request)
             "page" -> handlePage(request)
             "screenshot" -> captureWindow(request)
             "business" -> handleBusiness(request)
@@ -127,7 +130,10 @@ internal class DebugAutomation(
 
     private fun handleText(request: JSONObject): JSONObject {
         val value = request.optString("text")
-        require(value.isNotEmpty()) { "Text input requires a non-empty 'text'" }
+        val clear = request.optBoolean("clear", false)
+        val submit = request.optBoolean("submit", false)
+        require(value.isNotEmpty() || clear) { "Text input requires 'text' or 'clear'" }
+        val imeAction = editorAction(request.optString("imeAction", "search"))
         val view = requireComposeView()
         request.optJSONObject("target")?.let { selector ->
             val target = resolveTarget(requireComposeOwner(), selector)
@@ -137,12 +143,76 @@ internal class DebugAutomation(
         }
         onMain {
             val connection = view.onCreateInputConnection(EditorInfo())
-            requireNotNull(connection) { "No focused text field accepts input" }
-            connection.commitText(value, 1)
-            connection.finishComposingText()
+                ?: throw IllegalStateException("No focused text field accepts input")
+            if (clear) clearText(connection)
+            if (value.isNotEmpty()) {
+                connection.commitText(value, 1)
+                connection.finishComposingText()
+            }
+        }
+        if (submit) {
+            // 文本先进入编辑状态，再发送 IME 动作，避免提交时读到旧内容。
+            awaitFrames(2)
+            onMain {
+                val connection = view.onCreateInputConnection(EditorInfo())
+                    ?: throw IllegalStateException("No focused text field accepts input")
+                connection.performEditorAction(imeAction)
+            }
         }
         waitAfter(request)
-        return JSONObject().put("ok", true).put("text", value)
+        return JSONObject()
+            .put("ok", true)
+            .put("text", value)
+            .put("cleared", clear)
+            .put("submitted", submit)
+    }
+
+    private fun clearText(connection: InputConnection) {
+        val extracted = connection.getExtractedText(ExtractedTextRequest(), 0) ?: return
+        val length = extracted.text?.length ?: return
+        if (length == 0) return
+        connection.setSelection(length, length)
+        connection.deleteSurroundingText(length, 0)
+    }
+
+    private fun editorAction(name: String): Int =
+        when (name) {
+            "search" -> EditorInfo.IME_ACTION_SEARCH
+            "done" -> EditorInfo.IME_ACTION_DONE
+            "go" -> EditorInfo.IME_ACTION_GO
+            "send" -> EditorInfo.IME_ACTION_SEND
+            "next" -> EditorInfo.IME_ACTION_NEXT
+            else -> throw IllegalArgumentException("Unknown imeAction '$name'")
+        }
+
+    private fun handleWait(request: JSONObject): JSONObject {
+        val selector =
+            request.optJSONObject("target")
+                ?: throw IllegalArgumentException("Wait requires a target")
+        val absent = request.optBoolean("absent", false)
+        val timeoutMs = request.optLong("timeoutMs", 10_000L).coerceIn(100L, 120_000L)
+        val startedAt = SystemClock.uptimeMillis()
+        val deadline = startedAt + timeoutMs
+        var matched = 0
+        while (SystemClock.uptimeMillis() < deadline) {
+            matched =
+                onMain {
+                    val owner = runCatching { requireComposeOwner() }.getOrNull()
+                    if (owner == null) 0 else matchingNodes(owner, selector).size
+                }
+            if ((matched > 0) != absent) {
+                return JSONObject()
+                    .put("ok", true)
+                    .put("matched", matched)
+                    .put("absent", absent)
+                    .put("timedOut", false)
+                    .put("elapsedMs", SystemClock.uptimeMillis() - startedAt)
+            }
+            Thread.sleep(120L)
+        }
+        throw IllegalStateException(
+            "Wait timed out after " + timeoutMs + " ms with " + matched + " matches",
+        )
     }
 
     private fun handlePage(request: JSONObject): JSONObject {
@@ -155,6 +225,15 @@ internal class DebugAutomation(
                 onMain { navigator.navigate(destination) }
                 waitAfter(request)
                 JSONObject().put("ok", true).put("action", action).put("destination", name)
+            }
+            "current" -> {
+                val destination = onMain { navigator.currentDestination }
+                val canGoBack = onMain { navigator.canGoBack }
+                JSONObject()
+                    .put("ok", true)
+                    .put("action", action)
+                    .put("destination", destinationName(destination))
+                    .put("canGoBack", canGoBack)
             }
             "back" -> {
                 val popped = onMain { navigator.popBackStack() }
@@ -382,20 +461,7 @@ internal class DebugAutomation(
     }
 
     private fun resolveTarget(owner: SemanticsOwner, selector: JSONObject): SemanticsNode {
-        val tag = selector.optString("tag").takeIf { it.isNotEmpty() }
-        val desc = selector.optString("desc").takeIf { it.isNotEmpty() }
-        val text = selector.optString("text").takeIf { it.isNotEmpty() }
-        require(tag != null || desc != null || text != null) {
-            "Target requires tag, desc or text"
-        }
-        val contains = selector.optBoolean("contains", false)
-        val nodes = onMain { collectNodes(owner) }
-        val matches =
-            nodes.filter { node ->
-                (tag == null || node.testTag() == tag) &&
-                    (desc == null || node.description().matchesText(desc, contains)) &&
-                    (text == null || node.text().matchesText(text, contains))
-            }
+        val matches = matchingNodes(owner, selector)
         require(matches.isNotEmpty()) {
             "No control matches ${selector.toString()}"
         }
@@ -404,6 +470,21 @@ internal class DebugAutomation(
             "Control index $index is outside ${matches.size} matches"
         }
         return matches[index]
+    }
+
+    private fun matchingNodes(owner: SemanticsOwner, selector: JSONObject): List<SemanticsNode> {
+        val tag = selector.optString("tag").takeIf { it.isNotEmpty() }
+        val desc = selector.optString("desc").takeIf { it.isNotEmpty() }
+        val text = selector.optString("text").takeIf { it.isNotEmpty() }
+        require(tag != null || desc != null || text != null) {
+            "Target requires tag, desc or text"
+        }
+        val contains = selector.optBoolean("contains", false)
+        return onMain { collectNodes(owner) }.filter { node ->
+            (tag == null || node.testTag() == tag) &&
+                (desc == null || node.description().matchesText(desc, contains)) &&
+                (text == null || node.text().matchesText(text, contains))
+        }
     }
 
     private fun largestScrollable(): SemanticsNode? =
@@ -538,6 +619,29 @@ internal class DebugAutomation(
         return field.get(current) as? AppNavigator
             ?: throw IllegalStateException("Navigator is not ready yet")
     }
+
+    private fun destinationName(destination: AppDestination): String =
+        when (destination) {
+            AppDestination.Main -> "main"
+            is AppDestination.Settings -> "settings"
+            AppDestination.ContentFilters -> "content-filters"
+            AppDestination.TwilightRules -> "twilight-rules"
+            AppDestination.LocalFollows -> "local-follows"
+            AppDestination.Accounts -> "accounts"
+            AppDestination.TabEditor -> "tab-editor"
+            AppDestination.NavigationOrder -> "navigation-order"
+            AppDestination.DeviceImport -> "device-import"
+            AppDestination.Params -> "params"
+            AppDestination.About -> "about"
+            AppDestination.License -> "license"
+            AppDestination.Login -> "login"
+            is AppDestination.Feed -> "feed"
+            is AppDestination.User -> "user"
+            is AppDestination.Search -> "search"
+            is AppDestination.SearchResult -> "search-result"
+            is AppDestination.WebView -> "webview"
+            else -> destination.javaClass.simpleName
+        }
 
     private fun destinationOf(name: String): AppDestination =
         when (name) {

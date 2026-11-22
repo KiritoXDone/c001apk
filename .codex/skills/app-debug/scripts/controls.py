@@ -70,8 +70,21 @@ def scroll(args) -> dict:
 
 
 def input_text(args) -> dict:
+    if not args.value and not args.clear:
+        raise CommandFailure("Provide --value, --clear or both")
     device = resolve_device(args.device)
-    payload = {"command": "text", "text": args.value, "wait": args.wait}
+    payload = {
+        "command": "text", "text": args.value, "wait": args.wait,
+        "clear": args.clear, "submit": args.submit, "imeAction": args.ime_action,
+    }
     if args.tag or args.desc or args.text:
         payload["target"] = selector(args)
     return call(device, payload)
+
+
+def wait(args) -> dict:
+    device = resolve_device(args.device)
+    return call(device, {
+        "command": "wait", "target": selector(args),
+        "absent": args.absent, "timeoutMs": args.timeout_ms, "wait": "none",
+    })

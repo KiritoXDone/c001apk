@@ -9,6 +9,11 @@ def open_page(args) -> dict:
     })
 
 
+def current(args) -> dict:
+    device = resolve_device(args.device)
+    return call(device, {"command": "page", "action": "current"})
+
+
 def back(args) -> dict:
     device = resolve_device(args.device)
     return call(device, {

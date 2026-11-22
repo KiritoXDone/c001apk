@@ -83,9 +83,33 @@ def configure_control_scroll(parser: argparse.ArgumentParser) -> None:
 
 def configure_control_text(parser: argparse.ArgumentParser) -> None:
     add_device_argument(parser)
-    parser.add_argument("--value", required=True, help="Text to commit into the field.")
+    parser.add_argument("--value", default="", help="Text to commit into the field.")
+    parser.add_argument("--clear", action="store_true", help="Clear the field before typing.")
+    parser.add_argument("--submit", action="store_true", help="Send the IME action after typing.")
+    parser.add_argument(
+        "--ime-action",
+        choices=("search", "done", "go", "send", "next"),
+        default="search",
+        help="IME action sent by --submit.",
+    )
     add_selector_arguments(parser)
     add_wait_argument(parser)
+
+
+def configure_control_wait(parser: argparse.ArgumentParser) -> None:
+    add_device_argument(parser)
+    add_selector_arguments(parser)
+    parser.add_argument(
+        "--absent",
+        action="store_true",
+        help="Wait until the control disappears instead of appearing.",
+    )
+    parser.add_argument(
+        "--timeout-ms",
+        type=int,
+        default=10000,
+        help="Maximum wait in milliseconds (100-120000).",
+    )
 
 
 def configure_page_open(parser: argparse.ArgumentParser) -> None:
@@ -115,6 +139,17 @@ def configure_animation_set(parser: argparse.ArgumentParser) -> None:
         type=float,
         required=True,
         help="Animation playback speed from 0.02 to 1 (0.1 means 10x longer).",
+    )
+
+
+def configure_log_capture(parser: argparse.ArgumentParser) -> None:
+    add_device_argument(parser)
+    parser.add_argument("--grep", help="Only keep lines matching this regular expression.")
+    parser.add_argument(
+        "--lines",
+        type=int,
+        default=1000,
+        help="Keep the last N lines; 0 keeps every line.",
     )
 
 
@@ -204,9 +239,24 @@ COMMANDS: tuple[Command, ...] = (
         target_fields=("device",),
     ),
     Command(
+        "control.wait", "Wait for a control",
+        "app_debug.controls:wait", configure_control_wait,
+        examples=(
+            "run.py control.wait --text 搜索 --timeout-ms 5000",
+            "run.py control.wait --desc 加载中 --absent",
+        ),
+        target_fields=("device",),
+    ),
+    Command(
         "page.open", "Open an app page",
         "app_debug.pages:open_page", configure_page_open,
         examples=("run.py page.open --destination settings --wait settled",),
+        target_fields=("device",),
+    ),
+    Command(
+        "page.current", "Show the current page",
+        "app_debug.pages:current", configure_app,
+        examples=("run.py page.current",),
         target_fields=("device",),
     ),
     Command(
@@ -249,6 +299,15 @@ COMMANDS: tuple[Command, ...] = (
         "prefs.set", "Update a UI preference",
         "app_debug.business:prefs_set", configure_prefs_set,
         examples=("run.py prefs.set --key themeMode --value dark",),
+        target_fields=("device",),
+    ),
+    Command(
+        "log.capture", "Save app logs",
+        "app_debug.logs:capture", configure_log_capture,
+        examples=(
+            "run.py log.capture",
+            "run.py log.capture --grep \"FATAL|AndroidRuntime\" --lines 200",
+        ),
         target_fields=("device",),
     ),
     Command(

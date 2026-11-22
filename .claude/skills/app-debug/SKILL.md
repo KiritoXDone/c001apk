@@ -19,9 +19,9 @@ description: 调试 c001apk（com.example.c001apk.compose）的 Debug 构建，�
 
 | 需要做的事 | 指南 |
 | --- | --- |
-| 启动、查询、退出应用，串联命令，写调试记录 | [运行](guides/runtime.md) |
-| 查看控件、点击、长按、滚动、输入文本 | [控件交互](guides/controls.md) |
-| 打开指定页面、返回上一页 | [页面导航](guides/pages.md) |
+| 启动、查询、退出应用，抓取日志，串联命令，写调试记录 | [运行](guides/runtime.md) |
+| 查看控件、点击、长按、滚动、输入文本、等待控件 | [控件交互](guides/controls.md) |
+| 打开指定页面、查询当前页、返回上一页 | [页面导航](guides/pages.md) |
 | 截图、连续截图、查看细节 | [截图与查阅](guides/screenshots.md) |
 | 放慢或恢复动画，观察过渡 | [动画](guides/animations.md) |
 | 检查版本更新、读写界面偏好 | [业务调用](guides/business.md) |

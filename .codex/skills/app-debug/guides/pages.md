@@ -6,6 +6,7 @@
 
 ```text
 python .codex/skills/app-debug/scripts/run.py page.open --destination settings --wait settled
+python .codex/skills/app-debug/scripts/run.py page.current
 python .codex/skills/app-debug/scripts/run.py page.back --wait settled
 ```
 
@@ -27,6 +28,7 @@ python .codex/skills/app-debug/scripts/run.py page.back --wait settled
 | `device-import` | 数盟设备导入 |
 | `login` | 登录 |
 
+`page.current` 返回当前栈顶页面的 `destination`、`canGoBack`；常见页面为 `main`、`settings`、`about`、`search`、`feed`，其他页面返回目标类型名。
 `page.back` 先调用导航控制器出栈；栈内已无页面时回退到 Activity 的返回分发。
 
 ## 就绪条件与返回值

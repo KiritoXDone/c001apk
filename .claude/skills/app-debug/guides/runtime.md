@@ -29,6 +29,7 @@ python .codex/skills/app-debug/scripts/run.py --help
 - `app.start`：`am force-stop` 后 `am start -W` 启动主 Activity，轮询调试通道直至可响应（上限 20 s），返回状态对象。`--wait` 控制启动后的等待方式。
 - `app.status`：返回 `package`、`version`、`versionCode`、`pid`、`sdk`、`device`、`activity`、`resumed`、`animationScale`、`running`。
 - `app.quit`：`am force-stop` 并核对进程消失，返回 `running: false`。
+- `log.capture`：按进程 PID 导出 `logcat -d`，可 `--grep` 正则过滤、`--lines` 限制尾部行数（默认 1000，0 保留全部），保存到 `build/logs/`，返回路径、行数与字节数。
 
 ## 命令串联
 
