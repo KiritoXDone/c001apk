@@ -8,6 +8,7 @@ import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.view.PixelCopy
+import androidx.annotation.RequiresApi
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -65,6 +66,7 @@ internal fun captureScreenshot(
         .put("lossless", lossless)
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 private fun copyWindow(activity: Activity, bitmap: Bitmap) {
     val latch = CountDownLatch(1)
     var copyResult = PixelCopy.SUCCESS
