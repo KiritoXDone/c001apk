@@ -105,11 +105,15 @@
 !/.codex/skills/**/
 !/.codex/skills/**/SKILL.md
 !/.codex/skills/privacy-review/scripts/**/*.py
+!/.codex/skills/app-debug/guides/**/*.md
+!/.codex/skills/app-debug/scripts/**/*.py
 !/.claude/
 !/.claude/skills/
 !/.claude/skills/**/
 !/.claude/skills/**/SKILL.md
 !/.claude/skills/privacy-review/scripts/**/*.py
+!/.claude/skills/app-debug/guides/**/*.md
+!/.claude/skills/app-debug/scripts/**/*.py
 
 # 即使位于源码目录，生成内容、凭据与工具状态也不入库。
 **/build/
