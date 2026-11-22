@@ -23,7 +23,7 @@ def _matches(value: str, expected: str, contains: bool) -> bool:
     return expected in value if contains else value == expected
 
 
-def listing(args) -> dict:
+def list_controls(args) -> dict:
     device = resolve_device(args.device)
     response = call(device, {"command": "controls", "limit": max(1, args.limit)})
     items = response.get("items", [])

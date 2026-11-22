@@ -36,12 +36,12 @@ internal class DebugAutomation(
     fun execute(request: JSONObject): JSONObject =
         when (val command = request.optString("command")) {
             "status" -> status()
-            "controls" -> controls(request)
-            "pointer" -> pointer(request)
-            "text" -> text(request)
-            "page" -> page(request)
-            "screenshot" -> capture(request)
-            "business" -> business(request)
+            "controls" -> listControls(request)
+            "pointer" -> handlePointer(request)
+            "text" -> handleText(request)
+            "page" -> handlePage(request)
+            "screenshot" -> captureWindow(request)
+            "business" -> handleBusiness(request)
             "quit" -> quit()
             else -> throw IllegalArgumentException("Unknown debug command '$command'")
         }
@@ -72,19 +72,19 @@ internal class DebugAutomation(
             1f,
         )
 
-    private fun controls(request: JSONObject): JSONObject {
+    private fun listControls(request: JSONObject): JSONObject {
         val owner = requireComposeOwner()
         val limit = request.optInt("limit", 400)
         val nodes = onMain { collectNodes(owner) }
         val items = JSONArray()
-        nodes.take(limit.coerceAtLeast(1)).forEach { items.put(nodeJson(it)) }
+        nodes.take(limit.coerceAtLeast(1)).forEach { items.put(describeNode(it)) }
         return JSONObject()
             .put("ok", true)
             .put("count", nodes.size)
             .put("items", items)
     }
 
-    private fun pointer(request: JSONObject): JSONObject {
+    private fun handlePointer(request: JSONObject): JSONObject {
         val action = request.optString("action")
         val view = requireComposeView()
         var target =
@@ -116,10 +116,10 @@ internal class DebugAutomation(
             .put("action", action)
             .put("x", x)
             .put("y", y)
-            .put("target", target?.let { nodeJson(it) } ?: JSONObject.NULL)
+            .put("target", target?.let { describeNode(it) } ?: JSONObject.NULL)
     }
 
-    private fun text(request: JSONObject): JSONObject {
+    private fun handleText(request: JSONObject): JSONObject {
         val value = request.optString("text")
         require(value.isNotEmpty()) { "Text input requires a non-empty 'text'" }
         val view = requireComposeView()
@@ -139,13 +139,13 @@ internal class DebugAutomation(
         return JSONObject().put("ok", true).put("text", value)
     }
 
-    private fun page(request: JSONObject): JSONObject {
+    private fun handlePage(request: JSONObject): JSONObject {
         val current = requireActivity()
         val navigator = navigatorOf(current)
         return when (val action = request.optString("action")) {
             "open" -> {
                 val name = request.optString("destination")
-                val destination = destination(name)
+                val destination = destinationOf(name)
                 onMain { navigator.navigate(destination) }
                 waitAfter(request)
                 JSONObject().put("ok", true).put("action", action).put("destination", name)
@@ -165,11 +165,11 @@ internal class DebugAutomation(
         return JSONObject().put("ok", true).put("finished", activity != null)
     }
 
-    private fun business(request: JSONObject): JSONObject {
+    private fun handleBusiness(request: JSONObject): JSONObject {
         val updates =
             EntryPointAccessors.fromApplication(app, AppDebugEntryPoint::class.java).appUpdates()
         return when (request.optString("action")) {
-            "updateState" -> updateState(updates)
+            "updateState" -> describeUpdateState(updates)
             "updateCheck" -> {
                 updates.check(manual = true)
                 val timeoutMs = request.optLong("timeoutMs", 25_000L).coerceIn(1_000L, 60_000L)
@@ -177,7 +177,7 @@ internal class DebugAutomation(
                 while (updates.state.value.checking && SystemClock.uptimeMillis() < deadline) {
                     SystemClock.sleep(120L)
                 }
-                updateState(updates).put("completed", !updates.state.value.checking)
+                describeUpdateState(updates).put("completed", !updates.state.value.checking)
             }
             else -> throw IllegalArgumentException(
                 "Unknown business action '" + request.optString("action") + "'",
@@ -185,7 +185,7 @@ internal class DebugAutomation(
         }
     }
 
-    private fun updateState(updates: AppUpdates): JSONObject {
+    private fun describeUpdateState(updates: AppUpdates): JSONObject {
         val state = updates.state.value
         val release = state.release
         return JSONObject()
@@ -199,7 +199,7 @@ internal class DebugAutomation(
             .put("message", state.message ?: JSONObject.NULL)
     }
 
-    private fun capture(request: JSONObject): JSONObject {
+    private fun captureWindow(request: JSONObject): JSONObject {
         val current = requireActivity()
         return captureScreenshot(app, current, request)
     }
@@ -241,12 +241,12 @@ internal class DebugAutomation(
         }
         visit(root)
         return result.filter {
-            it.contentKey() || it.config.contains(SemanticsActions.OnClick) ||
+            it.isInteractive() || it.config.contains(SemanticsActions.OnClick) ||
                 it.config.contains(SemanticsActions.ScrollBy)
         }.filter { !it.boundsInRoot.isEmpty }
     }
 
-    private fun SemanticsNode.contentKey(): Boolean =
+    private fun SemanticsNode.isInteractive(): Boolean =
         !testTag().isNullOrEmpty() || !description().isEmpty() || !text().isEmpty()
 
     private fun SemanticsNode.testTag(): String? =
@@ -258,7 +258,7 @@ internal class DebugAutomation(
     private fun SemanticsNode.text(): String =
         config.getOrNull(SemanticsProperties.Text).orEmpty().joinToString(" ")
 
-    private fun nodeJson(node: SemanticsNode): JSONObject {
+    private fun describeNode(node: SemanticsNode): JSONObject {
         val bounds = node.boundsInRoot
         val role = node.config.getOrNull(SemanticsProperties.Role)
         return JSONObject()
@@ -288,8 +288,8 @@ internal class DebugAutomation(
         val matches =
             nodes.filter { node ->
                 (tag == null || node.testTag() == tag) &&
-                    (desc == null || node.description().matches(desc, contains)) &&
-                    (text == null || node.text().matches(text, contains))
+                    (desc == null || node.description().matchesText(desc, contains)) &&
+                    (text == null || node.text().matchesText(text, contains))
             }
         require(matches.isNotEmpty()) {
             "No control matches ${selector.toString()}"
@@ -311,7 +311,7 @@ internal class DebugAutomation(
                 }
         }
 
-    private fun String.matches(expected: String, contains: Boolean): Boolean =
+    private fun String.matchesText(expected: String, contains: Boolean): Boolean =
         if (contains) contains(expected) else this == expected
 
     private fun tap(view: View, x: Float, y: Float) {
@@ -434,7 +434,7 @@ internal class DebugAutomation(
             ?: throw IllegalStateException("Navigator is not ready yet")
     }
 
-    private fun destination(name: String): AppDestination =
+    private fun destinationOf(name: String): AppDestination =
         when (name) {
             "main" -> AppDestination.Main
             "settings" -> AppDestination.Settings()

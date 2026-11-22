@@ -13,7 +13,7 @@ def _timestamp() -> str:
     return datetime.now().strftime("%Y%m%d-%H%M%S-%f")[:-3]
 
 
-def take(args) -> dict:
+def capture(args) -> dict:
     device = resolve_device(args.device)
     high_quality = args.high_quality
     name = _timestamp() + "-window-" + ("hq.png" if high_quality else "agent.webp")
@@ -41,12 +41,12 @@ def take(args) -> dict:
     }
 
 
-def sequence(args) -> dict:
+def capture_sequence(args) -> dict:
     count = max(1, min(30, args.count))
     interval = max(0, min(5000, args.interval_ms))
     frames = []
     for index in range(count):
         if index:
             time.sleep(interval / 1000)
-        frames.append(take(args))
+        frames.append(capture(args))
     return {"count": len(frames), "interval_ms": interval, "frames": frames}

@@ -169,7 +169,7 @@ COMMANDS: tuple[Command, ...] = (
     ),
     Command(
         "control.list", "List visible controls",
-        "app_debug.controls:listing", configure_control_list,
+        "app_debug.controls:list_controls", configure_control_list,
         examples=("run.py control.list --desc 更多操作",),
         target_fields=("device",),
     ),
@@ -235,13 +235,13 @@ COMMANDS: tuple[Command, ...] = (
     ),
     Command(
         "screenshot.take", "Save screenshot",
-        "app_debug.captures:take", configure_screenshot,
+        "app_debug.captures:capture", configure_screenshot,
         examples=("run.py screenshot.take", "run.py screenshot.take --high-quality"),
         target_fields=("device",),
     ),
     Command(
         "screenshot.sequence", "Save timed screenshots",
-        "app_debug.captures:sequence", configure_screenshot_sequence,
+        "app_debug.captures:capture_sequence", configure_screenshot_sequence,
         examples=("run.py screenshot.sequence --count 6 --interval-ms 200",),
         target_fields=("device",),
     ),

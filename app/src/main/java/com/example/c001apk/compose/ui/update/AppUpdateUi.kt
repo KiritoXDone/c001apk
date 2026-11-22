@@ -57,7 +57,7 @@ fun AppUpdateHost(navigator: AppNavigator, model: AppUpdateViewModel = hiltViewM
         return
     val release = state.release
     if (release != null) {
-        var menuExpanded by remember { mutableStateOf(false) }
+        var isMenuExpanded by remember { mutableStateOf(false) }
         MiuixAlertDialog(
             onDismissRequest = { model.updates.dismiss() },
             title = {
@@ -68,7 +68,7 @@ fun AppUpdateHost(navigator: AppNavigator, model: AppUpdateViewModel = hiltViewM
                         textAlign = TextAlign.Center,
                     )
                     Box(Modifier.align(Alignment.CenterEnd)) {
-                        IconButton(onClick = { menuExpanded = true }) {
+                        IconButton(onClick = { isMenuExpanded = true }) {
                             Icon(
                                 imageVector = MiuixIcons.Glass.More,
                                 contentDescription = "更多操作",
@@ -76,21 +76,21 @@ fun AppUpdateHost(navigator: AppNavigator, model: AppUpdateViewModel = hiltViewM
                             )
                         }
                         MiuixMenu(
-                            expanded = menuExpanded,
-                            onDismissRequest = { menuExpanded = false },
+                            expanded = isMenuExpanded,
+                            onDismissRequest = { isMenuExpanded = false },
                             alignment = PopupPositionProvider.Align.End,
                         ) {
                             MiuixMenuItem(
                                 text = { Text("查看发布页") },
                                 onClick = {
-                                    menuExpanded = false
+                                    isMenuExpanded = false
                                     context.openUpdate(release.page)
                                 },
                             )
                             MiuixMenuItem(
                                 text = { Text("跳过此版本") },
                                 onClick = {
-                                    menuExpanded = false
+                                    isMenuExpanded = false
                                     model.updates.dismiss(skip = true)
                                     context.makeToast("已跳过 ${release.version}")
                                 },

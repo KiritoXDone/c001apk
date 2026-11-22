@@ -22,11 +22,11 @@ internal fun captureScreenshot(
     activity: Activity,
     request: JSONObject,
 ): JSONObject {
-    val highQuality = request.optBoolean("highQuality", false)
+    val lossless = request.optBoolean("highQuality", false)
     val quality = request.optInt("quality", 40).coerceIn(1, 100)
     val name =
         request.optString("name").takeIf { it.isNotEmpty() }
-            ?: defaultScreenshotName(highQuality)
+            ?: defaultScreenshotName(lossless)
     val directory =
         File(app.getExternalFilesDir(null), "debug-screenshots").apply { mkdirs() }
     val file = File(directory, name)
@@ -43,7 +43,7 @@ internal fun captureScreenshot(
         }
         file.outputStream().use { stream ->
             when {
-                highQuality -> bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream)
+                lossless -> bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream)
                 Build.VERSION.SDK_INT >= Build.VERSION_CODES.R ->
                     bitmap.compress(Bitmap.CompressFormat.WEBP_LOSSY, quality, stream)
                 else ->
@@ -60,9 +60,9 @@ internal fun captureScreenshot(
         .put("file", file.name)
         .put("width", width)
         .put("height", height)
-        .put("format", if (highQuality) "png" else "webp")
-        .put("quality", if (highQuality) JSONObject.NULL else quality)
-        .put("lossless", highQuality)
+        .put("format", if (lossless) "png" else "webp")
+        .put("quality", if (lossless) JSONObject.NULL else quality)
+        .put("lossless", lossless)
 }
 
 private fun copyWindow(activity: Activity, bitmap: Bitmap) {
@@ -83,7 +83,7 @@ private fun copyWindow(activity: Activity, bitmap: Bitmap) {
     check(copyResult == PixelCopy.SUCCESS) { "Window capture failed with code $copyResult" }
 }
 
-private fun defaultScreenshotName(highQuality: Boolean): String {
+private fun defaultScreenshotName(lossless: Boolean): String {
     val stamp = SimpleDateFormat("yyyyMMdd-HHmmss-SSS", Locale.US).format(Date())
-    return "$stamp-window-agent." + if (highQuality) "png" else "webp"
+    return "$stamp-window-agent." + if (lossless) "png" else "webp"
 }
