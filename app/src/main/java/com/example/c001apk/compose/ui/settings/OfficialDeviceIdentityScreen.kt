@@ -17,14 +17,20 @@ import com.example.c001apk.compose.logic.repository.UserPreferencesRepository
 import com.example.c001apk.compose.logic.smid.OfficialDeviceIdentity
 import com.example.c001apk.compose.ui.component.*
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.*
+import androidx.compose.ui.res.stringResource
+import com.example.c001apk.compose.R
 
 @HiltViewModel
 class OfficialDeviceIdentityViewModel
 @Inject
-constructor(private val preferences: UserPreferencesRepository) : ViewModel() {
+constructor(
+    private val preferences: UserPreferencesRepository,
+    @ApplicationContext private val context: Context,
+) : ViewModel() {
     var pending by mutableStateOf<String?>(null)
         private set
 
@@ -61,7 +67,7 @@ constructor(private val preferences: UserPreferencesRepository) : ViewModel() {
             } catch (e: kotlinx.coroutines.CancellationException) {
                 throw e
             } catch (_: Exception) {
-                error = "保存失败，请重试"
+                error = context.getString(R.string.settings_device_save_failed)
             } finally {
                 saving = false
             }
@@ -74,11 +80,16 @@ fun OfficialDeviceIdentityScreen(onBack: () -> Unit) {
     val model = hiltViewModel<OfficialDeviceIdentityViewModel>()
     val context = LocalContext.current
     var input by remember { mutableStateOf("") }
+    val openFailedMessage = stringResource(R.string.settings_device_import_error)
+    val clipboardEmptyMessage = stringResource(R.string.settings_device_clipboard_empty)
     fun recognize(text: String) {
         input = if (model.recognize(text)) "" else text.take(32768)
     }
     MiuixScaffold(
-        topBar = { MiuixTopBar(title = "导入官方设备标识", navigationIcon = { BackButton(onBack) }) },
+        topBar = { MiuixTopBar(
+                title = stringResource(R.string.settings_device_import_title),
+                navigationIcon = { BackButton(onBack) },
+            ) },
     ) { padding ->
         Column(
             Modifier.fillMaxSize()
@@ -87,7 +98,7 @@ fun OfficialDeviceIdentityScreen(onBack: () -> Unit) {
                 .padding(20.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            Text("1. 打开官方酷安的“检查日志和测试”页。\n2. 在同一页面累计点击“复制 OAID”5 次。\n3. 返回此处粘贴完整内容，识别后保存。")
+            Text(stringResource(R.string.settings_device_import_steps))
             Button(
                 onClick = {
                     try {
@@ -99,24 +110,24 @@ fun OfficialDeviceIdentityScreen(onBack: () -> Unit) {
                                 .setPackage("com.coolapk.market"),
                         )
                     } catch (_: Exception) {
-                        model.error = "无法打开官方酷安，请确认已安装并启用支持此入口的版本"
+                        model.error = openFailedMessage
                     }
                 },
             ) {
-                Text("打开酷安 OAID 界面")
+                Text(stringResource(R.string.settings_device_import_open))
             }
-            Text("仅识别 ShuzlmID（数盟 ID），忽略 OAID、AndroidID 和 UUID。其他设备参数与账号保持原值。")
+            Text(stringResource(R.string.settings_device_import_note))
             TextField(
                 value = input,
                 onValueChange = { recognize(it) },
-                label = "粘贴官方复制的完整文本",
+                label = stringResource(R.string.settings_device_import_label),
                 modifier = Modifier.fillMaxWidth(),
                 enabled = !model.saving,
                 minLines = 2,
                 maxLines = 4,
             )
-            if (model.pending != null) Text("已识别数盟 ID，复制内容已隐藏。")
-            if (model.saved) Text("已保存，返回内容页后刷新即可。")
+            if (model.pending != null) Text(stringResource(R.string.settings_device_import_recognized))
+            if (model.saved) Text(stringResource(R.string.settings_device_import_saved))
             model.error?.let { Text(it) }
             Button(
                 onClick = {
@@ -128,14 +139,18 @@ fun OfficialDeviceIdentityScreen(onBack: () -> Unit) {
                             ?.coerceToText(context)
                             ?.toString()
                             .orEmpty()
-                    if (text.isBlank()) model.error = "剪贴板没有文本" else recognize(text)
+                    if (text.isBlank()) {
+                        model.error = clipboardEmptyMessage
+                    } else {
+                        recognize(text)
+                    }
                 },
                 enabled = !model.saving,
             ) {
-                Text("粘贴并识别")
+                Text(stringResource(R.string.settings_device_import_paste))
             }
             Button(onClick = model::save, enabled = model.pending != null && !model.saving) {
-                Text(if (model.saving) "正在保存…" else "保存并应用")
+                Text(if (model.saving) stringResource(R.string.settings_device_import_saving) else stringResource(R.string.settings_device_import_apply))
             }
         }
     }

@@ -2,10 +2,12 @@ package com.example.c001apk.compose.ui.settings
 
 import android.os.Build
 import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import com.example.c001apk.compose.R
 import com.example.c001apk.compose.ThemeMode
 import com.example.c001apk.compose.ThemeType
+import com.example.c001apk.compose.logic.model.HapticStrength
 import com.example.c001apk.compose.logic.datastore.UserPreferencesCompat
 import com.example.c001apk.compose.ui.component.settings.BasicListItem
 import com.example.c001apk.compose.ui.component.settings.PreferenceGroup
@@ -31,17 +33,21 @@ import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteText2Line
 import com.example.c001apk.compose.ui.component.settings.SwitchListItem
 import com.example.c001apk.compose.ui.theme.paletteStyleOptions
 
-private val themeModes = listOf(
-    SelectionItem("跟随系统", ThemeMode.FOLLOW_SYSTEM),
-    SelectionItem("总是开启", ThemeMode.ALWAYS_ON),
-    SelectionItem("总是关闭", ThemeMode.ALWAYS_OFF),
-)
+@Composable
+private fun themeModeItems() =
+    listOf(
+        SelectionItem(stringResource(R.string.settings_theme_follow_system), ThemeMode.FOLLOW_SYSTEM),
+        SelectionItem(stringResource(R.string.settings_theme_always_on), ThemeMode.ALWAYS_ON),
+        SelectionItem(stringResource(R.string.settings_theme_always_off), ThemeMode.ALWAYS_OFF),
+    )
 
-private val readingModes = listOf(
-    SelectionItem("自动适配大屏", 0),
-    SelectionItem("开启（窗口足够宽时）", 1),
-    SelectionItem("关闭", 2),
-)
+@Composable
+private fun readingModeItems() =
+    listOf(
+        SelectionItem(stringResource(R.string.settings_reading_auto), 0),
+        SelectionItem(stringResource(R.string.settings_reading_on), 1),
+        SelectionItem(stringResource(R.string.settings_reading_off), 2),
+    )
 
 internal fun LazyListScope.appearancePreferences(
     prefs: UserPreferencesCompat,
@@ -57,13 +63,13 @@ internal fun LazyListScope.appearancePreferences(
             SwitchListItem(
                 value = prefs.materialYou,
                 leadingImageVector = MingCutePaletteLine,
-                headlineText = "系统主题色",
+                headlineText = stringResource(R.string.settings_material_you),
                 onValueChanged = viewModel::setMaterialYou,
             )
             if (!prefs.materialYou) {
                 SelectionListItem(
                     leadingImageVector = MingCuteColorPickerLine,
-                    title = "主题颜色",
+                    title = stringResource(R.string.settings_theme_color),
                     value = prefs.themeType,
                     selections =
                         ThemeType.entries.filterNot { it == ThemeType.UNRECOGNIZED }.map { type ->
@@ -77,7 +83,7 @@ internal fun LazyListScope.appearancePreferences(
                 if (prefs.themeType != ThemeType.Default && prefs.themeType != ThemeType.UNRECOGNIZED) {
                     SelectionListItem(
                         leadingImageVector = MingCuteDropletsLine,
-                        title = "调色风格",
+                        title = stringResource(R.string.settings_palette_style),
                         value = prefs.paletteStyle,
                         selections =
                             paletteStyleOptions.mapIndexed { index, option ->
@@ -89,22 +95,22 @@ internal fun LazyListScope.appearancePreferences(
             }
             SelectionListItem(
                 leadingImageVector = MingCuteMoonLine,
-                title = "深色主题",
+                title = stringResource(R.string.settings_dark_theme),
                 value = prefs.themeMode,
-                selections = themeModes,
+                selections = themeModeItems(),
                 onSelected = viewModel::setDarkTheme,
             )
             if (prefs.themeMode != ThemeMode.ALWAYS_OFF) {
                 SwitchListItem(
                     value = prefs.pureBlack,
                     leadingImageVector = MingCuteContrastLine,
-                    headlineText = "纯黑背景",
+                    headlineText = stringResource(R.string.settings_pure_black),
                     onValueChanged = viewModel::setPureBlack,
                 )
                 SwitchListItem(
                     value = prefs.imageFilter,
                     leadingImageVector = MingCuteBrightnessLine,
-                    headlineText = "压暗图片",
+                    headlineText = stringResource(R.string.settings_dim_images),
                     onValueChanged = viewModel::setImageFilter,
                 )
             }
@@ -118,32 +124,34 @@ internal fun LazyListScope.appearancePreferences(
                 onTopBarStyleChange = viewModel::setTopBarStyle,
                 onBottomBarStyleChange = viewModel::setBottomBarStyle,
             )
-            BasicListItem(headlineText = "底栏排序", leadingImageVector = MingCuteSortAscendingLine, onClick = onNavigationOrder)
+            BasicListItem(headlineText = stringResource(R.string.settings_bar_order), leadingImageVector = MingCuteSortAscendingLine, onClick = onNavigationOrder)
             SwitchListItem(
                 value = prefs.blurBars && Build.VERSION.SDK_INT >= 33,
                 enabled = Build.VERSION.SDK_INT >= 33,
                 leadingImageVector = MingCuteLayersLine,
-                headlineText = "栏背景模糊",
-                supportingText = if (Build.VERSION.SDK_INT < 33) "需要 Android 13 及以上" else null,
+                headlineText = stringResource(R.string.settings_blur_bars),
+                supportingText =
+                    if (Build.VERSION.SDK_INT < 33) stringResource(R.string.settings_blur_bars_needs_android13)
+                    else null,
                 onValueChanged = viewModel::setBlurBars,
             )
             SwitchListItem(
                 value = prefs.collapseTabsOnScroll,
                 leadingImageVector = MingCuteListCollapseLine,
-                headlineText = "滚动时收起标签栏",
+                headlineText = stringResource(R.string.settings_collapse_tabs),
                 onValueChanged = viewModel::setCollapseTabsOnScroll,
             )
         }
     }
     item(key = "Appearance_scale") {
         PreferenceGroup {
-            BasicListItem(headlineText = "字体大小", leadingImageVector = MingCuteFontSizeLine, onClick = onFontSize)
-            BasicListItem(headlineText = "内容大小", leadingImageVector = MingCuteText2Line, onClick = onContentScale)
+            BasicListItem(headlineText = stringResource(R.string.settings_font_size), leadingImageVector = MingCuteFontSizeLine, onClick = onFontSize)
+            BasicListItem(headlineText = stringResource(R.string.settings_content_size), leadingImageVector = MingCuteText2Line, onClick = onContentScale)
             SelectionListItem(
                 leadingImageVector = MingCuteColumns2Line,
-                title = "分栏阅读",
+                title = stringResource(R.string.settings_split_reading),
                 value = prefs.readingMode,
-                selections = readingModes,
+                selections = readingModeItems(),
                 onSelected = viewModel::setReadingMode,
             )
         }
@@ -153,34 +161,34 @@ internal fun LazyListScope.appearancePreferences(
             SwitchListItem(
                 value = prefs.predictiveBack,
                 leadingImageVector = MingCuteArrowLeftCircleLine,
-                headlineText = "预测返回手势",
+                headlineText = stringResource(R.string.settings_predictive_back),
                 onValueChanged = viewModel::setPredictiveBack,
             )
             SwitchListItem(
                 value = prefs.hapticFeedback,
                 leadingImageVector = MingCuteCellphoneVibrationLine,
-                headlineText = "触感反馈",
+                headlineText = stringResource(R.string.settings_haptic_feedback),
                 onValueChanged = viewModel::setHapticFeedback,
             )
             if (prefs.hapticFeedback) {
                 SwitchListItem(
                     value = prefs.customHaptics,
                     leadingImageVector = MingCuteSettings2Line,
-                    headlineText = "自定义触感",
+                    headlineText = stringResource(R.string.settings_custom_haptics),
                     onValueChanged = viewModel::setCustomHaptics,
                 )
                 if (prefs.customHaptics) {
                     BasicListItem(
                         leadingImageVector = MingCuteDashboardLine,
-                        headlineText = "触感强度",
-                        supportingText = prefs.hapticStrength.label,
+                        headlineText = stringResource(R.string.settings_haptic_strength),
+                        supportingText = hapticStrengthLabel(prefs.hapticStrength),
                         onClick = onHapticStrength,
                     )
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                         SwitchListItem(
                             value = prefs.reverseHapticEffects,
                             leadingImageVector = MingCuteClockwiseLine,
-                            headlineText = "触感兼容模式",
+                            headlineText = stringResource(R.string.settings_haptic_compat),
                             onValueChanged = viewModel::setReverseHapticEffects,
                         )
                     }
@@ -215,3 +223,13 @@ private fun themeTypeLabelRes(themeType: ThemeType): Int =
         ThemeType.Sakura -> R.string.theme_type_sakura
         ThemeType.Custom -> R.string.theme_type_custom
     }
+
+@Composable
+internal fun hapticStrengthLabel(strength: HapticStrength): String =
+    stringResource(
+        when (strength) {
+            HapticStrength.Light -> R.string.haptic_light
+            HapticStrength.Medium -> R.string.haptic_standard
+            HapticStrength.Strong -> R.string.haptic_strong
+        },
+    )

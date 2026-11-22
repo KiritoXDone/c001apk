@@ -30,6 +30,7 @@ import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.theme.MiuixTheme
+import com.example.c001apk.compose.R
 
 @Composable
 fun NavigationBarOrderScreen(
@@ -49,13 +50,13 @@ fun NavigationBarOrderScreen(
     MiuixScaffold(
         topBar = {
             MiuixTopBar(
-                title = "底栏排序",
+                title = stringResource(R.string.settings_bar_order),
                 navigationIcon = { BackButton { if (!viewModel.savingNavigationOrder) onBackClick() } },
                 actions = {
                     MiuixActionButton(
                         enabled = !viewModel.savingNavigationOrder,
                         onClick = { viewModel.setMainNavigationOrder(order, onBackClick) },
-                    ) { Text(if (viewModel.savingNavigationOrder) "正在保存" else "完成") }
+                    ) { Text(if (viewModel.savingNavigationOrder) stringResource(R.string.settings_bar_order_saving) else stringResource(R.string.settings_bar_order_done)) }
                 },
             )
         },
@@ -75,7 +76,7 @@ fun NavigationBarOrderScreen(
                     items = order,
                     key = { it.toString() },
                     onReorder = { order = it },
-                    title = "显示顺序",
+                    title = stringResource(R.string.settings_bar_order_display),
                     enabled = !viewModel.savingNavigationOrder,
                 ) { pageId, dragging, dragHandle ->
                     val page = pages[pageId]
@@ -88,7 +89,7 @@ fun NavigationBarOrderScreen(
                     )
                 }
                 Text(
-                    "拖动右侧手柄调整顺序，同时应用于底栏与大屏侧栏。启动和返回主页的行为保持不变，点击完成后保存。",
+                    stringResource(R.string.settings_bar_order_hint),
                     modifier = Modifier.padding(horizontal = 28.dp, vertical = 8.dp),
                     style = MiuixTheme.textStyles.footnote1,
                     color = MiuixTheme.colorScheme.onSurfaceVariantSummary,

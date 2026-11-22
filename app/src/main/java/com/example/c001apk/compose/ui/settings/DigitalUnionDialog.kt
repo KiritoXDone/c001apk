@@ -10,6 +10,8 @@ import com.example.c001apk.compose.ui.component.MiuixAlertDialog
 import com.example.c001apk.compose.ui.component.MiuixDialogButton
 import top.yukonga.miuix.kmp.basic.*
 import top.yukonga.miuix.kmp.theme.MiuixTheme
+import androidx.compose.ui.res.stringResource
+import com.example.c001apk.compose.R
 
 @Composable
 fun DigitalUnionDialog(
@@ -31,18 +33,18 @@ fun DigitalUnionDialog(
     }
     MiuixAlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("数字联盟 ID") },
+        title = { Text(stringResource(R.string.settings_szlm_title)) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 Text(
-                    "用于连接酷安服务，可自动获取，也可粘贴已有 ID。",
+                    stringResource(R.string.settings_szlm_desc),
                     color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
                 )
                 TextField(
                     value = value,
                     onValueChange = { value = it; edited = true },
                     modifier = Modifier.fillMaxWidth(),
-                    label = "数字联盟 ID",
+                    label = stringResource(R.string.settings_szlm_title),
                     useLabelAsPlaceholder = true,
                 )
                 Row(
@@ -60,7 +62,9 @@ fun DigitalUnionDialog(
                             Spacer(Modifier.width(8.dp))
                         }
                         Text(
-                            if (generating) "正在获取…" else if (id.isBlank()) "自动获取" else "重新获取",
+                            if (generating) stringResource(R.string.settings_szlm_fetching)
+                            else if (id.isBlank()) stringResource(R.string.settings_szlm_auto)
+                            else stringResource(R.string.settings_szlm_refetch),
                             textAlign = TextAlign.Center,
                         )
                     }
@@ -69,19 +73,19 @@ fun DigitalUnionDialog(
                         enabled = !generating,
                         modifier = Modifier.weight(1f).fillMaxHeight(),
                         insideMargin = PaddingValues(horizontal = 8.dp, vertical = 12.dp),
-                    ) { Text("从官方酷安导入", textAlign = TextAlign.Center) }
+                    ) { Text(stringResource(R.string.settings_szlm_import), textAlign = TextAlign.Center) }
                 }
                 error?.let { Text(it, color = MiuixTheme.colorScheme.onSurfaceVariantSummary) }
             }
         },
-        dismissButton = { MiuixDialogButton(onClick = onDismiss) { Text("关闭") } },
+        dismissButton = { MiuixDialogButton(onClick = onDismiss) { Text(stringResource(R.string.action_close)) } },
         confirmButton = {
             MiuixDialogButton(
                 onClick = {
                     onSave(value.trim())
                 },
             ) {
-                Text("保存")
+                Text(stringResource(R.string.action_save))
             }
         },
     )

@@ -1,5 +1,6 @@
 package com.example.c001apk.compose.ui.settings
 
+import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.SizeTransform
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -101,12 +102,12 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.basic.TextField
 import top.yukonga.miuix.kmp.utils.scrollEndHaptic
 
-private enum class SettingsSection(val title: String, val icon: ImageVector) {
-    Appearance("外观", MingCutePaletteLine),
-    Content("关注与内容", MingCuteHeartLine),
-    Privacy("浏览与隐私", MingCuteEye2Line),
-    Storage("存储与应用", MingCuteFolderLine),
-    Device("协议与设备", MingCuteCellphone2Line),
+private enum class SettingsSection(@param:StringRes val titleRes: Int, val icon: ImageVector) {
+    Appearance(R.string.settings_section_appearance, MingCutePaletteLine),
+    Content(R.string.settings_section_content, MingCuteHeartLine),
+    Privacy(R.string.settings_section_privacy, MingCuteEye2Line),
+    Storage(R.string.settings_section_storage, MingCuteFolderLine),
+    Device(R.string.settings_section_device, MingCuteCellphone2Line),
 }
 
 /** Created by bggRGjQaUbCoE on 2024/5/30 */
@@ -154,8 +155,13 @@ fun SettingsScreen(
     }
 
     val topBarScrollBehavior = MiuixScrollBehavior()
-    val imageQualityList by lazy { listOf("网络自适应", "原图", "普清") }
-    val hapticStrengthList by lazy { HapticStrength.options.map { it.label } }
+    val imageQualityList =
+        listOf(
+            stringResource(R.string.settings_image_quality_adaptive),
+            stringResource(R.string.settings_image_quality_original),
+            stringResource(R.string.settings_image_quality_standard),
+        )
+    val hapticStrengthList = HapticStrength.options.map { hapticStrengthLabel(it) }
 
     var showSZLMIDDialog by remember { mutableStateOf(false) }
     var showFontScaleDialog by remember { mutableStateOf(false) }
@@ -167,6 +173,9 @@ fun SettingsScreen(
     val showHapticStrengthDialogClick = rememberHapticClick {
         showHapticStrengthDialog = true
     }
+    val sectionTitles = SettingsSection.entries.associateWith { stringResource(it.titleRes) }
+    val accountsLabel = stringResource(R.string.settings_accounts)
+    val aboutLabel = stringResource(R.string.settings_about)
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -214,7 +223,7 @@ fun SettingsScreen(
                         expanded = true,
                         outsideEndAction = {
                             MiuixToolbarIconButton(onClick = closeSearch) {
-                                Icon(MingCuteCloseLine, contentDescription = "关闭搜索")
+                                Icon(MingCuteCloseLine, contentDescription = stringResource(R.string.settings_search_close))
                             }
                         },
                     ) {}
@@ -222,18 +231,24 @@ fun SettingsScreen(
                 } else {
                     TopAppBar(
                         color = com.example.c001apk.compose.ui.component.LocalBarColor.current,
-                        title = if (wide) "设置" else activeSection?.title ?: "设置",
-                        largeTitle = if (wide) "设置" else activeSection?.title ?: "设置",
+                        title =
+                            if (wide) stringResource(R.string.settings)
+                            else activeSection?.let { stringResource(it.titleRes) }
+                                ?: stringResource(R.string.settings),
+                        largeTitle =
+                            if (wide) stringResource(R.string.settings)
+                            else activeSection?.let { stringResource(it.titleRes) }
+                                ?: stringResource(R.string.settings),
                         scrollBehavior = topBarScrollBehavior,
                         navigationIcon = {
                             MiuixToolbarIconButton(onClick = onBackClick) {
-                                Icon(MingCuteArrowLeftLine, contentDescription = "返回")
+                                Icon(MingCuteArrowLeftLine, contentDescription = stringResource(R.string.action_back))
                             }
                         },
                         actions = {
                             if (activeSection == null) {
                                 MiuixToolbarIconButton(onClick = { searchExpanded = true }) {
-                                    Icon(MingCuteSearchLine, contentDescription = "搜索设置")
+                                    Icon(MingCuteSearchLine, contentDescription = stringResource(R.string.settings_search_open))
                                 }
                             }
                         },
@@ -253,11 +268,12 @@ fun SettingsScreen(
                         else Modifier.fillMaxSize().nestedScroll(topBarScrollBehavior.nestedScrollConnection),
                     contentPadding = paddingValues,
                 ) {
-                    val visibleSections = SettingsSection.entries.filter { matchesSearch(it.title) }
+                    val visibleSections =
+                        SettingsSection.entries.filter { matchesSearch(sectionTitles.getValue(it)) }
                     visibleSections.forEach { section ->
                         item(key = section.name) {
                             BasicListItem(
-                                headlineText = section.title,
+                                headlineText = sectionTitles.getValue(section),
                                 leadingImageVector = section.icon,
                                 holdDownState = wide && activeSection == section,
                                 onClick = {
@@ -270,10 +286,10 @@ fun SettingsScreen(
                             )
                         }
                     }
-                    if (matchesSearch("账号管理")) {
+                    if (matchesSearch(accountsLabel)) {
                         item(key = "accounts") {
                             BasicListItem(
-                                headlineText = "账号管理",
+                                headlineText = accountsLabel,
                                 leadingImageVector = MingCuteUser3Line,
                                 onClick = {
                                     closeSearch()
@@ -282,10 +298,10 @@ fun SettingsScreen(
                             )
                         }
                     }
-                    if (matchesSearch("关于")) {
+                    if (matchesSearch(aboutLabel)) {
                         item(key = "about") {
                             BasicListItem(
-                                headlineText = "关于",
+                                headlineText = aboutLabel,
                                 leadingImageVector = MingCuteInformationLine,
                                 onClick = {
                                     closeSearch()
@@ -295,11 +311,11 @@ fun SettingsScreen(
                         }
                     }
                     if (searchQuery.isNotBlank() && visibleSections.isEmpty() &&
-                        !matchesSearch("账号管理") && !matchesSearch("关于")
+                        !matchesSearch(accountsLabel) && !matchesSearch(aboutLabel)
                     ) {
                         item(key = "no-results") {
                             Text(
-                                text = "没有匹配的设置",
+                                text = stringResource(R.string.settings_search_empty),
                                 modifier = Modifier.fillMaxWidth().padding(28.dp),
                                 color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
                             )
@@ -353,34 +369,43 @@ fun SettingsScreen(
                                 SearchPreferences(prefs.defaultSearchOrder, viewModel::setDefaultSearchOrder)
                             }
                             item(key = "publish") {
-                                PreferenceGroup(title = "发布") {
-                                    SwitchListItem(prefs.hideHomePublishButton, MingCuteAddSquareLine, "隐藏首页发布按钮",
-                                        "关闭后可在首页动态页发布") { viewModel.setHideHomePublishButton(it) }
+                                PreferenceGroup(title = stringResource(R.string.settings_group_publish)) {
+                                    SwitchListItem(
+                                        prefs.hideHomePublishButton,
+                                        MingCuteAddSquareLine,
+                                        stringResource(R.string.settings_hide_publish_button),
+                                        stringResource(R.string.settings_hide_publish_button_summary),
+                                    ) { viewModel.setHideHomePublishButton(it) }
                                 }
                             }
                             item(key = "Content_1") {
-                                PreferenceGroup(title = "关注") {
+                                PreferenceGroup(title = stringResource(R.string.settings_group_follow)) {
                                     BasicListItem(
                                         leadingImageVector = MingCuteUserFollowLine,
-                                        headlineText = "本地 / 悄悄关注",
-                                        supportingText = "管理本机名单与长按关注行为",
+                                        headlineText = stringResource(R.string.settings_local_follow),
+                                        supportingText = stringResource(R.string.settings_local_follow_summary),
                                         onClick = onLocalFollowsClick,
                                     )
                                 }
                             }
                             item(key = "Content_2") {
-                                PreferenceGroup(title = "屏蔽") {
-                                    BasicListItem(headlineText = "内容过滤", supportingText = "个人规则、匹配范围与例外", leadingImageVector = MingCuteFilterLine, onClick = onContentFilters)
+                                PreferenceGroup(title = stringResource(R.string.settings_group_block)) {
+                                    BasicListItem(
+                                            headlineText = stringResource(R.string.settings_content_filter),
+                                            supportingText = stringResource(R.string.settings_content_filter_summary),
+                                            leadingImageVector = MingCuteFilterLine,
+                                            onClick = onContentFilters,
+                                        )
 
                                     BasicListItem(
                                         leadingImageVector = MingCuteUserForbidLine,
-                                        headlineText = "用户黑名单",
+                                        headlineText = stringResource(R.string.settings_user_blocklist),
                                     ) {
                                         onViewBlackList(BlackListType.USER.name)
                                     }
                                     BasicListItem(
                                         leadingImageVector = MingCuteTagLine,
-                                        headlineText = "话题黑名单",
+                                        headlineText = stringResource(R.string.settings_topic_blocklist),
                                     ) {
                                         onViewBlackList(BlackListType.TOPIC.name)
                                     }
@@ -389,10 +414,10 @@ fun SettingsScreen(
                         }
                         SettingsSection.Privacy -> {
                             item(key = "Privacy_0") {
-                                PreferenceGroup(title = "图片") {
+                                PreferenceGroup(title = stringResource(R.string.settings_group_image)) {
                                     SelectionListItem(
                                         leadingImageVector = MingCutePhotoAlbumLine,
-                                        title = "图片画质",
+                                        title = stringResource(R.string.settings_image_quality),
                                         value = prefs.imageQuality,
                                         selections =
                                             imageQualityList.mapIndexed { index, label ->
@@ -403,18 +428,18 @@ fun SettingsScreen(
                                 }
                             }
                             item(key = "Privacy_1") {
-                                PreferenceGroup(title = "浏览") {
+                                PreferenceGroup(title = stringResource(R.string.settings_group_browse)) {
                                     SwitchListItem(
                                         value = prefs.openInBrowser,
                                         leadingImageVector = MingCuteGlobeLine,
-                                        headlineText = "使用外部浏览器打开链接",
+                                        headlineText = stringResource(R.string.settings_open_in_browser),
                                     ) {
                                         viewModel.setOpenInBrowser(it)
                                     }
                                     SwitchListItem(
                                         value = prefs.recordHistory,
                                         leadingImageVector = MingCuteHistoryLine,
-                                        headlineText = "记录本地浏览历史",
+                                        headlineText = stringResource(R.string.settings_record_history),
                                     ) {
                                         viewModel.setRecordHistory(it)
                                     }
@@ -423,10 +448,10 @@ fun SettingsScreen(
                         }
                         SettingsSection.Storage -> {
                             item(key = "Storage_0") {
-                                PreferenceGroup(title = "缓存与应用") {
+                                PreferenceGroup(title = stringResource(R.string.settings_group_cache)) {
                                     BasicListItem(
                                         leadingImageVector = MingCuteDelete2Line,
-                                        headlineText = "清理缓存",
+                                        headlineText = stringResource(R.string.settings_clean_cache),
                                         supportingText = cacheSize,
                                     ) {
                                         cacheSize = getTotalCacheSize(context)
@@ -435,15 +460,15 @@ fun SettingsScreen(
                                     SwitchListItem(
                                         value = prefs.autoClearImageCache,
                                         leadingImageVector = MingCuteDelete2Line,
-                                        headlineText = "退出时清除图片缓存",
-                                        supportingText = "下次启动时自动清除图片缓存",
+                                        headlineText = stringResource(R.string.settings_clear_cache_on_exit),
+                                        supportingText = stringResource(R.string.settings_clear_cache_on_exit_summary),
                                     ) {
                                         viewModel.setAutoClearImageCache(it)
                                     }
                                     SwitchListItem(
                                         value = prefs.checkUpdate,
                                         leadingImageVector = MingCuteClockwiseLine,
-                                        headlineText = "检查已安装应用更新",
+                                        headlineText = stringResource(R.string.settings_check_app_updates),
                                     ) {
                                         viewModel.setCheckUpdate(it)
                                     }
@@ -452,18 +477,19 @@ fun SettingsScreen(
                         }
                         SettingsSection.Device -> {
                             item(key = "Device_0") {
-                                PreferenceGroup(title = "协议与设备") {
+                                PreferenceGroup(title = stringResource(R.string.settings_section_device)) {
                                     BasicListItem(
                                         leadingImageVector = MingCuteCardSimLine,
-                                        headlineText = "数字联盟ID",
+                                        headlineText = stringResource(R.string.settings_szlm_id),
                                         supportingText =
-                                            if (prefs.szlmId.isBlank()) "尚未生成，点击获取" else "已保存，点击管理",
+                                            if (prefs.szlmId.isBlank()) stringResource(R.string.settings_szlm_id_empty)
+                                            else stringResource(R.string.settings_szlm_id_saved),
                                     ) {
                                         showSZLMIDDialog = true
                                     }
                                     BasicListItem(
                                         leadingImageVector = MingCuteCellphone2Line,
-                                        headlineText = "机型参数",
+                                        headlineText = stringResource(R.string.settings_device_params),
                                     ) {
                                         onParamsClick()
                                     }
@@ -481,7 +507,7 @@ fun SettingsScreen(
                     hint = "6650A4",
                     maxLength = 6,
                     data = prefs.seedColor,
-                    title = "自定义主题颜色",
+                    title = stringResource(R.string.settings_custom_theme_color),
                     onDismiss = {
                         showThemeTypeDialog = false
                     },
@@ -509,8 +535,8 @@ fun SettingsScreen(
             showFontScaleDialog -> {
                 SliderDialog(
                     data = prefs.fontScale,
-                    title = "字体大小",
-                    hint = "比例",
+                    title = stringResource(R.string.settings_font_scale),
+                    hint = stringResource(R.string.settings_scale_hint),
                     onDismiss = {
                         showFontScaleDialog = false
                     },
@@ -523,8 +549,8 @@ fun SettingsScreen(
             showContentScaleDialog -> {
                 SliderDialog(
                     data = prefs.contentScale,
-                    title = "内容缩放",
-                    hint = "比例",
+                    title = stringResource(R.string.settings_content_scale),
+                    hint = stringResource(R.string.settings_scale_hint),
                     onDismiss = {
                         showContentScaleDialog = false
                     },
@@ -549,7 +575,7 @@ fun SettingsScreen(
 
             showHapticStrengthDialog -> {
                 ListItemDialog(
-                    title = "触感强度",
+                    title = stringResource(R.string.settings_haptic_strength),
                     list = hapticStrengthList,
                     selected = HapticStrength.options.indexOf(prefs.hapticStrength),
                     onDismiss = {
@@ -594,12 +620,12 @@ fun CleanCacheDialog(
             }
         },
         text = {
-            Text(text = "当前缓存大小: " + cacheSize)
+            Text(text = stringResource(R.string.settings_cache_size, cacheSize))
         },
         title = {
             Text(
                 modifier = Modifier.fillMaxWidth(),
-                text = "清理缓存",
+                text = stringResource(R.string.settings_clean_cache),
                 textAlign = TextAlign.Center,
             )
         },
@@ -634,7 +660,7 @@ fun ListItemDialog(
     top.yukonga.miuix.kmp.popup.WindowDropdownDialog(
         entry = entry,
         title = title,
-        dialogButtonString = "取消",
+        dialogButtonString = stringResource(android.R.string.cancel),
         show = true,
         onDismiss = onDismiss,
         onDismissFinished = onDismiss,

@@ -96,25 +96,25 @@ fun AboutScreen(
                 PreferenceGroup {
                     BasicListItem(
                         leadingImageVector = MingCuteGlobeLine,
-                        headlineText = "项目主页",
+                        headlineText = stringResource(R.string.settings_about_project_home),
                         supportingText = "KiritoXDone/c001apk",
                         onClick = { context.openInBrowser(URL_PROJECT) },
                     )
                     BasicListItem(
                         leadingImageVector = MingCuteFolderLine,
-                        headlineText = "原项目地址",
+                        headlineText = stringResource(R.string.settings_about_source),
                         supportingText = URL_SOURCE_CODE,
                         onClick = { context.openInBrowser(URL_SOURCE_CODE) },
                     )
                     BasicListItem(
                         leadingImageVector = MingCuteTagLine,
-                        headlineText = "Compose 基线项目",
+                        headlineText = stringResource(R.string.settings_about_baseline),
                         supportingText = URL_SOURCE_CODE_FORK,
                         onClick = { context.openInBrowser(URL_SOURCE_CODE_FORK) },
                     )
                     BasicListItem(
                         leadingImageVector = MingCuteInformationLine,
-                        headlineText = "开源许可证",
+                        headlineText = stringResource(R.string.settings_about_license),
                         onClick = onLicenseClick,
                     )
                 }
@@ -126,7 +126,7 @@ fun AboutScreen(
             ) {
                 Icon(
                     MingCuteArrowLeftLine,
-                    contentDescription = "返回",
+                    contentDescription = stringResource(R.string.action_back),
                     tint = colors.onSurface,
                 )
             }

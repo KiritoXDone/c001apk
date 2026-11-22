@@ -47,7 +47,7 @@ fun ParamsScreen(
         Column(
             Modifier.fillMaxSize().verticalScroll(rememberTopBarScrollState()).padding(paddingValues),
         ) {
-            PreferenceGroup(title = "酷安协议") {
+            PreferenceGroup(title = stringResource(R.string.settings_params_group_protocol)) {
                 ParamsItem(
                     title = stringResource(id = R.string.params_version_name),
                     data = prefs.versionName.ifEmpty { null },
@@ -69,7 +69,7 @@ fun ParamsScreen(
                     viewModel.setVersionCode(it)
                 }
             }
-            PreferenceGroup(title = "设备信息") {
+            PreferenceGroup(title = stringResource(R.string.settings_params_group_device)) {
                 ParamsItem(
                     title = stringResource(id = R.string.params_manufacturer),
                     data = prefs.manufacturer.ifEmpty { null },
@@ -144,7 +144,7 @@ fun ParamsScreen(
                     )
                 }
             }
-            PreferenceGroup(title = "请求参数") {
+            PreferenceGroup(title = stringResource(R.string.settings_params_group_request)) {
                 ParamsItem(
                     title = stringResource(id = R.string.params_user_agent),
                     data = prefs.userAgent.ifEmpty { null },
@@ -156,8 +156,8 @@ fun ParamsScreen(
                 )
             }
             BasicListItem(
-                headlineText = "使用本机设备参数",
-                supportingText = "保留数盟 ID，恢复当前手机的品牌、型号和系统版本",
+                headlineText = stringResource(R.string.settings_params_use_device),
+                supportingText = stringResource(R.string.settings_params_use_device_summary),
             ) {
                 viewModel.regenerateParams()
             }

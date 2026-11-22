@@ -1,6 +1,8 @@
 package com.example.c001apk.compose.ui.settings
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import com.example.c001apk.compose.R
 import com.example.c001apk.compose.ui.component.settings.BasicListItem
 import com.example.c001apk.compose.ui.component.settings.PreferenceGroup
 import com.example.c001apk.compose.ui.component.settings.SwitchListItem
@@ -21,39 +23,39 @@ internal fun HomeContentPreferences(
     onShowTopics: (Boolean) -> Unit,
     onShowEmoji: (Boolean) -> Unit,
 ) {
-    PreferenceGroup(title = "首页内容") {
+    PreferenceGroup(title = stringResource(R.string.settings_group_home_content)) {
         BasicListItem(
             leadingImageVector = MingCuteGridLine,
-            headlineText = "首页板块",
-            supportingText = "选择并排序首页显示的标签页",
+            headlineText = stringResource(R.string.settings_home_tabs),
+            supportingText = stringResource(R.string.settings_home_tabs_summary),
             onClick = onHomeTabsClick,
         )
         SwitchListItem(
             value = showCarousel,
             leadingImageVector = MingCutePhotoAlbumLine,
-            headlineText = "显示轮播横幅",
-            supportingText = "首页动态顶部的大图推荐和活动横幅",
+            headlineText = stringResource(R.string.settings_show_carousel),
+            supportingText = stringResource(R.string.settings_show_carousel_summary),
             onValueChanged = onShowCarousel,
         )
         SwitchListItem(
             value = showChannels,
             leadingImageVector = MingCuteGridLine,
-            headlineText = "显示频道快捷入口",
-            supportingText = "首页动态中的值得看、热闻、活动等入口",
+            headlineText = stringResource(R.string.settings_show_channels),
+            supportingText = stringResource(R.string.settings_show_channels_summary),
             onValueChanged = onShowChannels,
         )
         SwitchListItem(
             value = showTopics,
             leadingImageVector = MingCuteDocumentLine,
-            headlineText = "显示推荐话题与数码入口",
-            supportingText = "首页动态中的机型、话题等横向或网格入口",
+            headlineText = stringResource(R.string.settings_show_topics),
+            supportingText = stringResource(R.string.settings_show_topics_summary),
             onValueChanged = onShowTopics,
         )
         SwitchListItem(
             value = showEmoji,
             leadingImageVector = MingCuteEmojiLine,
-            headlineText = "显示酷安表情",
-            supportingText = "将普通文本中的 [doge] 等表情代码显示为图片",
+            headlineText = stringResource(R.string.settings_show_emoji),
+            supportingText = stringResource(R.string.settings_show_emoji_summary),
             onValueChanged = onShowEmoji,
         )
     }
