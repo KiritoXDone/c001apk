@@ -128,6 +128,12 @@ def configure_update_check(parser: argparse.ArgumentParser) -> None:
     )
 
 
+def configure_prefs_set(parser: argparse.ArgumentParser) -> None:
+    add_device_argument(parser)
+    parser.add_argument("--key", required=True, help="Preference key to update.")
+    parser.add_argument("--value", required=True, help="Explicit value for the key.")
+
+
 def configure_screenshot(parser: argparse.ArgumentParser) -> None:
     add_device_argument(parser)
     parser.add_argument(
@@ -158,7 +164,7 @@ COMMANDS: tuple[Command, ...] = (
     Command(
         "app.status", "Show app state",
         "app_debug.processes:status", configure_app,
-        examples=("run.py app.status --json",),
+        examples=("run.py app.status",),
         target_fields=("device",),
     ),
     Command(
@@ -212,7 +218,7 @@ COMMANDS: tuple[Command, ...] = (
     Command(
         "animation.get", "Show animation speed",
         "app_debug.animations:get_speed", configure_app,
-        examples=("run.py animation.get --json",),
+        examples=("run.py animation.get",),
         target_fields=("device",),
     ),
     Command(
@@ -224,13 +230,25 @@ COMMANDS: tuple[Command, ...] = (
     Command(
         "update.state", "Show update check state",
         "app_debug.business:update_state", configure_app,
-        examples=("run.py update.state --json",),
+        examples=("run.py update.state",),
         target_fields=("device",),
     ),
     Command(
         "update.check", "Trigger an update check",
         "app_debug.business:update_check", configure_update_check,
-        examples=("run.py update.check --json",),
+        examples=("run.py update.check",),
+        target_fields=("device",),
+    ),
+    Command(
+        "prefs.get", "Show UI preferences",
+        "app_debug.business:prefs_get", configure_app,
+        examples=("run.py prefs.get",),
+        target_fields=("device",),
+    ),
+    Command(
+        "prefs.set", "Update a UI preference",
+        "app_debug.business:prefs_set", configure_prefs_set,
+        examples=("run.py prefs.set --key themeMode --value dark",),
         target_fields=("device",),
     ),
     Command(

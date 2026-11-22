@@ -35,10 +35,10 @@ python .codex/skills/app-debug/scripts/run.py --help
 多条命令使用独立 `+` 参数串联，示例：
 
 ```text
-python .codex/skills/app-debug/scripts/run.py page.open --destination settings --wait settled --json + control.click --text 关于 --contains --wait settled --json
+python .codex/skills/app-debug/scripts/run.py page.open --destination settings --wait settled + control.click --text 关于 --contains --wait settled
 ```
 
-整条链先解析全部参数，再按书写顺序执行；某段失败时保留已完成步骤、写入失败位置并返回实际退出码。任一段带 `--json` 时整组输出一个 `{"ok":..., "steps":[...]}`，单条调用输出 `{"ok":..., "command":..., "result":{...}}`。诊断信息写入 stderr。
+整条链先解析全部参数，再按书写顺序执行；某段失败时保留已完成步骤与失败位置，返回非零退出码。stdout 始终只输出一个 JSON 对象：单条调用为 `{"ok":..., "command":..., "result":{...}}`，命令链为 `{"ok":..., "steps":[...]}`。进度、告警与诊断写入 stderr。
 
 ## 状态与返回值
 

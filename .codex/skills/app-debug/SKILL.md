@@ -13,7 +13,7 @@ description: 调试 c001apk（com.example.c001apk.compose）的 Debug 构建，�
 
 - 包名 `com.example.c001apk.compose`，主 Activity `.ui.main.MainActivity`。
 - 调试通道为 Debug 变体注册的 `ContentProvider`：`content://com.example.c001apk.compose.debug`，经 `adb shell content call` 调用；Release 构建不包含。
-- 命令默认输出一行结果摘要与耗时；加 `--json` 输出结构化字段，日志与诊断写入 stderr。退出码非零即失败。
+- 命令在 stdout 输出一个 JSON 对象，进度与诊断写入 stderr；退出码非零即失败。
 
 ## 按任务阅读指南
 
@@ -24,7 +24,7 @@ description: 调试 c001apk（com.example.c001apk.compose）的 Debug 构建，�
 | 打开指定页面、返回上一页 | [页面导航](guides/pages.md) |
 | 截图、连续截图、查看细节 | [截图与查阅](guides/screenshots.md) |
 | 放慢或恢复动画，观察过渡 | [动画](guides/animations.md) |
-| 检查版本更新等业务状态 | [业务调用](guides/business.md) |
+| 检查版本更新、读写界面偏好 | [业务调用](guides/business.md) |
 
 ## 执行流程
 
@@ -41,7 +41,7 @@ description: 调试 c001apk（com.example.c001apk.compose）的 Debug 构建，�
 
 - 使用普通 `python` 调用；入口在导入项目模块前关闭字节码缓存。
 - `run.py` 与 `run.py --help` 从同一注册表展示全部指令；`run.py <指令> --help` 展示参数与示例，帮助在环境检查前结束。
-- 命令使用独立 `+` 参数串联；先解析整条链，再按顺序执行，失败时保留已完成结果并结束本组。任一段 `--json` 使整组返回有序 `steps`，含失败位置与退出码。
+- 命令使用独立 `+` 参数串联；先解析整条链，再按顺序执行，失败时保留已完成步骤并结束本组。命令链返回有序 `steps`，含失败位置与退出码。
 
 ## 输入与焦点确认
 

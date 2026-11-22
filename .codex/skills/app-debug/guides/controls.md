@@ -13,7 +13,7 @@
 ## 控件与命令
 
 ```text
-python .codex/skills/app-debug/scripts/run.py control.list --limit 300 --json
+python .codex/skills/app-debug/scripts/run.py control.list --limit 300
 python .codex/skills/app-debug/scripts/run.py control.click --text 关于 --contains --wait settled
 python .codex/skills/app-debug/scripts/run.py control.long-click --desc 头像 --wait settled
 python .codex/skills/app-debug/scripts/run.py control.scroll --dy -600 --wait settled

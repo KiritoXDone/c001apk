@@ -6,7 +6,7 @@
 
 ```text
 python .codex/skills/app-debug/scripts/run.py page.open --destination settings --wait settled
-python .codex/skills/app-debug/scripts/run.py page.back --wait settled --json
+python .codex/skills/app-debug/scripts/run.py page.back --wait settled
 ```
 
 `--destination` 取值与对应页面：

@@ -40,13 +40,9 @@ def create_parser() -> argparse.ArgumentParser:
         epilog=(
             "Chain: COMMAND [ARGS] + COMMAND [ARGS] ...\n"
             "All segments are parsed first; execution stops on failure.\n"
-            "Use --json in any segment for ordered step results."
+            "Results are printed as one JSON object on stdout."
         ),
         formatter_class=argparse.RawTextHelpFormatter,
-    )
-    parser.add_argument(
-        "--json", action="store_true",
-        help="Return JSON on stdout; diagnostics use stderr.",
     )
     commands = parser.add_subparsers(
         title="Commands", dest="command", metavar="COMMAND", required=True,
@@ -64,10 +60,6 @@ def create_parser() -> argparse.ArgumentParser:
             description=command.summary,
             epilog=examples,
             formatter_class=argparse.RawTextHelpFormatter,
-        )
-        child.add_argument(
-            "--json", action="store_true", default=argparse.SUPPRESS,
-            help="Return JSON on stdout; diagnostics use stderr.",
         )
         if command.configure is not None:
             command.configure(child)
@@ -117,52 +109,21 @@ def failure(
     args: argparse.Namespace,
     message: str,
     exit_code: int,
-    steps: list[dict] | None = None,
+    steps: list[dict],
     *,
     format_error=str,
 ) -> int:
     print(format_error("error: " + message), file=sys.stderr)
-    if steps is not None:
-        index = len(steps) + 1
-        steps.append({
-            "index": index, "command": args.command, "ok": False,
-            "error": message, "exit_code": exit_code,
-        })
-        if args.json:
-            print(json.dumps({
-                "ok": False, "steps": steps, "failed_index": index,
-                "command": args.command, "error": message,
-                "exit_code": exit_code,
-            }, ensure_ascii=False))
-        return exit_code
-    if args.json:
-        print(json.dumps({
-            "ok": False, "command": args.command, "error": message,
-            "exit_code": exit_code,
-        }, ensure_ascii=False))
+    index = len(steps) + 1
+    steps.append({
+        "index": index, "command": args.command, "ok": False,
+        "error": message, "exit_code": exit_code,
+    })
+    print(json.dumps({
+        "ok": False, "command": args.command, "error": message,
+        "exit_code": exit_code, "steps": steps,
+    }, ensure_ascii=False))
     return exit_code
-
-
-def describe_result(value, indent: str = "") -> list[str]:
-    if isinstance(value, dict):
-        lines = []
-        for key, item in value.items():
-            if isinstance(item, (dict, list)):
-                lines.append(f"{indent}{key}:")
-                lines.extend(describe_result(item, indent + "  "))
-            else:
-                lines.append(f"{indent}{key}: {item}")
-        return lines
-    if isinstance(value, list):
-        lines = []
-        for index, item in enumerate(value):
-            if isinstance(item, (dict, list)):
-                lines.append(f"{indent}[{index}]")
-                lines.extend(describe_result(item, indent + "  "))
-            else:
-                lines.append(f"{indent}[{index}] {item}")
-        return lines
-    return [indent + str(value)]
 
 
 def emit_tool_output(output: str | bytes | None) -> None:
@@ -185,11 +146,7 @@ def describe_os_error(error: OSError) -> str:
 
 
 def execute_command(args: argparse.Namespace, timed_step):
-    output_context = (
-        contextlib.redirect_stdout(sys.stderr)
-        if args.json else contextlib.nullcontext()
-    )
-    with output_context:
+    with contextlib.redirect_stdout(sys.stderr):
         with timed_step("Execute " + args.command):
             handler = load_handler(args._command_spec.handler)
             return handler(args)
@@ -213,58 +170,40 @@ def main(argv: list[str] | None = None) -> int:
         validate_chain_targets(parsed)
     except ValueError as error:
         parser.error(str(error))
-    json_mode = any(args.json for args in parsed)
-    steps: list[dict] | None = [] if len(parsed) > 1 else None
+    steps: list[dict] = []
     # 参数与帮助完成后才导入共享执行能力，帮助不依赖构建环境。
     sys.path.insert(0, str(PROJECT_ROOT / "scripts"))
     try:
-        from build_support.console import fail, print_summary
+        from build_support.console import fail
         from build_support.timer import timed_step
     except ImportError as error:
-        parsed[0].json = json_mode
         return failure(
-            parsed[0], "Cannot load shared script support: " + str(error),
-            1, steps,
+            parsed[0], "Cannot load shared script support: " + str(error), 1, steps,
         )
     for args in parsed:
-        args.json = json_mode
         try:
             result = execute_command(args, timed_step)
         except CommandFailure as error:
-            return failure(
-                args, str(error), error.exit_code, steps, format_error=fail,
-            )
+            return failure(args, str(error), error.exit_code, steps, format_error=fail)
         except subprocess.CalledProcessError as error:
             emit_tool_output(error.stdout)
             emit_tool_output(error.stderr)
-            message = (
-                "Task command returned exit code " + str(error.returncode)
-            )
-            return failure(
-                args, message, error.returncode, steps, format_error=fail,
-            )
+            message = "Task command returned exit code " + str(error.returncode)
+            return failure(args, message, error.returncode, steps, format_error=fail)
         except OSError as error:
-            return failure(
-                args, describe_os_error(error), 1, steps, format_error=fail,
-            )
-        except (
-            RuntimeError, ValueError, ImportError, AttributeError,
-        ) as error:
-            return failure(
-                args, str(error), 1, steps, format_error=fail,
-            )
-        if steps is not None:
-            steps.append({
-                "index": len(steps) + 1, "command": args.command,
-                "ok": True, "result": result,
-            })
-        elif args.json:
-            print(json.dumps({
-                "ok": True, "command": args.command, "result": result,
-            }, ensure_ascii=False))
-        if not args.json:
-            print_summary(*describe_result(result))
-    if steps is not None and json_mode:
+            return failure(args, describe_os_error(error), 1, steps, format_error=fail)
+        except (RuntimeError, ValueError, ImportError, AttributeError) as error:
+            return failure(args, str(error), 1, steps, format_error=fail)
+        steps.append({
+            "index": len(steps) + 1, "command": args.command,
+            "ok": True, "result": result,
+        })
+    if len(parsed) == 1:
+        print(json.dumps({
+            "ok": True, "command": parsed[0].command,
+            "result": steps[0]["result"],
+        }, ensure_ascii=False))
+    else:
         print(json.dumps({"ok": True, "steps": steps}, ensure_ascii=False))
     return 0
 

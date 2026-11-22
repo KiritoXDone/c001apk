@@ -5,9 +5,9 @@
 ## 实际命令与目标
 
 ```text
-python .codex/skills/app-debug/scripts/run.py screenshot.take --json
-python .codex/skills/app-debug/scripts/run.py screenshot.take --high-quality --json
-python .codex/skills/app-debug/scripts/run.py screenshot.sequence --count 6 --interval-ms 150 --json
+python .codex/skills/app-debug/scripts/run.py screenshot.take
+python .codex/skills/app-debug/scripts/run.py screenshot.take --high-quality
+python .codex/skills/app-debug/scripts/run.py screenshot.sequence --count 6 --interval-ms 150
 ```
 
 - 目标为主 Activity 所在窗口，按窗口像素 1:1 输出；`PixelCopy` 不可用时回退到 `decorView.draw`。
@@ -27,7 +27,7 @@ python .codex/skills/app-debug/scripts/run.py screenshot.sequence --count 6 --in
 截图与动作可用 `+` 串联，例如：
 
 ```text
-python .codex/skills/app-debug/scripts/run.py animation.set --speed 0.05 + control.click --text 更新 --wait frame + screenshot.sequence --count 5 --interval-ms 120 --json + animation.set --speed 1
+python .codex/skills/app-debug/scripts/run.py animation.set --speed 0.05 + control.click --text 更新 --wait frame + screenshot.sequence --count 5 --interval-ms 120 + animation.set --speed 1
 ```
 
 ## 返回值与证据

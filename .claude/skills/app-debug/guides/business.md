@@ -5,12 +5,34 @@
 ## 实际命令
 
 ```text
-python .codex/skills/app-debug/scripts/run.py update.state --json
-python .codex/skills/app-debug/scripts/run.py update.check --json
+python .codex/skills/app-debug/scripts/run.py update.state
+python .codex/skills/app-debug/scripts/run.py update.check
 ```
 
 - `update.state`：读取 `AppUpdates.state`，返回 `checking`、`manual`、`hasUpdate`、`version`、`tag`、`page`、`message`。
 - `update.check`：触发一次手动检查（`manual = true`），轮询直至 `checking` 变为 `false`，`--timeout-ms` 默认 25000、上限 60000；返回同上字段并附加 `completed`。
+
+## 偏好设置
+
+```text
+python .codex/skills/app-debug/scripts/run.py prefs.get
+python .codex/skills/app-debug/scripts/run.py prefs.set --key themeMode --value dark
+```
+
+`prefs.get` 返回当前界面偏好；`prefs.set` 写入一个键并返回写入后的完整状态。可写键：
+
+| 键 | 取值 |
+| --- | --- |
+| `themeMode` | `system`、`dark`、`light` |
+| `materialYou`、`pureBlack`、`floatingNavigationBar`、`blurBars`、`predictiveBack` | `true`、`false` |
+| `fontScale`、`contentScale` | 数字，限制在界面允许的 `0.8`～`1.3` |
+| `readingMode` | 整数 |
+| `topBarStyle` | `classic`、`classic_contour`、`os4` |
+| `bottomBarStyle` | `classic`、`floating`、`os4` |
+| `showHomeCarousel`、`showHomeChannels`、`showSquare`、`recordHistory`、`checkUpdate`、`collapseTabsOnScroll` | `true`、`false` |
+| `imageQuality` | `1`～`100` |
+
+写入通过 `UserPreferencesRepository` 的现有 setter 完成，走真实的 DataStore 与界面刷新；未知键或非法值返回错误，不做静默兜底。改过主题、字号等可见项后，用 `screenshot.take` 或 `control.list` 核对界面已按新值渲染，再按需要恢复原值。
 
 ## 实现与边界
 

@@ -18,12 +18,18 @@ import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsNode
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
+import com.example.c001apk.compose.ThemeMode
+import com.example.c001apk.compose.logic.model.BottomBarStyle
+import com.example.c001apk.compose.logic.model.TopBarStyle
+import com.example.c001apk.compose.logic.repository.UserPreferencesRepository
 import com.example.c001apk.compose.logic.update.AppUpdates
 import com.example.c001apk.compose.ui.main.AppDestination
 import com.example.c001apk.compose.ui.main.AppNavigator
 import dagger.hilt.android.EntryPointAccessors
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -166,11 +172,11 @@ internal class DebugAutomation(
     }
 
     private fun handleBusiness(request: JSONObject): JSONObject {
-        val updates =
-            EntryPointAccessors.fromApplication(app, AppDebugEntryPoint::class.java).appUpdates()
-        return when (request.optString("action")) {
-            "updateState" -> describeUpdateState(updates)
+        val entryPoint = EntryPointAccessors.fromApplication(app, AppDebugEntryPoint::class.java)
+        return when (val action = request.optString("action")) {
+            "updateState" -> describeUpdateState(entryPoint.appUpdates())
             "updateCheck" -> {
+                val updates = entryPoint.appUpdates()
                 updates.check(manual = true)
                 val timeoutMs = request.optLong("timeoutMs", 25_000L).coerceIn(1_000L, 60_000L)
                 val deadline = SystemClock.uptimeMillis() + timeoutMs
@@ -179,11 +185,110 @@ internal class DebugAutomation(
                 }
                 describeUpdateState(updates).put("completed", !updates.state.value.checking)
             }
-            else -> throw IllegalArgumentException(
-                "Unknown business action '" + request.optString("action") + "'",
-            )
+            "prefsGet" -> describePreferences(entryPoint.preferences())
+            "prefsSet" -> {
+                val preferences = entryPoint.preferences()
+                val key = request.optString("key")
+                val value = request.optString("value")
+                require(key.isNotEmpty() && value.isNotEmpty()) {
+                    "prefsSet requires a non-empty key and value"
+                }
+                runBlocking { applyPreference(preferences, key, value) }
+                describePreferences(preferences)
+            }
+            else -> throw IllegalArgumentException("Unknown business action '$action'")
         }
     }
+
+    private fun describePreferences(repository: UserPreferencesRepository): JSONObject {
+        val preferences = runBlocking { repository.data.first() }
+        return JSONObject()
+            .put("ok", true)
+            .put("themeMode", preferences.themeMode.storedName())
+            .put("materialYou", preferences.materialYou)
+            .put("pureBlack", preferences.pureBlack)
+            .put("fontScale", preferences.fontScale)
+            .put("contentScale", preferences.contentScale)
+            .put("readingMode", preferences.readingMode)
+            .put("floatingNavigationBar", preferences.floatingNavigationBar)
+            .put("blurBars", preferences.blurBars)
+            .put("predictiveBack", preferences.predictiveBack)
+            .put("topBarStyle", preferences.topBarStyle.storedId)
+            .put("bottomBarStyle", preferences.bottomBarStyle?.storedId ?: JSONObject.NULL)
+            .put("showHomeCarousel", preferences.showHomeCarousel)
+            .put("showHomeChannels", preferences.showHomeChannels)
+            .put("showSquare", preferences.showSquare)
+            .put("recordHistory", preferences.recordHistory)
+            .put("checkUpdate", preferences.checkUpdate)
+            .put("collapseTabsOnScroll", preferences.collapseTabsOnScroll)
+            .put("imageQuality", preferences.imageQuality)
+    }
+
+    private suspend fun applyPreference(
+        repository: UserPreferencesRepository,
+        key: String,
+        value: String,
+    ) {
+        when (key) {
+            "themeMode" ->
+                repository.setThemeMode(
+                    when (value) {
+                        "system" -> ThemeMode.FOLLOW_SYSTEM
+                        "dark" -> ThemeMode.ALWAYS_ON
+                        "light" -> ThemeMode.ALWAYS_OFF
+                        else -> throw IllegalArgumentException("Unknown themeMode '$value'")
+                    },
+                )
+            "materialYou" -> repository.setMaterialYou(value.toFlag())
+            "pureBlack" -> repository.setPureBlack(value.toFlag())
+            "fontScale" -> repository.setFontScale(value.toScale())
+            "contentScale" -> repository.setContentScale(value.toScale())
+            "readingMode" -> repository.setReadingMode(value.toInt("readingMode"))
+            "floatingNavigationBar" -> repository.setFloatingNavigationBar(value.toFlag())
+            "blurBars" -> repository.setBlurBars(value.toFlag())
+            "predictiveBack" -> repository.setPredictiveBack(value.toFlag())
+            "topBarStyle" ->
+                repository.setTopBarStyle(
+                    TopBarStyle.entries.firstOrNull { it.storedId == value }
+                        ?: throw IllegalArgumentException("Unknown topBarStyle '$value'"),
+                )
+            "bottomBarStyle" ->
+                repository.setBottomBarStyle(
+                    BottomBarStyle.fromStoredId(value)
+                        ?: throw IllegalArgumentException("Unknown bottomBarStyle '$value'"),
+                )
+            "showHomeCarousel" -> repository.setShowHomeCarousel(value.toFlag())
+            "showHomeChannels" -> repository.setShowHomeChannels(value.toFlag())
+            "showSquare" -> repository.setShowSquare(value.toFlag())
+            "recordHistory" -> repository.setRecordHistory(value.toFlag())
+            "checkUpdate" -> repository.setCheckUpdate(value.toFlag())
+            "collapseTabsOnScroll" -> repository.setCollapseTabsOnScroll(value.toFlag())
+            "imageQuality" -> repository.setImageQuality(value.toInt("imageQuality").coerceIn(1, 100))
+            else -> throw IllegalArgumentException("Unsupported preference '$key'")
+        }
+    }
+
+    private fun ThemeMode.storedName(): String =
+        when (this) {
+            ThemeMode.FOLLOW_SYSTEM -> "system"
+            ThemeMode.ALWAYS_ON -> "dark"
+            ThemeMode.ALWAYS_OFF -> "light"
+            else -> throw IllegalStateException("Unsupported theme mode $this")
+        }
+
+    private fun String.toFlag(): Boolean =
+        when (this) {
+            "true" -> true
+            "false" -> false
+            else -> throw IllegalArgumentException("Expected true or false but was '$this'")
+        }
+
+    private fun String.toScale(): Float =
+        toFloatOrNull()?.coerceIn(0.8f, 1.3f)
+            ?: throw IllegalArgumentException("Expected a number but was '$this'")
+
+    private fun String.toInt(field: String): Int =
+        toIntOrNull() ?: throw IllegalArgumentException("Unknown $field '$this'")
 
     private fun describeUpdateState(updates: AppUpdates): JSONObject {
         val state = updates.state.value

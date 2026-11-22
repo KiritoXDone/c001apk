@@ -5,7 +5,7 @@
 ## 实际命令
 
 ```text
-python .codex/skills/app-debug/scripts/run.py animation.get --json
+python .codex/skills/app-debug/scripts/run.py animation.get
 python .codex/skills/app-debug/scripts/run.py animation.set --speed 0.1
 ```
 
@@ -22,7 +22,7 @@ python .codex/skills/app-debug/scripts/run.py animation.set --speed 0.1
 ## 观察流程
 
 ```text
-python .codex/skills/app-debug/scripts/run.py animation.set --speed 0.05 + control.click --text 更新 --wait frame + screenshot.sequence --count 5 --interval-ms 120 --json + animation.set --speed 1
+python .codex/skills/app-debug/scripts/run.py animation.set --speed 0.05 + control.click --text 更新 --wait frame + screenshot.sequence --count 5 --interval-ms 120 + animation.set --speed 1
 ```
 
 1. 用 `animation.get` 查询并记录原倍率。
