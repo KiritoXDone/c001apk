@@ -1,5 +1,6 @@
 package com.example.c001apk.compose.util
 
+import com.example.c001apk.compose.R
 import android.content.Context
 import android.net.Uri
 import android.util.Base64
@@ -94,7 +95,7 @@ object OssUploadUtil {
             }
         } catch (e: Exception) {
             closeDialog()
-            withContext(Dispatchers.Main) { context.makeToast("图片上传失败，请检查网络后重试") }
+            withContext(Dispatchers.Main) { context.makeToast(context.getString(R.string.image_upload_failed)) }
         }
     }
 

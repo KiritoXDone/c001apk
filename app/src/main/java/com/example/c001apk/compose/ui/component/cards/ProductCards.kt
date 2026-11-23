@@ -14,6 +14,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.res.stringResource
+import com.example.c001apk.compose.R
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
@@ -62,7 +64,7 @@ fun ProductConfigListCard(
                     fontWeight = FontWeight.SemiBold,
                 )
                 TextButton(onClick = onShowComparison) {
-                    Text("配置对比")
+                    Text(stringResource(R.string.product_compare))
                     Icon(
                         imageVector = MiuixIcons.Glass.ChevronForward,
                         contentDescription = null,
@@ -87,7 +89,7 @@ fun ProductConfigListCard(
                 onClick = onShowGlobalComparison,
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
             ) {
-                Text("跨机型对比（${selectedCompareIds.size}/10）")
+                Text(stringResource(R.string.product_compare_cross, selectedCompareIds.size))
                 Icon(
                     imageVector = MiuixIcons.Glass.ChevronForward,
                     contentDescription = null,
@@ -142,7 +144,7 @@ private fun ProductConfigRow(
                         modifier = Modifier.size(16.dp),
                     )
                     Spacer(Modifier.width(4.dp))
-                    Text("参数", style = MiuixTheme.textStyles.footnote1)
+                    Text(stringResource(R.string.params_title), style = MiuixTheme.textStyles.footnote1)
                 }
             }
             if (!config.id.isNullOrBlank()) {
@@ -158,7 +160,7 @@ private fun ProductConfigRow(
                     )
                     Spacer(Modifier.width(4.dp))
                     Text(
-                        if (selectedForCompare) "已添加" else "对比",
+                        stringResource(if (selectedForCompare) R.string.product_compare_added else R.string.product_compare_action),
                         style = MiuixTheme.textStyles.footnote1,
                     )
                 }
@@ -255,7 +257,7 @@ private fun ProductListRow(
                     modifier = Modifier.weight(1f),
                     style = MiuixTheme.textStyles.body1,
                     color =
-                        if (price == "暂无价格") {
+                        if (!product.priceMin.isPositivePrice() && !product.priceMax.isPositivePrice()) {
                             MiuixTheme.colorScheme.onSurfaceVariantSummary
                         } else {
                             MiuixTheme.colorScheme.error
@@ -273,7 +275,7 @@ private fun ProductListRow(
                             modifier = Modifier.size(15.dp),
                         )
                         Spacer(Modifier.width(3.dp))
-                        Text(if (selectedForCompare) "已添加" else "对比")
+                        Text(stringResource(if (selectedForCompare) R.string.product_compare_added else R.string.product_compare_action))
                     }
                 }
             }
@@ -281,10 +283,11 @@ private fun ProductListRow(
     }
 }
 
+@Composable
 private fun productPrice(product: HomeFeedResponse.Entities): String {
     val min = product.priceMin.takeIf { it.isPositivePrice() }
     val max = product.priceMax.takeIf { it.isPositivePrice() }
-    if (min == null && max == null) return "暂无价格"
+    if (min == null && max == null) return stringResource(R.string.product_no_price)
 
     val currency = product.priceCurrency?.takeIf { it.isNotBlank() } ?: "¥"
     return when {
@@ -294,7 +297,8 @@ private fun productPrice(product: HomeFeedResponse.Entities): String {
     }
 }
 
-private fun String?.asPrice(): String = takeIf { it.isPositivePrice() }?.let { "¥$it" } ?: "暂无价格"
+@Composable
+private fun String?.asPrice(): String = takeIf { it.isPositivePrice() }?.let { "¥$it" } ?: stringResource(R.string.product_no_price)
 
 private fun String?.isPositivePrice(): Boolean =
     !isNullOrBlank() && (toBigDecimalOrNull()?.signum() ?: 0) > 0

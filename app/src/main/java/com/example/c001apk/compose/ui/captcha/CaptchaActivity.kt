@@ -1,6 +1,9 @@
 package com.example.c001apk.compose.ui.captcha
 
 import android.annotation.SuppressLint
+import android.content.Context
+import android.text.TextUtils
+import org.json.JSONObject
 import android.os.Bundle
 import android.webkit.WebResourceRequest
 import android.webkit.WebSettings
@@ -10,6 +13,9 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.res.stringResource
+import com.example.c001apk.compose.R
+import com.example.c001apk.compose.logic.settings.AppLanguage
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.webkit.WebViewCompat
@@ -21,6 +27,10 @@ import top.yukonga.miuix.kmp.basic.Text
 
 class CaptchaActivity : ComponentActivity() {
     private var requestId: String? = null
+
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(AppLanguage.wrap(newBase))
+    }
 
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -39,16 +49,16 @@ class CaptchaActivity : ComponentActivity() {
                 MiuixScaffold(
                     topBar = {
                         MiuixTopBar(
-                            title = "人机验证",
+                            title = stringResource(R.string.captcha_title),
                             navigationIcon = { BackButton { finish() } },
                             actions = {
-                                MiuixActionButton(onClick = { reload++ }) { Text("重新加载") }
+                                MiuixActionButton(onClick = { reload++ }) { Text(stringResource(R.string.action_reload)) }
                             },
                         )
                     },
                 ) { padding ->
                     if (!WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_LISTENER)) {
-                        Text("请更新系统 WebView 后重试验证。", Modifier.padding(padding))
+                        Text(stringResource(R.string.captcha_update_webview), Modifier.padding(padding))
                     } else
                         key(reload) {
                             AndroidView(
@@ -105,21 +115,23 @@ class CaptchaActivity : ComponentActivity() {
         super.onDestroy()
     }
 
-    private fun html(id: String) =
-        """
-        <!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+    private fun html(id: String): String {
+        val language = if (resources.configuration.locales[0].language == "en") "en" else "zh-CN"
+        fun message(resource: Int): String = JSONObject.quote(getString(resource))
+        return """
+        <!doctype html><html lang="$language"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
         <style>:root{color-scheme:light dark}body{font:16px sans-serif;margin:24px;background:Canvas;color:CanvasText}p{line-height:1.6}</style>
-        <p id="status">正在加载验证组件…</p><div id="captcha"></div><script>
+        <p id="status">${TextUtils.htmlEncode(getString(R.string.captcha_loading))}</p><div id="captcha"></div><script>
         function statusText(t){document.getElementById('status').textContent=t;}
-        var timeout=setTimeout(function(){statusText('加载超时，请点击重新加载');},15000);
+        var timeout=setTimeout(function(){statusText(${message(R.string.captcha_timeout)});},15000);
         var script=document.createElement('script');script.src='https://cstaticdun.126.net/load.min.js';
-        script.onerror=function(){clearTimeout(timeout);statusText('加载失败，请检查网络后重试');};
-        script.onload=function(){try{initNECaptcha({captchaId:'$id',element:'#captcha',protocol:'https',mode:'embed',apiVersion:2,
-        width:Math.min(320,window.innerWidth-48)+'px',lang:'zh-CN',onVerify:function(err,data){
-        if(!err&&data&&data.validate){window.CaptchaResult.postMessage(data.validate);}else{statusText('验证未通过，请重试');}}},
-        function(){clearTimeout(timeout);statusText('请按下方提示完成人机验证');},function(){clearTimeout(timeout);statusText('初始化失败，请重新加载');});
-        }catch(e){clearTimeout(timeout);statusText('初始化失败，请重新加载');}};document.head.appendChild(script);
+        script.onerror=function(){clearTimeout(timeout);statusText(${message(R.string.captcha_load_failed)});};
+        script.onload=function(){try{initNECaptcha({captchaId:${JSONObject.quote(id)},element:'#captcha',protocol:'https',mode:'embed',apiVersion:2,
+        width:Math.min(320,window.innerWidth-48)+'px',lang:'$language',onVerify:function(err,data){
+        if(!err&&data&&data.validate){window.CaptchaResult.postMessage(data.validate);}else{statusText(${message(R.string.captcha_failed)});}}},
+        function(){clearTimeout(timeout);statusText(${message(R.string.captcha_hint)});},function(){clearTimeout(timeout);statusText(${message(R.string.captcha_init_failed)});});
+        }catch(e){clearTimeout(timeout);statusText(${message(R.string.captcha_init_failed)});}};document.head.appendChild(script);
         </script></html>
-    """
-            .trimIndent()
+        """.trimIndent()
+    }
 }

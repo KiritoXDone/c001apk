@@ -1,0 +1,7 @@
+<resources>
+    <string name="media_replay">Replay</string>
+    <string name="media_live_off">Turn live photo off</string>
+    <string name="media_live_on">Turn live photo on</string>
+    <string name="media_unmute">Unmute live photo</string>
+    <string name="media_mute">Mute live photo</string>
+</resources>

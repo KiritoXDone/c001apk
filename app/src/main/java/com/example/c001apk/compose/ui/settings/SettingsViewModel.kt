@@ -6,6 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.viewModelScope
 import com.example.c001apk.compose.FollowType
+import com.example.c001apk.compose.logic.settings.AppLanguage
 import com.example.c001apk.compose.R
 import com.example.c001apk.compose.ThemeMode
 import com.example.c001apk.compose.ThemeType
@@ -101,7 +102,7 @@ constructor(
         idError = null
         viewModelScope.launch {
             try {
-                digitalUnion.ensureId(force = true).onFailure { idError = it.message }
+                digitalUnion.ensureId(force = true).onFailure { idError = AppLanguage.getString(R.string.identity_fetch_failed) }
             } finally {
                 generatingId = false
             }
@@ -148,7 +149,7 @@ constructor(
             } catch (e: kotlinx.coroutines.CancellationException) {
                 throw e
             } catch (_: Exception) {
-                idError = context.getString(R.string.settings_szlm_save_failed)
+                idError = AppLanguage.getString(R.string.settings_szlm_save_failed)
             }
         }
     }

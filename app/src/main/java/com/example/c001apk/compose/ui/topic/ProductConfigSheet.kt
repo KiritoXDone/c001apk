@@ -25,6 +25,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.res.stringResource
+import com.example.c001apk.compose.R
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -114,7 +116,7 @@ private fun SheetTitle(title: String) {
 @Composable
 private fun LoadingContent(title: String) {
     Column(modifier = Modifier.fillMaxWidth()) {
-        SheetTitle(title.ifBlank { "产品参数" })
+        SheetTitle(title.ifBlank { stringResource(R.string.product_specs) })
         Box(
             modifier = Modifier.fillMaxWidth().height(180.dp),
             contentAlignment = Alignment.Center,
@@ -130,7 +132,7 @@ private fun ErrorContent(message: String, onDismiss: () -> Unit) {
         modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 12.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Text("加载失败", style = MiuixTheme.textStyles.title3)
+        Text(stringResource(R.string.loading_error), style = MiuixTheme.textStyles.title3)
         Spacer(Modifier.height(12.dp))
         Text(
             text = message,
@@ -138,21 +140,21 @@ private fun ErrorContent(message: String, onDismiss: () -> Unit) {
             color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
         )
         Spacer(Modifier.height(12.dp))
-        TextButton(onClick = onDismiss) { Text("关闭") }
+        TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_close)) }
     }
 }
 
 @Composable
 private fun DetailsContent(title: String, sections: List<ProductSpecSection>) {
     Column(modifier = Modifier.fillMaxSize()) {
-        SheetTitle(title.ifBlank { "产品参数" })
+        SheetTitle(title.ifBlank { stringResource(R.string.product_specs) })
         HorizontalDivider()
         if (sections.isEmpty()) {
             Box(
                 modifier = Modifier.fillMaxWidth().weight(1f),
                 contentAlignment = Alignment.Center,
             ) {
-                Text("暂无参数", color = MiuixTheme.colorScheme.onSurfaceVariantSummary)
+                Text(stringResource(R.string.product_specs_empty), color = MiuixTheme.colorScheme.onSurfaceVariantSummary)
             }
         } else {
             LazyColumn(modifier = Modifier.fillMaxWidth().weight(1f)) {
@@ -189,7 +191,7 @@ private fun ComparisonContent(
     var hideSame by rememberSaveable(state.mode) { mutableStateOf(false) }
     val sections =
         (if (state.columns.isEmpty()) {
-                EMPTY_COMPARISON_SECTIONS
+                emptyComparisonSections()
             } else {
                 mergeSections(state.columns)
             })
@@ -210,7 +212,7 @@ private fun ComparisonContent(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             IconButton(onClick = onDismiss) {
-                Icon(MiuixIcons.Basic.Close, contentDescription = "关闭")
+                Icon(MiuixIcons.Basic.Close, contentDescription = stringResource(R.string.action_close))
             }
             Text(
                 text = state.title,
@@ -238,7 +240,7 @@ private fun ComparisonContent(
                     context.startActivity(Intent.createChooser(intent, state.title))
                 },
             ) {
-                Icon(MiuixIcons.Share, contentDescription = "分享")
+                Icon(MiuixIcons.Share, contentDescription = stringResource(R.string.action_share))
             }
         }
         HorizontalDivider()
@@ -318,13 +320,13 @@ private fun ComparisonHeader(
             )
             Spacer(Modifier.height(6.dp))
             Text(
-                text = "隐藏相同配置",
+                text = stringResource(R.string.product_compare_hide_same),
                 style = MiuixTheme.textStyles.body1,
                 textAlign = TextAlign.Center,
             )
             Spacer(Modifier.height(8.dp))
             Text(
-                text = "${state.columns.size}款配置对比",
+                text = stringResource(R.string.product_compare_count, state.columns.size),
                 style = MiuixTheme.textStyles.body2,
                 color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
             )
@@ -360,7 +362,7 @@ private fun ComparisonHeader(
                                 contentDescription = null,
                                 modifier = Modifier.size(36.dp),
                             )
-                            Text("添加对比")
+                            Text(stringResource(R.string.product_compare_add))
                         }
                     }
                 }
@@ -397,7 +399,7 @@ private fun ProductComparisonHeaderColumn(
                 ) {
                     Icon(
                         MiuixIcons.Basic.Close,
-                        contentDescription = "移除",
+                        contentDescription = stringResource(R.string.action_remove),
                         modifier = Modifier.size(18.dp),
                     )
                 }
@@ -552,36 +554,36 @@ private data class ComparisonItem(
     val group: String? = null,
 )
 
-private val EMPTY_COMPARISON_SECTIONS =
+@Composable
+private fun emptyComparisonSections() =
     listOf(
         ComparisonSection(
-            title = "重要参数",
-            items = listOf("性能", "芯片", "RAM & ROM").map { ComparisonItem(it, emptyList()) },
+            title = stringResource(R.string.product_key_specs),
+            items = listOf(stringResource(R.string.product_performance), stringResource(R.string.product_chip), "RAM & ROM").map { ComparisonItem(it, emptyList()) },
         ),
         ComparisonSection(
-            title = "屏幕",
-            items = listOf("屏幕").map { ComparisonItem(it, emptyList()) },
+            title = stringResource(R.string.product_screen),
+            items = listOf(ComparisonItem(stringResource(R.string.product_screen), emptyList())),
         ),
         ComparisonSection(
-            title = "影像",
-            items =
-                listOf(
-                        "影像联名",
-                        "后置主摄",
-                        "后置长焦①",
-                        "后置长焦②",
-                        "后置超广角",
-                        "前置主摄",
-                        "前置副摄",
-                    )
-                    .map { ComparisonItem(it, emptyList()) },
+            title = stringResource(R.string.product_camera),
+            items = listOf(
+                R.string.product_camera_brand,
+                R.string.product_rear_main,
+                R.string.product_rear_telephoto_first,
+                R.string.product_rear_telephoto_second,
+                R.string.product_rear_ultrawide,
+                R.string.product_front_main,
+                R.string.product_front_secondary,
+            ).map { ComparisonItem(stringResource(it), emptyList()) },
         ),
         ComparisonSection(
-            title = "充电与电池",
-            items =
-                listOf("电池容量", "有线充电", "无线充电").map {
-                    ComparisonItem(it, emptyList())
-                },
+            title = stringResource(R.string.product_battery_charging),
+            items = listOf(
+                R.string.product_battery_capacity,
+                R.string.product_wired_charging,
+                R.string.product_wireless_charging,
+            ).map { ComparisonItem(stringResource(it), emptyList()) },
         ),
     )
 
@@ -644,8 +646,9 @@ private fun com.example.c001apk.compose.logic.model.ProductComparisonSelection.d
 
 private fun String.normalizedSpecKey(): String = trim().replace(Regex("\\s+"), "").lowercase()
 
+@Composable
 private fun String?.asComparisonPrice(): String =
-    takeIf { it.isPositivePrice() }?.let { "¥$it" } ?: "暂无价格"
+    takeIf { it.isPositivePrice() }?.let { "¥$it" } ?: stringResource(R.string.product_no_price)
 
 private fun String?.isPositivePrice(): Boolean =
     !isNullOrBlank() && (toBigDecimalOrNull()?.signum() ?: 0) > 0

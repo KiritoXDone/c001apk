@@ -1,6 +1,8 @@
 package com.example.c001apk.compose.ui.webview
 
 import androidx.compose.runtime.*
+import com.example.c001apk.compose.R
+import com.example.c001apk.compose.logic.settings.AppLanguage
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.c001apk.compose.logic.accounts.AccountStore
@@ -23,7 +25,7 @@ class WebViewViewModel @Inject constructor(private val accounts: AccountStore) :
             } catch (e: kotlinx.coroutines.CancellationException) {
                 throw e
             } catch (_: Exception) {
-                error = "保存登录信息失败，请重新登录"
+                error = AppLanguage.getString(R.string.error_login_save)
             }
         }
     }

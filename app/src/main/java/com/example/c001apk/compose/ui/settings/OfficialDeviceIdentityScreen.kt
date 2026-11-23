@@ -14,10 +14,12 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.c001apk.compose.logic.repository.UserPreferencesRepository
+import com.example.c001apk.compose.logic.settings.AppLanguage
+import com.example.c001apk.compose.logic.smid.DeviceIdentityInputException
+import com.example.c001apk.compose.logic.smid.DeviceIdentityInputError
 import com.example.c001apk.compose.logic.smid.OfficialDeviceIdentity
 import com.example.c001apk.compose.ui.component.*
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.*
@@ -29,7 +31,6 @@ class OfficialDeviceIdentityViewModel
 @Inject
 constructor(
     private val preferences: UserPreferencesRepository,
-    @ApplicationContext private val context: Context,
 ) : ViewModel() {
     var pending by mutableStateOf<String?>(null)
         private set
@@ -48,8 +49,12 @@ constructor(
             pending = OfficialDeviceIdentity.parse(text)
             error = null
             true
-        } catch (e: IllegalArgumentException) {
-            error = e.message
+        } catch (e: DeviceIdentityInputException) {
+            error = AppLanguage.getString(when (e.error) {
+                DeviceIdentityInputError.TOO_LONG -> R.string.identity_input_too_long
+                DeviceIdentityInputError.MISSING_ID -> R.string.identity_input_missing
+                DeviceIdentityInputError.INVALID_ID -> R.string.identity_input_invalid
+            })
             false
         }
     }
@@ -67,7 +72,7 @@ constructor(
             } catch (e: kotlinx.coroutines.CancellationException) {
                 throw e
             } catch (_: Exception) {
-                error = context.getString(R.string.settings_device_save_failed)
+                error = AppLanguage.getString(R.string.settings_device_save_failed)
             } finally {
                 saving = false
             }

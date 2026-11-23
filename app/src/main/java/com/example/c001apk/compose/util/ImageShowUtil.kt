@@ -13,6 +13,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.activity.ComponentDialog
 import androidx.annotation.DrawableRes
+import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -300,7 +301,7 @@ object ImageShowUtil {
             return
         }
         MiuixViewDialogBuilder(context).apply {
-            setItems(actions.map { it.title }.toTypedArray()) { _, position: Int ->
+            setItems(actions.map { context.getString(it.titleRes) }.toTypedArray()) { _, position: Int ->
                 handleSaveDialogAction(
                     context,
                     url,
@@ -341,7 +342,7 @@ object ImageShowUtil {
                         contentScale = CookieUtil.contentScale,
                     ) {
                         SaveImageDialogContent(
-                            items = actions.map { it.title },
+                            items = actions.map { activity.getString(it.titleRes) },
                             onClick = { index ->
                                 handleSaveDialogAction(
                                     activity,
@@ -476,7 +477,7 @@ object ImageShowUtil {
         mediaFactory: MojitoMediaImageFactory?,
     ) {
         if (mediaFactory == null) {
-            context.makeToast("实况图片尚未加载完成")
+            context.makeToast(context.getString(R.string.image_live_not_ready))
             return
         }
         val exportDirectory = File(context.cacheDir, "live-photo-export").apply { mkdirs() }
@@ -491,7 +492,7 @@ object ImageShowUtil {
                             source.delete()
                             withContext(Dispatchers.Main) {
                                 context.makeToast(
-                                    if (saved) "保存实况图片成功" else "保存实况图片失败",
+                                    context.getString(if (saved) R.string.image_live_saved else R.string.image_live_save_failed),
                                 )
                             }
                         }
@@ -499,12 +500,12 @@ object ImageShowUtil {
                     onFailure = { error ->
                         Log.w("MotionPhotoExport", "Unable to export $url", error)
                         exportFile.delete()
-                        context.makeToast("保存实况图片失败")
+                        context.makeToast(context.getString(R.string.image_live_save_failed))
                     },
                 )
             }
         if (!started) {
-            context.makeToast("实况图片尚未加载完成")
+            context.makeToast(context.getString(R.string.image_live_not_ready))
         }
     }
 
@@ -529,7 +530,7 @@ object ImageShowUtil {
         if (imageFile.exists()) {
             if (isEnd)
                 withContext(Dispatchers.Main) {
-                    context.makeToast("文件已存在")
+                    context.makeToast(context.getString(R.string.image_file_exists))
                 }
         } else {
             ImageDownloadUtil.downloadImage(context, url, filename, isEnd, userAgent = userAgent)
@@ -646,11 +647,11 @@ object ImageShowUtil {
             else -> false
         }
 
-    private enum class SaveImageAction(val title: String) {
-        SAVE_IMAGE("保存图片"),
-        SAVE_LIVE_PHOTO("保存实况图片"),
-        SAVE_ALL("保存全部图片"),
-        SHARE("图片分享"),
-        COPY_URL("复制图片地址"),
+    private enum class SaveImageAction(@param:StringRes val titleRes: Int) {
+        SAVE_IMAGE(R.string.image_save),
+        SAVE_LIVE_PHOTO(R.string.image_save_live),
+        SAVE_ALL(R.string.image_save_all),
+        SHARE(R.string.image_share),
+        COPY_URL(R.string.image_copy_url),
     }
 }

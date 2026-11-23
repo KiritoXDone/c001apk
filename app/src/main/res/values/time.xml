@@ -1,0 +1,9 @@
+<resources>
+    <string name="time_just_now">刚刚</string>
+    <string name="time_date_pattern">M 月 d 日</string>
+    <string name="time_full_date_pattern">yyyy 年 M 月 d 日</string>
+    <plurals name="time_seconds_ago"><item quantity="other">%1$d 秒前</item></plurals>
+    <plurals name="time_minutes_ago"><item quantity="other">%1$d 分钟前</item></plurals>
+    <plurals name="time_hours_ago"><item quantity="other">%1$d 小时前</item></plurals>
+    <plurals name="time_days_ago"><item quantity="other">%1$d 天前</item></plurals>
+</resources>

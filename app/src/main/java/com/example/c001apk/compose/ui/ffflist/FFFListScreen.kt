@@ -159,7 +159,7 @@ fun FFFListScreen(
                                         url =
                                             if (index == 1) "#/topic/userFollowTagList"
                                             else "#/product/followProductList",
-                                        title = if (index == 1) "我关注的话题" else "我关注的数码吧",
+                                        title = stringResource(if (index == 1) R.string.follow_topics else R.string.follow_products),
                                         paddingValues = paddingValues,
                                         refreshState = refreshState,
                                         resetRefreshState = { refreshState = false },

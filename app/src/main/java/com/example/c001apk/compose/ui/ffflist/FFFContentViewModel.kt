@@ -1,6 +1,7 @@
 package com.example.c001apk.compose.ui.ffflist
 
 import com.example.c001apk.compose.logic.filter.ContentFilterStore
+import com.example.c001apk.compose.logic.network.ApiFailures
 import androidx.lifecycle.viewModelScope
 import com.example.c001apk.compose.logic.repository.BlackListRepo
 import com.example.c001apk.compose.logic.repository.NetworkRepo
@@ -104,7 +105,7 @@ class FFFContentViewModel @AssistedInject constructor(
                             toastText = data.data.count
                         }
                     } else {
-                        toastText = result.exceptionOrNull()?.message ?: "response is null"
+                        toastText = ApiFailures.safeMessage(result.exceptionOrNull())
                         result.exceptionOrNull()?.printStackTrace()
                     }
                 }

@@ -189,7 +189,7 @@ internal class MediaContentLoader(
             pendingPlayRequest = true
             startPlayback()
         }.apply {
-            text = "重新播放"
+            text = context.getString(R.string.media_replay)
             setTextViewIcon(R.drawable.ic_livephoto_replay)
         }
         livePhotoMenu = LinearLayout(context).apply {
@@ -490,7 +490,7 @@ internal class MediaContentLoader(
             if (livePhotoEnabled) R.drawable.ic_live_photo_on_big
             else R.drawable.ic_live_photo_off_big,
         )
-        primaryMenuAction.text = if (livePhotoEnabled) "关闭实况" else "开启实况"
+        primaryMenuAction.text = context.getString(if (livePhotoEnabled) R.string.media_live_off else R.string.media_live_on)
         primaryMenuAction.setTextViewIcon(
             if (livePhotoEnabled) R.drawable.ic_live_photo_off2 else R.drawable.ic_live_photo2,
         )
@@ -815,7 +815,7 @@ internal class MediaContentLoader(
             if (muted) R.drawable.ic_sound_mute else R.drawable.ic_sound,
         )
         audioButton.imageTintList = null
-        audioButton.contentDescription = if (muted) "打开实况声音" else "关闭实况声音"
+        audioButton.contentDescription = context.getString(if (muted) R.string.media_unmute else R.string.media_mute)
     }
 
     private fun pauseSketchBlockRendering() {

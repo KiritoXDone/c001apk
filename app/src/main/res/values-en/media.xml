@@ -1,0 +1,28 @@
+<resources>
+    <string name="image_save">Save image</string>
+    <string name="image_save_live">Save live photo</string>
+    <string name="image_save_all">Save all images</string>
+    <string name="image_share">Share image</string>
+    <string name="image_copy_url">Copy image URL</string>
+    <string name="image_long">Long image</string>
+    <string name="image_tap_retry">Tap to retry</string>
+    <string name="image_saved">Image saved</string>
+    <string name="image_save_failed">Could not save image</string>
+    <string name="image_live_saved">Live photo saved</string>
+    <string name="image_live_save_failed">Could not save live photo</string>
+    <string name="image_live_not_ready">The live photo has not finished loading</string>
+    <string name="image_file_exists">File already exists</string>
+    <string name="image_upload_failed">Image upload failed. Check your connection and try again.</string>
+    <string name="image_storage_permission">Allow storage access and try again</string>
+    <string name="image_permission_request_failed">Could not request storage access. Allow it in system settings and try again.</string>
+    <string name="image_permission_denied">Storage access was denied. The image cannot be saved.</string>
+    <string name="content_copied">Copied: %1$s</string>
+    <string name="link_open_failed">Could not open link</string>
+    <string name="link_unsupported">This link is not supported</string>
+    <string name="download_failed">Download failed</string>
+    <string name="download_confirm">Download this file?</string>
+    <string name="link_open_external">Open externally</string>
+    <string name="link_open">Open</string>
+    <string name="link_external_confirm">This page wants to open an external link. Continue?</string>
+    <string name="cache_cleared">Cache cleared</string>
+</resources>

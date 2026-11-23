@@ -57,7 +57,7 @@ object ImageDownloadUtil {
         userAgent: String?,
     ) {
         if (!isShare && !GalleryPermission.granted(context)) {
-            withContext(Dispatchers.Main) { context.makeToast("请允许存储权限后重试") }
+            withContext(Dispatchers.Main) { context.makeToast(context.getString(R.string.image_storage_permission)) }
             return
         }
         if (isGifRequest(imageUrl, fileName)) {
@@ -76,7 +76,7 @@ object ImageDownloadUtil {
                 if (!isShare && isEnd) {
                     withContext(Dispatchers.Main) {
                         context.makeToast(
-                            if (result) "保存图片成功" else "保存图片失败",
+                            context.getString(if (result) R.string.image_saved else R.string.image_save_failed),
                         )
                     }
                 }
@@ -89,7 +89,7 @@ object ImageDownloadUtil {
                 }
                 if (!result) {
                     withContext(Dispatchers.Main) {
-                        Toast.makeText(context, "保存图片失败", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, R.string.image_save_failed, Toast.LENGTH_SHORT).show()
                     }
                 }
             }
@@ -116,7 +116,7 @@ object ImageDownloadUtil {
                             if (!isShare && isEnd) {
                                 withContext(Dispatchers.Main) {
                                     context.makeToast(
-                                        if (result) "保存图片成功" else "保存图片失败",
+                                        context.getString(if (result) R.string.image_saved else R.string.image_save_failed),
                                     )
                                 }
                             }
@@ -130,7 +130,7 @@ object ImageDownloadUtil {
                         }
                     },
                     onError = {
-                        Toast.makeText(context, "保存图片失败", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, R.string.image_save_failed, Toast.LENGTH_SHORT).show()
                     },
                 )
                 .build()

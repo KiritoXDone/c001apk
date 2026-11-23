@@ -1,6 +1,8 @@
 package com.example.c001apk.compose.ui.user
 
 import com.example.c001apk.compose.logic.filter.ContentFilterStore
+import com.example.c001apk.compose.R
+import com.example.c001apk.compose.logic.settings.AppLanguage
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -54,7 +56,7 @@ constructor(
                     uid = response.uid.orEmpty()
                     username = response.username.orEmpty()
                     isBlocked = blackListRepo.checkUid(uid)
-                    if (isBlocked) loadingState = LoadingState.Error("$username 已被拉黑")
+                    if (isBlocked) loadingState = LoadingState.Error(AppLanguage.getString(R.string.user_blocked, username))
                     else fetchData()
                 }
                 isRefreshing = false
@@ -70,7 +72,7 @@ constructor(
             delay(50)
             isRefreshing = false
         }
-        loadingState = LoadingState.Error("$username 已被拉黑")
+        loadingState = LoadingState.Error(AppLanguage.getString(R.string.user_blocked, username))
     }
 
     var isPull = false
@@ -126,7 +128,7 @@ constructor(
             } catch (e: kotlinx.coroutines.CancellationException) {
                 throw e
             } catch (_: Exception) {
-                toastText = "本地关注保存失败，请重试"
+                toastText = AppLanguage.getString(R.string.error_local_follow)
             }
         }
     }

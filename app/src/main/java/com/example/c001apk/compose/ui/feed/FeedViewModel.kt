@@ -10,6 +10,8 @@ import kotlinx.coroutines.flow.map
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import com.example.c001apk.compose.R
+import com.example.c001apk.compose.logic.settings.AppLanguage
 import androidx.lifecycle.viewModelScope
 import com.example.c001apk.compose.constant.Constants.EMPTY_STRING
 import com.example.c001apk.compose.logic.model.FeedArticleContentBean
@@ -137,14 +139,14 @@ constructor(
                         FeedDeletionEvents.deleted(
                             requestedId,
                         )
-                        toastText = "动态已删除"
+                        toastText = AppLanguage.getString(R.string.feed_deleted)
                     } else {
                         toastText =
                             response?.message
                                 ?: (result.exceptionOrNull() as? Exception)?.let {
                                     ApiFailures.safeMessage(it)
                                 }
-                                ?: "删除失败，请重试"
+                                ?: AppLanguage.getString(R.string.error_delete)
                     }
                 }
             } finally {
@@ -183,7 +185,7 @@ constructor(
                 if (updatedVote == null || (response.error ?: 0) != 0) {
                     voteError = (result.exceptionOrNull() as? Exception)?.let(ApiFailures::safeMessage)
                         ?: response?.message?.takeIf(String::isNotBlank)
-                        ?: "投票失败，请重试"
+                        ?: AppLanguage.getString(R.string.error_vote)
                     return@launch
                 }
                 val confirmedVote = updatedVote.copy(
@@ -320,7 +322,7 @@ constructor(
                             guestReplyGate.start(
                                 isGuest = !CookieUtil.isLogin,
                                 isCurrent = { requestedId == id && revision == CookieUtil.accountSession.revision },
-                                onWaiting = { loadingState = LoadingState.Error("设备标识尚未就绪，点击加载评论") },
+                                onWaiting = { loadingState = LoadingState.Error(AppLanguage.getString(R.string.error_device_not_ready)) },
                                 onReady = ::fetchData,
                             )
 
@@ -470,10 +472,10 @@ constructor(
             when (reply.pic) {
                 EMPTY_STRING -> EMPTY_STRING
                 else ->
-                    """ <a class=\"feed-forward-pic\" href=${reply.pic}>查看图片(${reply.picArr?.size})</a>"""
+                    """ <a class=\"feed-forward-pic\" href=${reply.pic}>${AppLanguage.getString(R.string.reply_view_images, reply.picArr?.size ?: 1)}</a>"""
             }
 
-        """<a class="feed-link-uname" href="/u/${reply.uid}">${reply.username}${replyTag}</a>回复${rReplyUser}: ${reply.message}${replyPic}"""
+        """<a class="feed-link-uname" href="/u/${reply.uid}">${reply.username}${replyTag}</a>${AppLanguage.getString(R.string.reply_to_user, rReplyUser)}: ${reply.message}${replyPic}"""
     }
 
     var isSheet: Boolean = false
@@ -569,14 +571,14 @@ constructor(
                 )
                 if (paused) {
                     replyAutomaticPaused = true
-                    replyFooterState = FooterState.Error("本批内容已过滤，点击继续加载")
+                    replyFooterState = FooterState.Error(AppLanguage.getString(R.string.filter_batch_paused))
                 }
             } catch (cancelled: kotlinx.coroutines.CancellationException) {
                 throw cancelled
             } catch (failure: Exception) {
                 if (generation == replyFetchGeneration) {
                     replyAutomaticPaused = true
-                    val message = failure.message ?: "加载失败，请重试"
+                    val message = ApiFailures.safeMessage(failure)
                     if (replyLoadingState is LoadingState.Success) replyFooterState = FooterState.Error(message)
                     else replyLoadingState = LoadingState.Error(message)
                 }
@@ -603,8 +605,10 @@ constructor(
 
         if (data.ruid == "0")
             """<a class="feed-link-uname" href="/u/${data.uid}">${data.username}$replyTag</a>"""
-        else
-            """<a class="feed-link-uname" href="/u/${data.uid}">${data.username}$replyTag</a>回复<a class="feed-link-uname" href="/u/${data.rusername}">${data.rusername}$rReplyTag</a>"""
+        else {
+            val target = """<a class="feed-link-uname" href="/u/${data.rusername}">${data.rusername}$rReplyTag</a>"""
+            """<a class="feed-link-uname" href="/u/${data.uid}">${data.username}$replyTag</a>${AppLanguage.getString(R.string.reply_to_user, target)}"""
+        }
     }
 
     fun resetReplyState() {
@@ -711,12 +715,12 @@ constructor(
                 else historyFavoriteRepo.insertFavorite(entry)
                 if (requestedId == id) {
                     isFav = !wasFavorite
-                    toastText = if (isFav) "已保存到本地收藏" else "已取消本地收藏"
+                    toastText = AppLanguage.getString(if (isFav) R.string.favorite_saved else R.string.favorite_removed)
                 }
             } catch (e: kotlinx.coroutines.CancellationException) {
                 throw e
             } catch (_: Exception) {
-                toastText = "本地收藏保存失败，请重试"
+                toastText = AppLanguage.getString(R.string.error_local_favorite)
             } finally {
                 localFavoriteBusy = false
             }
@@ -799,7 +803,7 @@ constructor(
                         replyLoadingState = LoadingState.Success(dataList)
                     }
                 } else {
-                    toastText = result.exceptionOrNull()?.message ?: "response is null"
+                    toastText = ApiFailures.safeMessage(result.exceptionOrNull())
                     result.exceptionOrNull()?.printStackTrace()
                 }
             }
@@ -835,7 +839,7 @@ constructor(
                         }
                     }
                 } else {
-                    toastText = result.exceptionOrNull()?.message ?: "response is null"
+                    toastText = ApiFailures.safeMessage(result.exceptionOrNull())
                     result.exceptionOrNull()?.printStackTrace()
                 }
             }

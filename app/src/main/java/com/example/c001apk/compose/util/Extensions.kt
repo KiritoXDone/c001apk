@@ -2,6 +2,7 @@ package com.example.c001apk.compose.util
 
 import android.content.ClipData
 import android.content.ClipboardManager
+import com.example.c001apk.compose.R
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageInfo
@@ -79,12 +80,12 @@ fun Context.copyText(text: String?, showToast: Boolean = true) {
     text?.let {
         val clipboardManager = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         ClipData.newPlainText("copy text", it)?.let { clipboardManager.setPrimaryClip(it) }
-        if (showToast) makeToast("已复制: " + it)
+        if (showToast) makeToast(getString(R.string.content_copied, it))
     }
 }
 
 fun Context.shareText(text: String) {
-    val title = "分享"
+    val title = getString(R.string.action_share)
     try {
         val intent = Intent(Intent.ACTION_SEND)
         intent.type = "text/plain"
@@ -154,7 +155,7 @@ fun Context.openInBrowser(url: String) {
     try {
         startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
     } catch (e: Exception) {
-        makeToast("打开失败")
+        makeToast(getString(R.string.link_open_failed))
         copyText(url)
         e.printStackTrace()
     }
@@ -179,7 +180,7 @@ fun Context.downloadApk(downloadUrl: String, name: String) {
         try {
             openInBrowser(downloadUrl)
         } catch (e: Exception) {
-            makeToast("下载失败")
+            makeToast(getString(R.string.download_failed))
             copyText(downloadUrl)
         }
     }

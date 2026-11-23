@@ -6,6 +6,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import com.example.c001apk.compose.logic.network.ApiFailures
+import com.example.c001apk.compose.R
+import com.example.c001apk.compose.logic.settings.AppLanguage
 import androidx.lifecycle.viewModelScope
 import com.example.c001apk.compose.constant.Constants.EMPTY_STRING
 import com.example.c001apk.compose.logic.model.LoginResponse
@@ -66,7 +69,7 @@ constructor(
                     SESSID = session.substring(0, session.indexOf(";"))
                 } catch (e: Exception) {
                     e.printStackTrace()
-                    toastText = "无法获取Cookie"
+                    toastText = AppLanguage.getString(R.string.error_cookie)
                     return@collect
                 }
                 if (url == urlPreGetParam) {
@@ -74,7 +77,7 @@ constructor(
                     onGetLoginParam(urlGetParam)
                 }
             } else {
-                toastText = result.exceptionOrNull()?.message ?: "response is null"
+                toastText = ApiFailures.safeMessage(result.exceptionOrNull())
                 result.exceptionOrNull()?.printStackTrace()
             }
         }
@@ -89,7 +92,7 @@ constructor(
                 if (response != null) {
                     captchaImg = BitmapFactory.decodeStream(response.body()?.byteStream())
                 } else {
-                    toastText = result.exceptionOrNull()?.message ?: "response is null"
+                    toastText = ApiFailures.safeMessage(result.exceptionOrNull())
                     result.exceptionOrNull()?.printStackTrace()
                 }
             }
@@ -151,7 +154,7 @@ constructor(
                             } catch (e: kotlinx.coroutines.CancellationException) {
                                 throw e
                             } catch (_: Exception) {
-                                toastText = "保存登录信息失败，请重试"
+                                toastText = AppLanguage.getString(R.string.error_login_save)
                             }
                         }
                     } else {

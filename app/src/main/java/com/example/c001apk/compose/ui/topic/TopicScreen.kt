@@ -142,8 +142,7 @@ fun TopicScreen(
                                     Icon(
                                         MiuixIcons.Basic.Search,
                                         contentDescription =
-                                            if (viewModel.entityType == "topic") "搜索此话题的动态"
-                                            else "搜索此产品的动态",
+                                            stringResource(if (viewModel.entityType == "topic") R.string.search_topic_feeds else R.string.search_product_feeds),
                                         modifier = Modifier.size(24.dp),
                                     )
                                 }
@@ -168,7 +167,7 @@ fun TopicScreen(
                                             ContextCompat.startActivity(context, intent, animationBundle)
                                         },
                                     ) {
-                                        Icon(MiuixIcons.Edit, contentDescription = "发布动态", modifier = Modifier.size(24.dp))
+                                        Icon(MiuixIcons.Edit, contentDescription = stringResource(R.string.feed_publish), modifier = Modifier.size(24.dp))
                                     }
                                 }
                                 Box {
@@ -179,7 +178,7 @@ fun TopicScreen(
                                         },
                                         holdDownState = menuHeld,
                                     ) {
-                                        Icon(MiuixIcons.ExpandMore, contentDescription = "更多操作", modifier = Modifier.size(24.dp))
+                                        Icon(MiuixIcons.ExpandMore, contentDescription = stringResource(R.string.update_more), modifier = Modifier.size(24.dp))
                                     }
                                     DropdownMenu(
                                         expanded = dropdownMenuExpanded,

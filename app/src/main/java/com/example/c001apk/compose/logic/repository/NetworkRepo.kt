@@ -1,5 +1,7 @@
 package com.example.c001apk.compose.logic.repository
 
+import com.example.c001apk.compose.R
+import com.example.c001apk.compose.logic.settings.AppLanguage
 import com.example.c001apk.compose.constant.Constants.LOADING_FAILED
 import com.example.c001apk.compose.di.AccountService
 import com.example.c001apk.compose.di.Api1Service
@@ -86,7 +88,8 @@ constructor(
                 } catch (_: Exception) {
                     throw com.example.c001apk.compose.logic.network.ApiFailure(
                         failure.kind,
-                        "公开分享页暂不提供正文，点击重试以完成验证，或检查登录与设备标识",
+                        "Public feed body is unavailable",
+                        userMessageRes = R.string.public_feed_unavailable,
                     )
                 }
             public.copy(data = public.data?.copy(userAction = null), isPublic = true)
@@ -280,7 +283,7 @@ constructor(
                         LoadingState.Error(mapServerMessage(response.message))
 
                     response.data != null -> LoadingState.Success(response.data)
-                    else -> LoadingState.Error(LOADING_FAILED)
+                    else -> LoadingState.Error(AppLanguage.getString(R.string.error_load))
                 }
             } catch (e: CancellationException) {
                 throw e
@@ -320,7 +323,7 @@ constructor(
     ) = fire {
         val account = CookieUtil.accountSession
         if (!account.isLogin || account.revision != accountRevision) {
-            throw ApiFailure(ApiFailureKind.AUTHENTICATION, "账号已切换，请重新打开投票")
+            throw ApiFailure(ApiFailureKind.AUTHENTICATION, "Account changed", userMessageRes = R.string.vote_account_changed)
         }
         val fields = hashMapOf(
             "id" to "",
@@ -563,7 +566,7 @@ constructor(
                 } else if (response.data?.isEmpty() == true) {
                     LoadingState.Empty
                 } else {
-                    LoadingState.Error(LOADING_FAILED)
+                    LoadingState.Error(AppLanguage.getString(R.string.error_load))
                 }
             } catch (e: CancellationException) {
                 throw e
@@ -615,7 +618,7 @@ constructor(
                 } else if (response.data != null) {
                     LoadingState.Success(response.data, isPublic = response.isPublic)
                 } else {
-                    LoadingState.Error(LOADING_FAILED)
+                    LoadingState.Error(AppLanguage.getString(R.string.error_load))
                 }
             } catch (e: CancellationException) {
                 throw e
@@ -629,9 +632,9 @@ constructor(
     private fun mapServerMessage(message: String?): String {
         val normalized = message?.trim().orEmpty()
         if (normalized.equals("timeout", ignoreCase = true)) {
-            return "超时"
+            return AppLanguage.getString(R.string.api_timeout)
         }
-        return normalized.ifEmpty { LOADING_FAILED }
+        return normalized.ifEmpty { AppLanguage.getString(R.string.error_load) }
     }
 
     private fun mapErrorMessage(e: Exception): String =

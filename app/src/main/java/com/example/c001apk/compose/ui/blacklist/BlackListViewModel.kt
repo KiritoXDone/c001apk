@@ -4,6 +4,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import com.example.c001apk.compose.R
+import com.example.c001apk.compose.logic.settings.AppLanguage
 import androidx.lifecycle.viewModelScope
 import com.example.c001apk.compose.logic.model.StringEntity
 import com.example.c001apk.compose.logic.repository.BlackListRepo
@@ -76,7 +78,7 @@ class BlackListViewModel @AssistedInject constructor(
     }
 
     private fun toast() {
-        toastText = "已存在"
+        toastText = AppLanguage.getString(R.string.entry_exists)
     }
 
     fun reset() {

@@ -14,7 +14,6 @@ import java.io.FileInputStream
 import java.io.InputStreamReader
 import java.security.MessageDigest
 import java.text.SimpleDateFormat
-import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 import java.util.UUID
@@ -344,42 +343,6 @@ object Utils {
      */
     fun Long.secondToDateString(pattern: String = "yyyy-MM-dd HH:mm:ss") =
         SimpleDateFormat(pattern, Locale.CHINA).format(Date(this))
-
-    /**
-     * 计算时间差
-     *
-     * @receiver old timestamp
-     * @param currentTime current timestamp
-     */
-    fun Long.timeStampInterval(currentTime: Long): String {
-        val calendarOld = Calendar.getInstance()
-        val calendarNow = Calendar.getInstance()
-
-        val dateOld = Date(this)
-        val dateNow = Date(currentTime)
-
-        calendarOld.time = dateOld
-        calendarNow.time = dateNow
-
-        val dayOld = calendarOld.get(Calendar.DAY_OF_YEAR)
-        val dayNow = calendarNow.get(Calendar.DAY_OF_YEAR)
-
-        val hourOld = calendarOld.get(Calendar.HOUR_OF_DAY)
-        val hourNow = calendarNow.get(Calendar.HOUR_OF_DAY)
-
-        val minuteOld = calendarOld.get(Calendar.MINUTE)
-        val minuteNow = calendarNow.get(Calendar.MINUTE)
-
-        return if (dayOld == dayNow) {
-            if (hourOld == hourNow) {
-                "${minuteNow - minuteOld}分钟前"
-            } else {
-                "${hourNow - hourOld}小时前"
-            }
-        } else {
-            "${dayNow - dayOld}天前"
-        }
-    }
 
     /**
      * 格式化富文本

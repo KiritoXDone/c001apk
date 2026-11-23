@@ -3,6 +3,8 @@ package com.example.c001apk.compose.ui.feed.reply
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import androidx.lifecycle.ViewModel
+import com.example.c001apk.compose.R
+import com.example.c001apk.compose.logic.settings.AppLanguage
 import androidx.lifecycle.viewModelScope
 import com.example.c001apk.compose.logic.model.HomeFeedResponse
 import com.example.c001apk.compose.logic.model.OSSUploadPrepareModel
@@ -58,7 +60,7 @@ class ReplyViewModel @Inject constructor(
                             }
                         }
                     } else {
-                        toastText.value = result.exceptionOrNull()?.message ?: "response is null"
+                        toastText.value = ApiFailures.safeMessage(result.exceptionOrNull())
                         result.exceptionOrNull()?.printStackTrace()
                     }
                 }
@@ -84,7 +86,7 @@ class ReplyViewModel @Inject constructor(
                             }
                         }
                     } else {
-                        toastText.value = result.exceptionOrNull()?.message ?: "response is null"
+                        toastText.value = ApiFailures.safeMessage(result.exceptionOrNull())
                         result.exceptionOrNull()?.printStackTrace()
                     }
                 }
@@ -109,7 +111,7 @@ class ReplyViewModel @Inject constructor(
                         val bitmap = BitmapFactory.decodeStream(responseBody?.byteStream())
                         captchaImg.value = bitmap
                     } else {
-                        toastText.value = result.exceptionOrNull()?.message ?: "response is null"
+                        toastText.value = ApiFailures.safeMessage(result.exceptionOrNull())
                         result.exceptionOrNull()?.printStackTrace()
                     }
                 }
@@ -131,7 +133,7 @@ class ReplyViewModel @Inject constructor(
         if (postFinished.value || createFeedJob?.isActive == true) return
         val voteTarget = voteCommentTarget
         if (type == VOTE_COMMENT_TYPE && voteTarget?.isCurrentAccount() != true) {
-            toastText.value = "账号已切换，请重新打开投票"
+            toastText.value = AppLanguage.getString(R.string.vote_account_changed)
             return
         }
         val draft = HashMap(replyAndFeedData)
@@ -154,14 +156,14 @@ class ReplyViewModel @Inject constructor(
                         if (!response.data?.id.isNullOrBlank() && (response.error ?: 0) == 0) {
                             postFinished.value = true
                         } else {
-                            toastText.value = response.message ?: "发布失败，请重试"
+                            toastText.value = response.message ?: AppLanguage.getString(R.string.feed_publish_failed)
                             if (response.messageStatus == "err_request_captcha") {
                                 onGetValidateCaptcha()
                             }
                         }
                     } else {
                         toastText.value = (result.exceptionOrNull() as? Exception)
-                            ?.let(ApiFailures::safeMessage) ?: "发布失败，请重试"
+                            ?.let(ApiFailures::safeMessage) ?: AppLanguage.getString(R.string.feed_publish_failed)
                     }
                 }
         }
@@ -216,7 +218,7 @@ class ReplyViewModel @Inject constructor(
                             uploadImage.value = data.data
                         }
                     } else {
-                        toastText.value = result.exceptionOrNull()?.message ?: "response is null"
+                        toastText.value = ApiFailures.safeMessage(result.exceptionOrNull())
                         result.exceptionOrNull()?.printStackTrace()
                     }
                 }

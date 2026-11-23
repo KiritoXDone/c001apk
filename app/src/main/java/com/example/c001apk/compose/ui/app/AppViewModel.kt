@@ -4,6 +4,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import com.example.c001apk.compose.logic.network.ApiFailures
+import com.example.c001apk.compose.R
+import com.example.c001apk.compose.logic.settings.AppLanguage
 import androidx.lifecycle.viewModelScope
 import com.example.c001apk.compose.constant.Constants.EMPTY_STRING
 import com.example.c001apk.compose.logic.model.HomeFeedResponse
@@ -93,7 +96,7 @@ class AppViewModel @AssistedInject constructor(
                             downloadApk = true
                         } else {
                             toastText =
-                                result.exceptionOrNull()?.message ?: "failed to get download url"
+                                ApiFailures.safeMessage(result.exceptionOrNull())
                             result.exceptionOrNull()?.printStackTrace()
                         }
                     }
@@ -136,12 +139,11 @@ class AppViewModel @AssistedInject constructor(
                         if (!response.message.isNullOrEmpty()) {
                             toastText = response.message
                         } else if (response.data?.follow != null) {
-                            toastText = if (isFollowed) "取消关注成功"
-                            else "关注成功"
+                            toastText = AppLanguage.getString(if (isFollowed) R.string.user_unfollowed else R.string.user_followed)
                             isFollowed = !isFollowed
                         }
                     } else {
-                        toastText = result.exceptionOrNull()?.message ?: "response is null"
+                        toastText = ApiFailures.safeMessage(result.exceptionOrNull())
                         result.exceptionOrNull()?.printStackTrace()
                     }
                 }

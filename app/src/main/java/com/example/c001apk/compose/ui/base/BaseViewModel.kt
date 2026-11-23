@@ -6,6 +6,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import com.example.c001apk.compose.logic.network.ApiFailures
+import com.example.c001apk.compose.R
+import com.example.c001apk.compose.logic.settings.AppLanguage
 import androidx.lifecycle.viewModelScope
 import com.example.c001apk.compose.constant.Constants.entityTemplateList
 import com.example.c001apk.compose.constant.Constants.entityTypeList
@@ -142,14 +145,14 @@ abstract class BaseViewModel(
                 )
                 if (result) {
                     automaticLoadPaused = true
-                    footerState = FooterState.Error("本批内容已过滤，点击继续加载")
+                    footerState = FooterState.Error(AppLanguage.getString(R.string.filter_batch_paused))
                 }
             } catch (cancelled: kotlinx.coroutines.CancellationException) {
                 throw cancelled
             } catch (failure: Exception) {
                 if (generation == fetchGeneration) {
                     automaticLoadPaused = true
-                    val message = failure.message ?: "加载失败，请重试"
+                    val message = ApiFailures.safeMessage(failure)
                     if (loadingState is LoadingState.Success) footerState = FooterState.Error(message)
                     else loadingState = LoadingState.Error(message)
                 }
@@ -234,7 +237,7 @@ abstract class BaseViewModel(
                         }
                     }
                 } else {
-                    toastText = result.exceptionOrNull()?.message ?: "response is null"
+                    toastText = ApiFailures.safeMessage(result.exceptionOrNull())
                     result.exceptionOrNull()?.printStackTrace()
                 }
             }
@@ -262,7 +265,7 @@ abstract class BaseViewModel(
                         toastText = data.data.count
                     }
                 } else {
-                    toastText = result.exceptionOrNull()?.message ?: "response is null"
+                    toastText = ApiFailures.safeMessage(result.exceptionOrNull())
                     result.exceptionOrNull()?.printStackTrace()
                 }
             }
@@ -315,10 +318,10 @@ abstract class BaseViewModel(
                                 }
                             loadingState = LoadingState.Success(dataList)
                         }
-                        toastText = if (follow == 1) "关注成功" else "取消关注成功"
+                        toastText = AppLanguage.getString(if (follow == 1) R.string.user_followed else R.string.user_unfollowed)
                     }
                 } else {
-                    toastText = result.exceptionOrNull()?.message ?: "response is null"
+                    toastText = ApiFailures.safeMessage(result.exceptionOrNull())
                     result.exceptionOrNull()?.printStackTrace()
                 }
             }

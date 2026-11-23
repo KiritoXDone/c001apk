@@ -176,13 +176,13 @@
     <string name="settings_bar_order_display">显示顺序</string>
     <string name="settings_bar_order_saving">保存中…</string>
     <string name="settings_bar_order_done">完成</string>
-    <string name="settings_bar_order_hint">拖动右侧手柄调整顺序，同时应用于底栏与大屏侧栏。启动和返回主页的行为保持不变，点击完成后保存。</string>
+    <string name="settings_bar_order_hint">拖动右侧手柄排序，点击“完成”保存。底栏与大屏侧栏共用此顺序。</string>
     <string name="settings_device_import_title">导入官方设备标识</string>
     <string name="settings_device_import_steps">1. 打开官方酷安的“检查日志和测试”页。
 2. 在同一页面累计点击“复制 OAID” 5 次。
 3. 返回此处粘贴完整内容，识别后保存。</string>
     <string name="settings_device_import_open">打开酷安 OAID 界面</string>
-    <string name="settings_device_import_note">仅识别 ShuzlmID（数盟 ID），忽略 OAID、AndroidID 和 UUID。其他设备参数与账号保持原值。</string>
+    <string name="settings_device_import_note">只导入 ShuzlmID（数盟 ID）。OAID、AndroidID、UUID、其他设备参数和账号保持不变。</string>
     <string name="settings_device_import_label">粘贴官方复制的完整文本</string>
     <string name="settings_device_import_recognized">已识别数盟 ID，复制内容已隐藏。</string>
     <string name="settings_device_import_saved">已保存，返回内容页后刷新即可。</string>

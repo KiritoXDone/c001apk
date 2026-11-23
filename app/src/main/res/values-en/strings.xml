@@ -128,13 +128,13 @@
     <string name="settings_bar_order_display">Display order</string>
     <string name="settings_bar_order_saving">Saving</string>
     <string name="settings_bar_order_done">Done</string>
-    <string name="settings_bar_order_hint">Drag the handle to reorder. The order applies to the bottom bar and the wide-screen rail; the launch and home behaviors stay the same. Tap Done to save.</string>
+    <string name="settings_bar_order_hint">Drag handles to reorder, then tap Done to save. The bottom bar and side rail use the same order.</string>
     <string name="settings_device_import_title">Import the official device ID</string>
     <string name="settings_device_import_steps">1. Open the "Check logs and tests" page in the official Coolapk app.
 2. Tap "Copy OAID" five times on that page.
 3. Return here, paste the full text, then detect and save.</string>
     <string name="settings_device_import_open">Open the Coolapk OAID screen</string>
-    <string name="settings_device_import_note">Only the ShuzlmID is used. OAID, AndroidID and UUID are ignored, and other device parameters and accounts stay unchanged.</string>
+    <string name="settings_device_import_note">Only ShuzlmID is imported. OAID, AndroidID, UUID, other device parameters and accounts stay unchanged.</string>
     <string name="settings_device_import_label">Paste the copied text</string>
     <string name="settings_device_import_recognized">ID detected, the copied text is hidden.</string>
     <string name="settings_device_import_saved">Saved. Refresh the content pages after going back.</string>

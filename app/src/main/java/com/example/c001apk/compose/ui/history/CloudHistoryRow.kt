@@ -17,6 +17,8 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.res.stringResource
+import com.example.c001apk.compose.R
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -41,8 +43,9 @@ internal fun CloudHistoryRow(
     onAvatarClick: (() -> Unit)? = null,
     endActions: (@Composable RowScope.() -> Unit)? = null,
 ) {
-    val title = remember(entry.title, entry.typeName) {
-        entry.title.orEmpty().richToString().ifBlank { entry.typeName.orEmpty().ifBlank { "浏览记录" } }
+    val fallbackTitle = stringResource(R.string.profile_history)
+    val title = remember(entry.title, entry.typeName, fallbackTitle) {
+        entry.title.orEmpty().richToString().ifBlank { entry.typeName.orEmpty().ifBlank { fallbackTitle } }
     }
     val summary = remember(entry.description) { entry.description.orEmpty().richToString() }
     BasicComponent(

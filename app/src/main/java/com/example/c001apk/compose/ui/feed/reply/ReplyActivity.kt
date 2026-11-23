@@ -178,7 +178,7 @@ class ReplyActivity :
         super.onCreate(savedInstanceState)
         if (type == VOTE_COMMENT_TYPE && voteCommentTarget?.isCurrentAccount() != true) {
             pendingShowKeyboard = false
-            makeToast("请重新打开投票后发表评论")
+            makeToast(getString(R.string.editor_reopen_vote))
             finish()
             return
         }
@@ -423,7 +423,7 @@ class ReplyActivity :
     private fun importAttachments(uris: List<Uri>) {
         if (uris.isEmpty() || importingImages) return
         val remaining = 9 - attachments.size
-        if (uris.size > remaining) makeToast("最多选择9张图片")
+        if (uris.size > remaining) makeToast(getString(R.string.editor_image_limit))
         if (remaining <= 0) return
 
         importingImages = true
@@ -438,7 +438,7 @@ class ReplyActivity :
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (_: Exception) {
-                makeToast("获取图片信息失败")
+                makeToast(getString(R.string.editor_image_info_failed))
             } finally {
                 importingImages = false
                 updateEditorState()
@@ -466,7 +466,7 @@ class ReplyActivity :
                 FrameLayout.LayoutParams.MATCH_PARENT,
             )
             scaleType = ImageView.ScaleType.CENTER_CROP
-            contentDescription = "已选择图片"
+            contentDescription = getString(R.string.image_selected)
             background = GradientDrawable().apply {
                 setColor(resolveSurfaceContainerColor())
                 cornerRadius = ReplyEditorDefaults.ThumbnailRadius.dp.toFloat()
@@ -604,7 +604,7 @@ class ReplyActivity :
                                     closeDialog()
                                     Toast.makeText(
                                             this@ReplyActivity,
-                                            "图片上传失败",
+                                            getString(R.string.image_upload_failed),
                                             Toast.LENGTH_SHORT,
                                         )
                                         .show()
@@ -658,7 +658,7 @@ class ReplyActivity :
                         closeDialog()
                         val intent = voteCommentTarget?.resultIntent() ?: Intent().apply {
                             if (type == "createFeed") {
-                                this@ReplyActivity.makeToast("发布成功")
+                                this@ReplyActivity.makeToast(getString(R.string.editor_published))
                             } else {
                                 putExtra("response_data", viewModel.responseData)
                             }
@@ -690,9 +690,9 @@ class ReplyActivity :
                         MiuixViewDialogBuilder(this@ReplyActivity)
                             .apply {
                                 setView(binding.root)
-                                setTitle("captcha")
+                                setTitle(getString(R.string.captcha_title))
                                 setNegativeButton(android.R.string.cancel, null)
-                                setPositiveButton("验证并继续") { _, _ ->
+                                setPositiveButton(R.string.captcha_continue) { _, _ ->
                                     viewModel.requestValidateData = HashMap()
                                     viewModel.requestValidateData["type"] = "err_request_captcha"
                                     viewModel.requestValidateData["code"] =
@@ -738,18 +738,18 @@ class ReplyActivity :
     private fun initPage() {
         voteCommentTarget?.let { target ->
             binding.checkBox.isVisible = false
-            binding.title.text = if (target.anonymous) "匿名评论" else "写评论"
-            binding.publish.actionLabel = "发表评论"
-            binding.editText.hint = "说说你的观点"
+            binding.title.text = getString(if (target.anonymous) R.string.editor_anonymous_comment else R.string.feed_write_comment)
+            binding.publish.actionLabel = getString(R.string.editor_publish_comment)
+            binding.editText.hint = getString(R.string.editor_comment_hint)
             updateEditorState()
             return
         }
-        binding.checkBox.text = if (type == "createFeed") "仅自己可见" else "回复并转发"
+        binding.checkBox.text = getString(if (type == "createFeed") R.string.label_private else R.string.editor_reply_forward)
         binding.checkBox.isReply = type != "createFeed"
-        binding.title.text = if (type == "createFeed") "发布动态" else "回复"
-        binding.publish.actionLabel = if (type == "createFeed") "发布动态" else "发布回复"
+        binding.title.text = getString(if (type == "createFeed") R.string.feed_publish else R.string.feed_reply)
+        binding.publish.actionLabel = getString(if (type == "createFeed") R.string.feed_publish else R.string.editor_publish_reply)
         if (type != "createFeed" && !username.isNullOrEmpty())
-            binding.editText.hint = "回复: " + username
+            binding.editText.hint = getString(R.string.editor_reply_hint, username)
         if (prefilledTopic.isNotEmpty()) {
             binding.editText.editableText.append(prefilledTopic).append(' ')
         }
@@ -757,7 +757,7 @@ class ReplyActivity :
     }
 
     private fun initEmojiPanel() {
-        val labels = listOf("最近") + pickerCategories.map { it.title }
+        val labels = listOf(getString(R.string.label_recent)) + pickerCategories.map { getString(it.titleRes) }
         for (i in labels.indices) {
             binding.indicator.addView(
                 TextView(this).apply {
@@ -1081,7 +1081,7 @@ class ReplyActivity :
     private fun publishDraft() {
         if (importingImages) return
         if (voteCommentTarget?.isCurrentAccount() == false) {
-            makeToast("账号已切换，请重新打开投票")
+            makeToast(getString(R.string.editor_account_changed))
             return
         }
         saveDraft()

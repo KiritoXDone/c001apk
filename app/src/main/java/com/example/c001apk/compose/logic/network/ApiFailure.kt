@@ -1,5 +1,8 @@
 package com.example.c001apk.compose.logic.network
 
+import androidx.annotation.StringRes
+import com.example.c001apk.compose.R
+import com.example.c001apk.compose.logic.settings.AppLanguage
 import com.example.c001apk.compose.util.CoolapkRequestPolicy
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
@@ -18,8 +21,13 @@ enum class ApiFailureKind {
     INVALID_RESPONSE,
 }
 
-class ApiFailure(val kind: ApiFailureKind, message: String, val expiredSession: Boolean = false) :
-    IOException(message)
+class ApiFailure(
+    val kind: ApiFailureKind,
+    message: String,
+    val expiredSession: Boolean = false,
+    @param:StringRes val userMessageRes: Int? = null,
+    val messageArgs: List<Any> = emptyList(),
+) : IOException(message)
 
 object ApiFailures {
     fun fromBody(body: JsonObject): ApiFailure? {
@@ -41,28 +49,34 @@ object ApiFailures {
         if (!failed) return null
         return when {
             status == -10 || "网络环境" in clues ->
-                ApiFailure(ApiFailureKind.RISK_CONTROL, "服务端检测到网络环境异常，请检查代理、DNS 或网络过滤设置")
+                ApiFailure(ApiFailureKind.RISK_CONTROL, "Network environment rejected", userMessageRes = R.string.api_risk_control)
             marker == "err_request_need_upgrade_new_version" ->
-                ApiFailure(ApiFailureKind.CLIENT_UPGRADE, "当前客户端协议未被服务端接受，请检查协议设置或更新客户端")
+                ApiFailure(ApiFailureKind.CLIENT_UPGRADE, "Client protocol rejected", userMessageRes = R.string.api_upgrade)
             "captcha" in clues || "验证码" in clues ->
-                ApiFailure(ApiFailureKind.CAPTCHA, "请求需要人机验证，请完成验证后重试")
+                ApiFailure(ApiFailureKind.CAPTCHA, "Human verification required", userMessageRes = R.string.api_captcha)
             "login" in clues || "auth" in clues || "登录" in clues || code == 401 ->
-                ApiFailure(ApiFailureKind.AUTHENTICATION, "登录状态已失效或需要登录，请重新登录", message == "登录信息有误")
+                ApiFailure(ApiFailureKind.AUTHENTICATION, "Authentication required", message == "登录信息有误", R.string.api_login)
             "rate_limit" in clues || "频繁" in clues || code == 429 ->
-                ApiFailure(ApiFailureKind.RATE_LIMIT, "请求过于频繁，请稍后重试")
+                ApiFailure(ApiFailureKind.RATE_LIMIT, "Too many requests", userMessageRes = R.string.api_rate_limit)
             status == -2 && ("应用不存在" in message || "未上架" in message || "已下架" in message) ->
-                ApiFailure(ApiFailureKind.BUSINESS, "该应用未在酷安上架")
-            else -> ApiFailure(ApiFailureKind.BUSINESS, message.ifBlank { "服务器未能完成请求，请稍后重试" })
+                ApiFailure(ApiFailureKind.BUSINESS, "App not listed", userMessageRes = R.string.api_app_unavailable)
+            else -> ApiFailure(
+                ApiFailureKind.BUSINESS,
+                message.ifBlank { "Request rejected" },
+                userMessageRes = if (message.isBlank()) R.string.api_business else null,
+            )
         }
     }
 
-    fun safeMessage(error: Exception): String =
+    fun safeMessage(error: Throwable?): String =
         when (error) {
-            is ApiFailure -> error.message.orEmpty()
-            is java.net.SocketTimeoutException -> "请求超时，请稍后重试"
-            is javax.net.ssl.SSLException -> "服务器证书验证失败"
-            is IOException -> "连接失败，请检查网络后重试"
-            else -> "服务器响应格式异常，请稍后重试"
+            is ApiFailure -> error.userMessageRes?.let {
+                AppLanguage.getString(it, *error.messageArgs.toTypedArray())
+            } ?: error.message.orEmpty()
+            is java.net.SocketTimeoutException -> AppLanguage.getString(R.string.api_timeout)
+            is javax.net.ssl.SSLException -> AppLanguage.getString(R.string.api_certificate)
+            is IOException -> AppLanguage.getString(R.string.api_connection)
+            else -> AppLanguage.getString(R.string.api_invalid_response)
         }
 }
 
@@ -84,9 +98,14 @@ class ApiFailureInterceptor : Interceptor {
                 }.getOrNull()
             } else null
             response.close()
-            throw accessFailure ?: ApiFailure(ApiFailureKind.HTTP, "请求失败（HTTP ${response.code}），请稍后重试")
+            throw accessFailure ?: ApiFailure(
+                ApiFailureKind.HTTP,
+                "HTTP ${response.code}",
+                userMessageRes = R.string.api_http,
+                messageArgs = listOf(response.code),
+            )
         }
-        // Binary image/download endpoints are intentionally outside JSON-envelope validation.
+        // 二进制图片与下载接口不参与 JSON 响应校验。
         val type = response.body?.contentType()?.subtype.orEmpty()
         if (!type.contains("json") && !type.contains("text")) return response
         val body =

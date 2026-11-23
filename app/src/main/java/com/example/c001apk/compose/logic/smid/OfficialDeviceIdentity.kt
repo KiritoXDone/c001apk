@@ -1,9 +1,13 @@
 package com.example.c001apk.compose.logic.smid
 
+enum class DeviceIdentityInputError { TOO_LONG, MISSING_ID, INVALID_ID }
+
+class DeviceIdentityInputException(val error: DeviceIdentityInputError) : IllegalArgumentException(error.name)
+
 /** TG-Twilight's explicit ShuzlmID import format. Other copied identifiers are ignored. */
 object OfficialDeviceIdentity {
     fun parse(text: String): String {
-        require(text.length <= 32768) { "复制内容过长，请重新从官方酷安复制" }
+        if (text.length > 32768) throw DeviceIdentityInputException(DeviceIdentityInputError.TOO_LONG)
         val matches =
             Regex(
                     "^\\s*ShuzlmID\\s*[:：]\\s*([^\\r\\n]*)$",
@@ -11,9 +15,9 @@ object OfficialDeviceIdentity {
                 )
                 .findAll(text.replace("\uFEFF", ""))
                 .toList()
-        require(matches.size == 1) { "未识别到唯一的 ShuzlmID，请在官方同一页面点击“复制 OAID”5 次后粘贴完整内容" }
+        if (matches.size != 1) throw DeviceIdentityInputException(DeviceIdentityInputError.MISSING_ID)
         return matches.single().groupValues[1].trim().also {
-            require(valid(it)) { "数盟 ID 为空或格式不正确，请稍等后重新复制" }
+            if (!valid(it)) throw DeviceIdentityInputException(DeviceIdentityInputError.INVALID_ID)
         }
     }
 

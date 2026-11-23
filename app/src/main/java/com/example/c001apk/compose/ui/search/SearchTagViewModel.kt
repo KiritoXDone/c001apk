@@ -1,6 +1,7 @@
 package com.example.c001apk.compose.ui.search
 
 import com.example.c001apk.compose.logic.filter.ContentFilterStore
+import com.example.c001apk.compose.logic.network.ApiFailures
 import androidx.lifecycle.viewModelScope
 import com.example.c001apk.compose.logic.model.HomeFeedResponse
 import com.example.c001apk.compose.logic.repository.BlackListRepo
@@ -40,7 +41,7 @@ class SearchTagViewModel @AssistedInject constructor(
         ).map { result ->
             val response = result.getOrNull()
             if (response == null) {
-                LoadingState.Error(result.exceptionOrNull()?.message ?: "response is null")
+                LoadingState.Error(ApiFailures.safeMessage(result.exceptionOrNull()))
             } else if (!response.message.isNullOrEmpty()) {
                 LoadingState.Error(response.message)
             } else if (!response.data.isNullOrEmpty()) {
@@ -48,7 +49,7 @@ class SearchTagViewModel @AssistedInject constructor(
             } else if (response.data?.isEmpty() == true) {
                 LoadingState.Empty
             } else {
-                LoadingState.Error("unknown error")
+                LoadingState.Error(ApiFailures.safeMessage(null))
             }
         }
     }

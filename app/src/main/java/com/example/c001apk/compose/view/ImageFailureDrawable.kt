@@ -7,10 +7,12 @@ import android.graphics.ColorFilter
 import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.PixelFormat
+import com.example.c001apk.compose.R
 import android.graphics.drawable.Drawable
 
 /** A bounded placeholder, including a retry hint when there is room for text. */
 class ImageFailureDrawable(context: Context) : Drawable() {
+    private val retryLabel = context.getString(R.string.image_tap_retry)
     private val density = context.resources.displayMetrics.density
     private val paint =
         Paint(Paint.ANTI_ALIAS_FLAG).apply {
@@ -41,7 +43,7 @@ class ImageFailureDrawable(context: Context) : Drawable() {
         )
         if (showText) {
             paint.style = Paint.Style.FILL
-            canvas.drawText("点击重试", x, y + 28 * density, paint)
+            canvas.drawText(retryLabel, x, y + 28 * density, paint)
         }
     }
 

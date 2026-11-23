@@ -32,6 +32,7 @@ import androidx.compose.ui.graphics.asAndroidPath
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.AbstractComposeView
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.role
@@ -159,7 +160,7 @@ class ReplyVisibilityChipView @JvmOverloads constructor(context: Context, attrs:
 class ReplyPublishButtonView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null) :
     AbstractComposeView(context, attrs) {
     var canPublish by mutableStateOf(false)
-    var actionLabel by mutableStateOf("发布动态")
+    var actionLabel by mutableStateOf(context.getString(R.string.feed_publish))
 
     @Composable
     override fun Content() {
@@ -240,7 +241,7 @@ class ReplyAttachmentDeleteView @JvmOverloads constructor(context: Context, attr
             ) {
                 Icon(
                     MiuixIcons.Basic.Close,
-                    "删除图片",
+                    stringResource(R.string.image_remove),
                     Modifier.size(14.dp),
                     tint = Color.White,
                 )

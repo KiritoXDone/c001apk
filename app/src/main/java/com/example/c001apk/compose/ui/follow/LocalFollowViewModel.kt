@@ -4,6 +4,8 @@ import com.example.c001apk.compose.logic.filter.loadFilteredPages
 import com.example.c001apk.compose.logic.filter.ContentFilterStore
 import com.example.c001apk.compose.logic.filter.ContentFilterEngine
 import androidx.compose.runtime.*
+import com.example.c001apk.compose.R
+import com.example.c001apk.compose.logic.settings.AppLanguage
 import androidx.lifecycle.viewModelScope
 import com.example.c001apk.compose.logic.follow.*
 import com.example.c001apk.compose.logic.model.HomeFeedResponse
@@ -93,13 +95,17 @@ constructor(
             accept = { items, _ ->
                 val added = items.filterNot { blackListRepo.checkTopic(it.tags.orEmpty() + it.ttitle.orEmpty()) }
                 combined = (combined + added).distinctBy { it.id }
-                warning = current.warning
+                warning = when {
+                    current.failedUsers > 0 -> AppLanguage.getString(R.string.follow_failed_users, current.failedUsers)
+                    current.warning != null -> AppLanguage.getString(R.string.filter_batch_paused)
+                    else -> null
+                }
                 current.isEnd || warning != null || added.any { filters.match(it) == null }
             },
         )
         automaticLoadPaused = paused || warning != null
         isEnd = current.isEnd
-        if (paused) warning = "本批内容已过滤，点击继续加载"
+        if (paused) warning = AppLanguage.getString(R.string.filter_batch_paused)
         loadingState =
             if (combined.isNotEmpty() || paused) LoadingState.Success(combined)
             else if (warning != null) LoadingState.Error(warning!!) else LoadingState.Empty

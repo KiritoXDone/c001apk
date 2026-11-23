@@ -1,5 +1,6 @@
 package com.example.c001apk.compose.ui.main
 
+import com.example.c001apk.compose.R
 import android.content.Context
 import com.example.c001apk.compose.constant.Constants.PREFIX_CAROUSEL
 import com.example.c001apk.compose.constant.Constants.PREFIX_CAROUSEL1
@@ -20,7 +21,7 @@ fun AppNavigator.onOpenLink(
     val parts = link?.segments.orEmpty()
     val target = parts.getOrNull(1).orEmpty()
     fun unsupported() {
-        context.makeToast("暂不支持此链接")
+        context.makeToast(context.getString(R.string.link_unsupported))
     }
     when {
         link == null -> {

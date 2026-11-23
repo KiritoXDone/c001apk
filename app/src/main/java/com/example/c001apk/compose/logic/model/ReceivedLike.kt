@@ -13,6 +13,9 @@ internal data class ReceivedLike(
     val thumbnail: String?,
     val url: String?,
     val copyText: String?,
+    val isFeed: Boolean,
+    val hasUsername: Boolean,
+    val hasSummary: Boolean,
 )
 
 /** Like-list rows contain the original feed/reply plus a separate liking user. */
@@ -32,6 +35,9 @@ internal fun HomeFeedResponse.Data.receivedLike(): ReceivedLike? {
         thumbnail = pic.nonBlank() ?: picArr?.firstOrNull { it.isNotBlank() },
         url = url.nonBlank() ?: if (isFeed) id.nonBlank()?.let { "/feed/$it" } else null,
         copyText = message,
+        isFeed = isFeed,
+        hasUsername = plainText(likeUserInfo?.username.nonBlank() ?: likeUsername).isNotBlank(),
+        hasSummary = plainText(content).isNotBlank(),
     )
 }
 

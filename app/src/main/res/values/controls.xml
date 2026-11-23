@@ -24,12 +24,12 @@
     <string name="action_import">导入</string>
     <string name="action_export">导出</string>
     <string name="action_collapse">收起</string>
-    <string name="status_loading">正在加载…</string>
+    <string name="status_loading">加载中…</string>
     <string name="status_sending">发送中…</string>
     <string name="status_saving">保存中…</string>
     <string name="status_creating">创建中…</string>
     <string name="status_deleting">删除中…</string>
-    <string name="status_processing">正在处理…</string>
+    <string name="status_processing">处理中…</string>
     <string name="refresh_pull">下拉刷新</string>
     <string name="refresh_release">释放刷新</string>
     <string name="refresh_loading">正在刷新</string>
@@ -86,7 +86,7 @@
     <string name="user_quietly_followed">已悄悄关注</string>
     <string name="user_info">用户信息</string>
     <string name="image_retry">图片加载失败，重试</string>
-    <string name="image_loading">正在加载图片</string>
+    <string name="image_loading">图片加载中</string>
     <string name="image_view">查看图片</string>
     <string name="image_retry_tap">图片加载失败，点按重试</string>
     <string name="image_placeholder">[图片]</string>

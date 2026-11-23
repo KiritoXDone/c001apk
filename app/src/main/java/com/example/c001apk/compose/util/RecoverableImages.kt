@@ -28,16 +28,16 @@ fun ImageView.bindRecoverableImage(
     setTag(R.id.image_request_binding, binding)
     binding.retry = {
         binding.failed = false
-        contentDescription = "正在加载图片"
+        contentDescription = context.getString(R.string.image_loading)
         load(url) {
             configure()
             error(ImageFailureDrawable(context))
             fallback(ImageFailureDrawable(context))
             listener(
-                onSuccess = { _, _ -> contentDescription = "查看图片" },
+                onSuccess = { _, _ -> contentDescription = context.getString(R.string.image_view) },
                 onError = { _, result ->
                     binding.failed = true
-                    contentDescription = "图片加载失败，点按重试"
+                    contentDescription = context.getString(R.string.image_retry_tap)
                     logImageFailure(result.throwable)
                 },
             )

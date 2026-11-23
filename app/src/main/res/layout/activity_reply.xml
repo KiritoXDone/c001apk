@@ -70,9 +70,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@null"
-                android:contentDescription="发布内容"
+                android:contentDescription="@string/editor_content"
                 android:gravity="start"
-                android:hint="分享新鲜事…"
+                android:hint="@string/editor_hint"
                 android:inputType="textCapSentences|textMultiLine"
                 android:lineSpacingMultiplier="1.2"
                 android:maxLength="500"
@@ -140,7 +140,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="8dp"
-                    android:text="表情"
+                    android:text="@string/editor_emoji"
                     android:src="@drawable/outline_emoji_emotions_24" />
 
                 <com.example.c001apk.compose.ui.feed.reply.ReplyToolChipView
@@ -148,7 +148,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="8dp"
-                    android:text="相册"
+                    android:text="@string/editor_gallery"
                     android:src="@drawable/outline_image_24" />
 
                 <com.example.c001apk.compose.ui.feed.reply.ReplyToolChipView
@@ -156,7 +156,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="8dp"
-                    android:text="文件"
+                    android:text="@string/editor_files"
                     android:src="@drawable/outline_note_alt_24" />
 
                 <com.example.c001apk.compose.ui.feed.reply.ReplyToolChipView
@@ -164,14 +164,14 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="8dp"
-                    android:text="提到"
+                    android:text="@string/editor_mention"
                     android:src="@drawable/outline_alternate_email_24" />
 
                 <com.example.c001apk.compose.ui.feed.reply.ReplyToolChipView
                     android:id="@+id/tagBtn"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="话题"
+                    android:text="@string/label_topic"
                     android:src="@drawable/outline_tag_24" />
 
             </LinearLayout>

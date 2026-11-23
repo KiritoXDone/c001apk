@@ -1,5 +1,6 @@
 package com.example.c001apk.compose.util
 
+import androidx.annotation.StringRes
 import com.example.c001apk.compose.R
 
 /** Created by bggRGjQaUbCoE on 2024/6/4 */
@@ -12,10 +13,18 @@ object EmojiUtils {
     val coolBList = ArrayList<List<Pair<String, Int>>>()
     val niuniuList = ArrayList<List<Pair<String, Int>>>()
 
-    data class PickerCategory(val title: String, val pages: List<List<Pair<String, Int>>>)
+    data class PickerCategory(
+        val title: String,
+        val pages: List<List<Pair<String, Int>>>,
+        @param:StringRes val titleRes: Int,
+    )
 
     val pickerCategories by lazy {
-        listOf(PickerCategory("默认", emojiList), PickerCategory("牛牛", niuniuList), PickerCategory("酷币", coolBList))
+        listOf(
+            PickerCategory("默认", emojiList, R.string.emoji_default),
+            PickerCategory("牛牛", niuniuList, R.string.emoji_niuniu),
+            PickerCategory("酷币", coolBList, R.string.emoji_coins),
+        )
     }
 
     init {

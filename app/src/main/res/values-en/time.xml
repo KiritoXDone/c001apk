@@ -1,0 +1,9 @@
+<resources>
+    <string name="time_just_now">Just now</string>
+    <string name="time_date_pattern">MMM d</string>
+    <string name="time_full_date_pattern">MMM d, yyyy</string>
+    <plurals name="time_seconds_ago"><item quantity="one">%1$d second ago</item><item quantity="other">%1$d seconds ago</item></plurals>
+    <plurals name="time_minutes_ago"><item quantity="one">%1$d minute ago</item><item quantity="other">%1$d minutes ago</item></plurals>
+    <plurals name="time_hours_ago"><item quantity="one">%1$d hour ago</item><item quantity="other">%1$d hours ago</item></plurals>
+    <plurals name="time_days_ago"><item quantity="one">%1$d day ago</item><item quantity="other">%1$d days ago</item></plurals>
+</resources>

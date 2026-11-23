@@ -1,0 +1,28 @@
+<resources>
+    <string name="image_save">保存图片</string>
+    <string name="image_save_live">保存实况图片</string>
+    <string name="image_save_all">保存全部图片</string>
+    <string name="image_share">分享图片</string>
+    <string name="image_copy_url">复制图片地址</string>
+    <string name="image_long">长图</string>
+    <string name="image_tap_retry">点击重试</string>
+    <string name="image_saved">图片已保存</string>
+    <string name="image_save_failed">无法保存图片</string>
+    <string name="image_live_saved">实况图片已保存</string>
+    <string name="image_live_save_failed">无法保存实况图片</string>
+    <string name="image_live_not_ready">实况图片尚未加载完成</string>
+    <string name="image_file_exists">文件已存在</string>
+    <string name="image_upload_failed">图片上传失败，请检查网络后重试</string>
+    <string name="image_storage_permission">请允许存储权限后重试</string>
+    <string name="image_permission_request_failed">无法请求存储权限，请在系统设置中允许后重试</string>
+    <string name="image_permission_denied">未授予存储权限，无法保存图片</string>
+    <string name="content_copied">已复制：%1$s</string>
+    <string name="link_open_failed">无法打开链接</string>
+    <string name="link_unsupported">暂不支持此链接</string>
+    <string name="download_failed">下载失败</string>
+    <string name="download_confirm">下载此文件？</string>
+    <string name="link_open_external">外部打开</string>
+    <string name="link_open">打开</string>
+    <string name="link_external_confirm">当前网页将打开外部链接，是否继续？</string>
+    <string name="cache_cleared">缓存已清除</string>
+</resources>

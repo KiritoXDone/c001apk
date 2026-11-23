@@ -15,6 +15,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
@@ -66,13 +67,13 @@ fun FeedProductInfo(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
-                    "点击图标即可跳转二手平台",
+                    stringResource(R.string.product_trade_hint),
                     modifier = Modifier.weight(1f),
                     style = MiuixTheme.textStyles.footnote1,
                     color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
                 )
                 Text(
-                    "不再显示",
+                    stringResource(R.string.product_hide_hint),
                     modifier = Modifier.clickable(role = Role.Button, onClick = onDismissLinkHint)
                         .padding(start = 8.dp, top = 4.dp, bottom = 4.dp),
                     style = MiuixTheme.textStyles.footnote1,
@@ -87,7 +88,12 @@ fun FeedProductInfo(
 private fun TradeLinkIcon(link: TradeLink, clickable: Boolean, onOpenLink: (String) -> Unit) {
     val graphic: @Composable () -> Unit = {
         val size = if (clickable) 32.dp else 24.dp
-        val description = if (clickable) link.label else link.previewLabel
+        val description = stringResource(when {
+            clickable && link.isXianyu -> R.string.product_view_xianyu
+            clickable -> R.string.product_view_trade
+            link.isXianyu -> R.string.product_has_xianyu
+            else -> R.string.product_has_trade
+        })
         if (link.isXianyu) {
             Image(painterResource(R.drawable.ic_xianyu), description, Modifier.size(size))
         } else {
@@ -107,7 +113,12 @@ fun FeedPriceRow(
     val inlineConfiguration = price.inlineConfiguration && price.configuration != null
     Column(modifier, verticalArrangement = Arrangement.spacedBy(2.dp)) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-            Text(price.label, style = MiuixTheme.textStyles.footnote1, color = MiuixTheme.colorScheme.onSurfaceVariantSummary)
+            val label = when (price.label) {
+                "到手价" -> stringResource(R.string.product_purchase_price)
+                "交易价" -> stringResource(R.string.product_trade_price)
+                else -> price.label
+            }
+            Text(label, style = MiuixTheme.textStyles.footnote1, color = MiuixTheme.colorScheme.onSurfaceVariantSummary)
             Text(
                 price.amount,
                 modifier = if (inlineConfiguration) Modifier.widthIn(max = 144.dp)
@@ -149,11 +160,11 @@ fun PurchasePriceSummaryCard(
         onClick = feedId?.let { { onViewFeed(it, false) } },
     ) {
         Column(Modifier.padding(horizontal = 16.dp, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            FeedPriceRow(FeedPriceDisplay("到手价参考", amount, null))
+            FeedPriceRow(FeedPriceDisplay(stringResource(R.string.product_price_reference), amount, null))
             summary.updateTime?.takeIf { it.isNotBlank() }?.let {
-                Text("更新于 $it", style = MiuixTheme.textStyles.footnote1, color = MiuixTheme.colorScheme.onSurfaceVariantSummary)
+                Text(stringResource(R.string.stat_updated_at, it), style = MiuixTheme.textStyles.footnote1, color = MiuixTheme.colorScheme.onSurfaceVariantSummary)
             }
-            if (feedId != null) Text("查看价格来源", style = MiuixTheme.textStyles.footnote1, color = MiuixTheme.colorScheme.primary)
+            if (feedId != null) Text(stringResource(R.string.product_price_source), style = MiuixTheme.textStyles.footnote1, color = MiuixTheme.colorScheme.primary)
         }
     }
 }

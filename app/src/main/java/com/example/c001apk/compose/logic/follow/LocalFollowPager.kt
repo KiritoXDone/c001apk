@@ -24,6 +24,9 @@ class LocalFollowPager(
     var warning: String? = null
         private set
 
+    var failedUsers = 0
+        private set
+
     val isEnd
         get() = cursors.all { it.ended && it.buffer.isEmpty() }
 
@@ -91,10 +94,11 @@ class LocalFollowPager(
             val item = cursor.buffer.removeAt(0)
             if (seen.add(item.id!!)) output.add(item)
         }
+        failedUsers = failures
         warning =
             when {
-                failures > 0 -> "$failures 位用户的动态加载失败，可点击重试"
-                deferred > 0 -> "部分动态已过滤，可继续加载"
+                failures > 0 -> "$failures user feeds could not be loaded"
+                deferred > 0 -> "Some content was filtered"
                 else -> null
             }
         output

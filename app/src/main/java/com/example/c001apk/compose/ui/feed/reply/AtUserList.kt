@@ -17,6 +17,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.res.stringResource
+import com.example.c001apk.compose.R
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
@@ -107,13 +109,13 @@ internal fun AtUserSuggestions(
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         if (visibleRecentUsers.isNotEmpty()) {
-            item(key = "recent_title") { UserSectionTitle("最近 @") }
+            item(key = "recent_title") { UserSectionTitle(stringResource(R.string.mention_recent)) }
             items(visibleRecentUsers, key = { "recent_user:${it.username}" }) { user ->
                 RecentAtUserRow(user) { onSelectUser(AtUser(user.username, user.avatar)) }
             }
         }
         if (showFollowSection) {
-            item(key = "follow_title") { UserSectionTitle("关注用户") }
+            item(key = "follow_title") { UserSectionTitle(stringResource(R.string.mention_following)) }
             when (state) {
                 is LoadingState.Success -> {
                     itemsIndexed(followedUsers) { index, item ->
@@ -136,7 +138,7 @@ internal fun AtUserSuggestions(
                     if (followedUsers.isEmpty() && !stopAutomaticLoading && footerState == FooterState.Success) {
                         item(key = "follow_more") {
                             Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                                MiuixActionButton(onClick = onLoadMore) { Text("加载更多") }
+                                MiuixActionButton(onClick = onLoadMore) { Text(stringResource(R.string.action_load_more)) }
                             }
                         }
                     }

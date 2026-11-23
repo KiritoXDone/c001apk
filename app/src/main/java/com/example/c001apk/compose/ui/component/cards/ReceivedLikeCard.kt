@@ -33,7 +33,10 @@ internal fun ReceivedLikeCard(
     onCopyText: (String?) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val likerDescription = stringResource(R.string.notice_liker, data.username)
+    val username = if (data.hasUsername) data.username else stringResource(R.string.label_user)
+    val action = stringResource(if (data.isFeed) R.string.notice_liked_post else R.string.notice_liked_reply)
+    val summary = if (data.hasSummary) data.summary else stringResource(if (data.isFeed) R.string.notice_view_post else R.string.action_view_replies)
+    val likerDescription = stringResource(R.string.notice_liker, username)
     val contentDescription = stringResource(R.string.notice_liked_content)
     Column(
         modifier.fillMaxWidth().padding(horizontal = 10.dp)
@@ -57,7 +60,7 @@ internal fun ReceivedLikeCard(
             ) {
                 CoilLoader(url = data.avatar, modifier = Modifier.size(30.dp).clip(CircleShape))
                 Text(
-                    data.username,
+                    username,
                     modifier = Modifier.weight(1f),
                     fontSize = 15.sp,
                     maxLines = 1,
@@ -73,7 +76,7 @@ internal fun ReceivedLikeCard(
                 )
             }
         }
-        Text(data.action, fontSize = 15.sp)
+        Text(action, fontSize = 15.sp)
         Row(
             Modifier.fillMaxWidth().squircleSurface(MiuixTheme.colorScheme.surface, 16.dp)
                 .combinedClickable(
@@ -99,7 +102,7 @@ internal fun ReceivedLikeCard(
                     )
                 }
                 Text(
-                    data.summary,
+                    summary,
                     fontSize = 12.sp,
                     color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
                     maxLines = 1,

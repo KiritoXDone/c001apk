@@ -3,6 +3,8 @@ package com.example.c001apk.compose.ui.feed
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import com.example.c001apk.compose.R
+import com.example.c001apk.compose.logic.settings.AppLanguage
 import com.example.c001apk.compose.logic.model.AccountCollection
 import com.example.c001apk.compose.logic.network.ApiFailures
 import com.example.c001apk.compose.logic.repository.NetworkRepo
@@ -58,7 +60,7 @@ class FeedCollections(
 
     fun open(id: String) {
         if (!CookieUtil.isLogin) {
-            notify("请先登录后使用账号收藏；长按收藏可保存到本地")
+            notify(AppLanguage.getString(R.string.collection_login))
             return
         }
         reset()
@@ -71,7 +73,7 @@ class FeedCollections(
     private fun currentAccount(): Boolean {
         if (CookieUtil.isLogin && revision == CookieUtil.accountSession.revision) return true
         visible = false
-        notify("账号已切换，请重新打开收藏夹")
+        notify(AppLanguage.getString(R.string.collection_account_changed))
         return false
     }
 
@@ -123,10 +125,10 @@ class FeedCollections(
         job = scope.launch {
             try {
                 val result = repository.saveFeedCollections(feedId, selected, original - selected)
-                check(result.collect == 0 || result.collect == 1) { "未收到收藏状态，请重试" }
+                check(result.collect == 0 || result.collect == 1) { "Collection state is missing" }
                 if (requestGeneration != generation || !currentAccount()) return@launch
                 onSaved(feedId, result.collect == 1)
-                notify(if (result.collect == 1) "已保存到账号收藏夹" else "已取消账号收藏")
+                notify(AppLanguage.getString(if (result.collect == 1) R.string.collection_saved else R.string.collection_removed))
                 visible = false
             } catch (e: CancellationException) {
                 throw e
@@ -146,7 +148,7 @@ class FeedCollections(
         job = scope.launch {
             try {
                 val collection = repository.createCollection(title.trim(), isOpen)
-                val id = checkNotNull(collection.id?.takeIf { it.isNotBlank() }) { "未收到收藏夹信息" }
+                val id = checkNotNull(collection.id?.takeIf { it.isNotBlank() }) { "Collection ID is missing" }
                 if (requestGeneration != generation || !currentAccount()) return@launch
                 items = listOf(collection) + items.filterNot { it.id == id }
                 selected = selected + id

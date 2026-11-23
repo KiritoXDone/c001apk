@@ -7,6 +7,8 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.res.stringResource
+import com.example.c001apk.compose.R
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
@@ -29,7 +31,7 @@ internal fun TopicSortOptions(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         options
-            .forEach { (sort, label) ->
+            .forEach { (sort, _) ->
                 val active = selected == sort
                 Box(
                     Modifier.selectable(
@@ -44,7 +46,14 @@ internal fun TopicSortOptions(
                     contentAlignment = Alignment.Center,
                 ) {
                     Text(
-                        label,
+                        stringResource(when (sort) {
+                            ProductSortType.REPLY -> R.string.theme_type_default
+                            ProductSortType.HOT -> R.string.search_order_hot
+                            ProductSortType.DATELINE -> R.string.label_latest
+                            ProductSortType.OWNER -> R.string.product_sort_owner
+                            ProductSortType.GOOD -> R.string.product_sort_good
+                            ProductSortType.BAD -> R.string.product_sort_bad
+                        }),
                         fontSize = 13.sp,
                         fontWeight = if (active) FontWeight.SemiBold else FontWeight.Normal,
                         color =

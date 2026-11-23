@@ -254,7 +254,7 @@ internal fun ChatComposerContent(
             }
             HorizontalDivider()
             Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 6.dp)) {
-                (listOf(stringResource(R.string.label_recent)) + pickerCategories.map { it.title }).forEachIndexed { index, title ->
+                (listOf(stringResource(R.string.label_recent)) + pickerCategories.map { stringResource(it.titleRes) }).forEachIndexed { index, title ->
                     TextIndicator(index = index, title = title, pagerState = pagerState)
                 }
             }

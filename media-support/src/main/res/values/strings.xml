@@ -1,0 +1,7 @@
+<resources>
+    <string name="media_replay">重新播放</string>
+    <string name="media_live_off">关闭实况</string>
+    <string name="media_live_on">开启实况</string>
+    <string name="media_unmute">打开实况声音</string>
+    <string name="media_mute">关闭实况声音</string>
+</resources>

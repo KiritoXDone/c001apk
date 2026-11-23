@@ -1,6 +1,7 @@
 package com.example.c001apk.compose.ui.notification
 
 import com.example.c001apk.compose.logic.filter.ContentFilterStore
+import com.example.c001apk.compose.logic.network.ApiFailures
 import androidx.lifecycle.viewModelScope
 import com.example.c001apk.compose.constant.Constants.EMPTY_STRING
 import com.example.c001apk.compose.logic.repository.BlackListRepo
@@ -88,7 +89,7 @@ constructor(
                             toastText = data.data.count
                         }
                     } else {
-                        toastText = result.exceptionOrNull()?.message ?: "response is null"
+                        toastText = ApiFailures.safeMessage(result.exceptionOrNull())
                         result.exceptionOrNull()?.printStackTrace()
                     }
                 }
@@ -111,7 +112,7 @@ constructor(
                     }
                     toastText = data.data.count
                 } else {
-                    toastText = result.exceptionOrNull()?.message ?: "删除失败，请稍后重试"
+                    toastText = ApiFailures.safeMessage(result.exceptionOrNull())
                 }
             }
         }

@@ -2,6 +2,7 @@ package com.example.c001apk.compose.ui.component
 
 import android.annotation.SuppressLint
 import android.app.DownloadManager
+import com.example.c001apk.compose.R
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -132,13 +133,13 @@ fun WebView(
                 setDownloadListener { url, userAgent, contentDisposition, mimetype, _ ->
                     val fileName = URLUtil.guessFileName(url, contentDisposition, mimetype)
                     MiuixViewDialogBuilder(context).apply {
-                        setTitle("确定下载文件吗？")
+                        setTitle(context.getString(R.string.download_confirm))
                         setMessage(fileName)
-                        setNeutralButton("外部打开") { _, _ ->
+                        setNeutralButton(context.getString(R.string.link_open_external)) { _, _ ->
                             context.openInBrowser(url)
                         }
                         setNegativeButton(android.R.string.cancel, null)
-                        setPositiveButton(android.R.string.ok) { _, _ ->
+                        setPositiveButton(R.string.action_download) { _, _ ->
                             try {
                                 val request =
                                     DownloadManager.Request(Uri.parse(url))
@@ -162,7 +163,7 @@ fun WebView(
                                         as DownloadManager
                                 downloadManager.enqueue(request)
                             } catch (e: Exception) {
-                                context.makeToast("下载失败")
+                                context.makeToast(context.getString(R.string.download_failed))
                                 context.copyText(url)
                                 e.printStackTrace()
                             }
@@ -274,7 +275,7 @@ fun WebView(
                     webView.clearHistory()
                     webView.clearCache(true)
                     webView.clearFormData()
-                    webView.context.makeToast("清除缓存成功")
+                    webView.context.makeToast(webView.context.getString(R.string.cache_cleared))
                 }
 
                 ActionType.NONE -> {}

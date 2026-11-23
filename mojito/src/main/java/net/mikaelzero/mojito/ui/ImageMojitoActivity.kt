@@ -1,5 +1,7 @@
 package net.mikaelzero.mojito.ui
 
+import android.content.res.Configuration
+import android.os.LocaleList
 import android.content.Context
 import android.os.Build
 import android.os.Bundle
@@ -54,6 +56,9 @@ class ImageMojitoActivity : AppCompatActivity(), IMojitoActivity {
     private val updateStatusBarRunnable = Runnable { updateStatusBarForCurrentImage() }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        intent.getStringExtra(EXTRA_LANGUAGE_TAGS)?.let { tags ->
+            applyOverrideConfiguration(Configuration().apply { setLocales(LocaleList.forLanguageTags(tags)) })
+        }
         requestWindowFeature(Window.FEATURE_NO_TITLE)
         super.onCreate(savedInstanceState)
         WindowCompat.setDecorFitsSystemWindows(window, false)
@@ -278,6 +283,7 @@ class ImageMojitoActivity : AppCompatActivity(), IMojitoActivity {
     }
 
     companion object {
+        internal const val EXTRA_LANGUAGE_TAGS = "mojito.language_tags"
         var hasShowedAnimMap = hashMapOf<Int, Boolean>()
         var progressLoader: InstanceLoader<IProgress>? = null
         var fragmentCoverLoader: InstanceLoader<FragmentCoverLoader>? = null

@@ -5,6 +5,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.c001apk.compose.R
+import com.example.c001apk.compose.logic.settings.AppLanguage
+import com.example.c001apk.compose.logic.network.ApiFailures
 import com.example.c001apk.compose.logic.model.HomeFeedResponse
 import com.example.c001apk.compose.logic.repository.BlackListRepo
 import com.example.c001apk.compose.logic.repository.NetworkRepo
@@ -113,10 +116,10 @@ class TopicViewModel @AssistedInject constructor(
                 if (response != null) {
                     val accepted = response.topicFollowAcknowledged()
                     if (accepted) isFollowed = desired
-                    toastText = response.message ?: if (accepted) {
-                        if (desired) "关注成功" else "取消关注成功"
-                    } else "关注状态未更新，请重试"
-                } else toastText = result.exceptionOrNull()?.message ?: "关注请求失败"
+                    toastText = if (accepted) {
+                        AppLanguage.getString(if (desired) R.string.user_followed else R.string.user_unfollowed)
+                    } else response.message ?: AppLanguage.getString(R.string.error_follow)
+                } else toastText = ApiFailures.safeMessage(result.exceptionOrNull())
             }
         }
     }

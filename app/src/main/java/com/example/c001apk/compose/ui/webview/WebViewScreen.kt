@@ -114,7 +114,7 @@ fun WebViewScreen(
                         ) {
                             listOf(
                                     stringResource(id = R.string.menu_refresh),
-                                    "复制",
+                                    stringResource(R.string.action_copy),
                                     stringResource(id = R.string.menu_open_in_browser),
                                     stringResource(id = R.string.menu_clean_caches),
                                 )
@@ -201,8 +201,8 @@ fun WebViewScreen(
                     scope.launch {
                         val result =
                             snackbarHostState.showSnackbar(
-                                message = "当前网页将要打开外部链接，是否打开",
-                                actionLabel = "打开",
+                                message = context.getString(R.string.link_external_confirm),
+                                actionLabel = context.getString(R.string.link_open),
                                 withDismissAction = true,
                             )
                         when (result) {

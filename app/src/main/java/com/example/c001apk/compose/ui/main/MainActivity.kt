@@ -3,6 +3,7 @@ package com.example.c001apk.compose.ui.main
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import com.example.c001apk.compose.R
 import com.example.c001apk.compose.logic.settings.AppLanguage
 import android.view.View
 import android.view.ViewTreeObserver
@@ -146,7 +147,7 @@ class MainActivity : ComponentActivity() {
                 lifecycle.repeatOnLifecycle(androidx.lifecycle.Lifecycle.State.RESUMED) {
                     viewModel.startup.identityFailures.collect {
                         if (currentId.isBlank()) {
-                            makeToast("数盟 ID 获取失败，请在设置中手动填写")
+                            makeToast(getString(R.string.error_device_id))
                         }
                     }
                 }

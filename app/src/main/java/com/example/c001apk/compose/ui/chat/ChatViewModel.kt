@@ -7,6 +7,9 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.viewModelScope
+import com.example.c001apk.compose.R
+import com.example.c001apk.compose.logic.settings.AppLanguage
+import com.example.c001apk.compose.logic.network.ApiFailures
 import com.example.c001apk.compose.logic.model.HomeFeedResponse
 import com.example.c001apk.compose.logic.model.StringEntity
 import com.example.c001apk.compose.logic.repository.BlackListRepo
@@ -77,7 +80,7 @@ constructor(
                     }
                     loadingState = LoadingState.Success(response)
                 } else {
-                    toastText = result.exceptionOrNull()?.message ?: "response is null"
+                    toastText = ApiFailures.safeMessage(result.exceptionOrNull())
                     result.exceptionOrNull()?.printStackTrace()
                 }
             }
@@ -99,7 +102,7 @@ constructor(
                         toastText = data.data.count
                     }
                 } else {
-                    toastText = result.exceptionOrNull()?.message ?: "response is null"
+                    toastText = ApiFailures.safeMessage(result.exceptionOrNull())
                     result.exceptionOrNull()?.printStackTrace()
                 }
             }
@@ -190,7 +193,7 @@ constructor(
                     data.data.orEmpty().filter {
                         it.entityType == "message" && !it.id.isNullOrBlank()
                     }
-                if (rows.isEmpty()) throw java.io.IOException("消息结果未确认")
+                if (rows.isEmpty()) throw java.io.IOException("Message delivery is unconfirmed")
                 if (accountRevision != CookieUtil.accountSession.revision) return@launch
                 val previous = (loadingState as? LoadingState.Success)?.response.orEmpty()
                 loadingState =
@@ -211,7 +214,7 @@ constructor(
                                         .INVALID_RESPONSE,
                                 ))
                 delivery.error =
-                    if (delivery.unconfirmed) "发送结果未确认，重试前请查看是否已送达"
+                    if (delivery.unconfirmed) AppLanguage.getString(R.string.chat_delivery_unknown)
                     else com.example.c001apk.compose.logic.network.ApiFailures.safeMessage(e)
             } finally {
                 delivery.sending = false

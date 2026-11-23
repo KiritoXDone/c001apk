@@ -23,6 +23,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.res.stringResource
+import com.example.c001apk.compose.R
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
@@ -80,7 +82,7 @@ fun EventScreen(
                 windowInsets =
                     WindowInsets.systemBars.only(WindowInsetsSides.Start + WindowInsetsSides.Top),
                 navigationIcon = { BackButton(onBackClick) },
-                title = { Text("酷安众测") },
+                title = { Text(stringResource(R.string.event_title)) },
             )
         },
     ) { paddingValues ->
@@ -130,12 +132,12 @@ private fun EventContent(
             (event.registrationEnd == null || now <= event.registrationEnd)
     val statusText =
         when {
-            event.stageStatus == 3 || (event.eventEnd != null && now > event.eventEnd) -> "活动已结束"
-            event.registrationStart != null && now < event.registrationStart -> "报名未开始"
-            event.stageStatus == 2 -> "活动进行中"
-            event.registrationEnd != null && now > event.registrationEnd -> "报名已结束"
-            registrationOpen -> "立即报名"
-            else -> "暂不可报名"
+            event.stageStatus == 3 || (event.eventEnd != null && now > event.eventEnd) -> stringResource(R.string.event_ended)
+            event.registrationStart != null && now < event.registrationStart -> stringResource(R.string.event_upcoming)
+            event.stageStatus == 2 -> stringResource(R.string.event_running)
+            event.registrationEnd != null && now > event.registrationEnd -> stringResource(R.string.event_registration_closed)
+            registrationOpen -> stringResource(R.string.event_register)
+            else -> stringResource(R.string.event_unavailable)
         }
 
     val topBarListState = rememberLazyListState()
@@ -219,7 +221,7 @@ private fun EventContent(
                             modifier = Modifier.size(20.dp),
                         )
                         Text(
-                            text = "众测须知",
+                            text = stringResource(R.string.event_rules),
                             style = MiuixTheme.textStyles.headline2,
                             color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
                         )
@@ -232,7 +234,7 @@ private fun EventContent(
             ?.takeIf { it.isNotBlank() }
             ?.let { notice ->
                 item(key = "notice") {
-                    EventSection(title = "报名须知", icon = MiuixIcons.Info) {
+                    EventSection(title = stringResource(R.string.event_registration_rules), icon = MiuixIcons.Info) {
                         Text(
                             text = notice.trim(),
                             style = MiuixTheme.textStyles.main,
@@ -246,7 +248,7 @@ private fun EventContent(
             ?.takeIf { it.isNotEmpty() }
             ?.let { sponsors ->
                 item(key = "sponsors") {
-                    EventSection(title = "主办方", icon = MiuixIcons.Contacts) {
+                    EventSection(title = stringResource(R.string.event_host), icon = MiuixIcons.Contacts) {
                         sponsors.forEachIndexed { index, sponsor ->
                             SponsorRow(sponsor = sponsor, onViewUser = onViewUser)
                             if (index != sponsors.lastIndex) HorizontalDivider()
@@ -259,7 +261,7 @@ private fun EventContent(
             ?.takeIf { it.isNotEmpty() }
             ?.let { prizes ->
                 item(key = "prizes") {
-                    EventSection(title = "活动奖品", icon = MiuixIcons.Promotions) {
+                    EventSection(title = stringResource(R.string.event_prizes), icon = MiuixIcons.Promotions) {
                         prizes.forEachIndexed { index, prize ->
                             PrizeRow(prize)
                             if (index != prizes.lastIndex) HorizontalDivider()
@@ -272,7 +274,7 @@ private fun EventContent(
             ?.takeIf { it.isNotEmpty() }
             ?.let { tabs ->
                 item(key = "tabs") {
-                    EventSection(title = "相关内容") {
+                    EventSection(title = stringResource(R.string.event_related)) {
                         tabs.forEachIndexed { index, tab ->
                             val title = tab.title.orEmpty()
                             Row(
@@ -399,10 +401,11 @@ private fun PrizeRow(prize: EventDetailResponse.SponsorPrize) {
     }
 }
 
+@Composable
 private fun registrationPeriod(event: EventDetailResponse.Data): String {
     val start = event.registrationStart?.formatEventDate()
     val end = event.registrationEnd?.formatEventDate()
-    return if (start != null && end != null) "报名时间：$start 至 $end" else "报名时间待定"
+    return if (start != null && end != null) stringResource(R.string.event_registration_time, start, end) else stringResource(R.string.event_time_unknown)
 }
 
 private fun Long.formatEventDate(): String =

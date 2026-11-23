@@ -6,6 +6,9 @@ import com.alibaba.sdk.android.oss.*
 import com.alibaba.sdk.android.oss.callback.OSSCompletedCallback
 import com.alibaba.sdk.android.oss.common.auth.OSSStsTokenCredentialProvider
 import com.alibaba.sdk.android.oss.model.*
+import com.example.c001apk.compose.R
+import com.example.c001apk.compose.logic.network.ApiFailure
+import com.example.c001apk.compose.logic.network.ApiFailureKind
 import com.example.c001apk.compose.logic.model.OSSUploadPrepareModel
 import com.example.c001apk.compose.logic.repository.NetworkRepo
 import com.example.c001apk.compose.util.OSSUtil
@@ -25,20 +28,20 @@ constructor(@ApplicationContext private val context: Context, private val networ
     suspend fun upload(uri: Uri, uid: String, active: () -> Boolean): String =
         withContext(Dispatchers.IO) {
             context.contentResolver.openInputStream(uri)?.use {
-                require(it.readAtMost(20 * 1024 * 1024 + 1).size <= 20 * 1024 * 1024) {
-                    "图片不能超过 20 MiB"
+                if (it.readAtMost(20 * 1024 * 1024 + 1).size > 20 * 1024 * 1024) {
+                    throw ApiFailure(ApiFailureKind.BUSINESS, "Image exceeds 20 MiB", userMessageRes = R.string.image_too_large)
                 }
-            } ?: error("图片无法读取")
+            } ?: throw ApiFailure(ApiFailureKind.BUSINESS, "Image cannot be read", userMessageRes = R.string.image_unreadable)
             val (dimensions, digest) =
                 OSSUtil.getImageDimensionsAndMD5(context.contentResolver, uri)
-            val (width, height, mime) = dimensions ?: error("图片无法解码")
-            require(width > 0 && height > 0 && width.toLong() * height <= 32_000_000L) {
-                "图片尺寸无效或过大"
+            val (width, height, mime) = dimensions ?: throw ApiFailure(ApiFailureKind.BUSINESS, "Image cannot be decoded", userMessageRes = R.string.image_undecodable)
+            if (width <= 0 || height <= 0 || width.toLong() * height > 32_000_000L) {
+                throw ApiFailure(ApiFailureKind.BUSINESS, "Invalid image dimensions", userMessageRes = R.string.image_invalid_dimensions)
             }
-            require(mime in listOf("image/jpeg", "image/png", "image/gif", "image/webp")) {
-                "图片格式不支持"
+            if (mime !in listOf("image/jpeg", "image/png", "image/gif", "image/webp")) {
+                throw ApiFailure(ApiFailureKind.BUSINESS, "Unsupported image format", userMessageRes = R.string.image_unsupported_format)
             }
-            require(active()) { "账号已切换" }
+            require(active()) { "Account changed" }
             val name = "${java.util.UUID.randomUUID()}.${mime.substringAfter('/')}"
             val response =
                 network
@@ -55,7 +58,7 @@ constructor(@ApplicationContext private val context: Context, private val networ
                                             OSSUploadPrepareModel(
                                                 name,
                                                 "${width}x${height}",
-                                                digest?.toHex() ?: error("图片校验失败"),
+                                                digest?.toHex() ?: error("Image checksum is missing"),
                                             ),
                                         ),
                                     ),
@@ -63,10 +66,10 @@ constructor(@ApplicationContext private val context: Context, private val networ
                     )
                     .first()
                     .getOrThrow()
-            val prepared = response.data ?: error("无法准备图片上传")
+            val prepared = response.data ?: error("Image upload preparation failed")
             val info = prepared.uploadPrepareInfo
-            val path = prepared.fileInfo.firstOrNull()?.uploadFileName ?: error("上传配置不完整")
-            require(path.startsWith("message/") && active()) { "上传配置已失效" }
+            val path = prepared.fileInfo.firstOrNull()?.uploadFileName ?: error("Upload configuration is incomplete")
+            require(path.startsWith("message/") && active()) { "Upload configuration expired" }
             require(
                 listOf(info.accessKeyId, info.accessKeySecret, info.securityToken, info.bucket)
                     .all { it.isNotBlank() },
@@ -110,13 +113,13 @@ constructor(@ApplicationContext private val context: Context, private val networ
                                 serviceException: ServiceException?,
                             ) {
                                 if (continuation.isActive)
-                                    continuation.resumeWithException(java.io.IOException("图片上传失败"))
+                                    continuation.resumeWithException(ApiFailure(ApiFailureKind.BUSINESS, "Image upload failed", userMessageRes = R.string.image_upload_failed))
                             }
                         },
                     )
                 continuation.invokeOnCancellation { task.cancel() }
             }
-            require(active()) { "账号已切换" }
+            require(active()) { "Account changed" }
             "/$path"
         }
 }

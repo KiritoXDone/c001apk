@@ -4,6 +4,8 @@ import com.example.c001apk.compose.logic.filter.ContentFilterStore
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import com.example.c001apk.compose.R
+import com.example.c001apk.compose.logic.settings.AppLanguage
 import androidx.lifecycle.viewModelScope
 import com.example.c001apk.compose.constant.Constants.EMPTY_STRING
 import com.example.c001apk.compose.logic.model.HomeFeedResponse
@@ -105,7 +107,7 @@ class TopicContentViewModel @AssistedInject constructor(
                 },
                 onFailure = { error ->
                     productConfigSheetState = ProductConfigSheetState.Error(
-                        error.message ?: "参数加载失败"
+                        error.message ?: AppLanguage.getString(R.string.product_specs_failed)
                     )
                 },
             )
@@ -122,8 +124,8 @@ class TopicContentViewModel @AssistedInject constructor(
                 ProductComparisonSelection(productTitle, productLogo, config)
             )
         ) {
-            ToggleResult.LIMIT_REACHED -> toastText = "最多选择 ${ProductComparisonRepo.MAX_SELECTIONS} 款配置"
-            ToggleResult.INVALID -> toastText = "该配置暂不支持对比"
+            ToggleResult.LIMIT_REACHED -> toastText = AppLanguage.getString(R.string.product_compare_limit, ProductComparisonRepo.MAX_SELECTIONS)
+            ToggleResult.INVALID -> toastText = AppLanguage.getString(R.string.product_compare_unsupported)
             ToggleResult.ADDED, ToggleResult.REMOVED -> Unit
         }
     }
@@ -131,14 +133,14 @@ class TopicContentViewModel @AssistedInject constructor(
     fun toggleGlobalProductComparison(product: HomeFeedResponse.Entities) {
         val configId = product.configId
         if (configId.isNullOrBlank()) {
-            toastText = "请进入机型参数页选择具体版本"
+            toastText = AppLanguage.getString(R.string.product_compare_pick)
             return
         }
         toggleGlobalProductComparison(
             config = HomeFeedResponse.ProductConfig(
                 id = configId,
                 productId = product.productId ?: product.id,
-                title = product.configName.orEmpty().ifBlank { "默认配置" },
+                title = product.configName.orEmpty().ifBlank { AppLanguage.getString(R.string.product_default_config) },
                 price = product.priceMin?.takeIf { it.toBigDecimalOrNull()?.signum() == 1 }
                     ?: product.priceMax,
                 url = product.url,
@@ -158,7 +160,7 @@ class TopicContentViewModel @AssistedInject constructor(
             .filter { !it.id.isNullOrBlank() }
             .map { ProductComparisonSelection(productTitle, productLogo, it) }
         loadComparison(
-            title = "${productTitle}对比",
+            title = AppLanguage.getString(R.string.product_compare_named, productTitle),
             mode = ProductComparisonMode.CURRENT_PRODUCT,
             selections = selections,
         )
@@ -166,7 +168,7 @@ class TopicContentViewModel @AssistedInject constructor(
 
     fun showGlobalProductComparison() {
         loadComparison(
-            title = "配置对比",
+            title = AppLanguage.getString(R.string.product_compare),
             mode = ProductComparisonMode.CROSS_PRODUCT,
             selections = productComparisonSelections.value,
         )
@@ -191,13 +193,13 @@ class TopicContentViewModel @AssistedInject constructor(
             productConfigSheetState = ProductConfigSheetState.Comparison(title, mode, emptyList())
             return
         }
-        productConfigSheetState = ProductConfigSheetState.Loading("配置对比")
+        productConfigSheetState = ProductConfigSheetState.Loading(AppLanguage.getString(R.string.product_compare))
         viewModelScope.launch {
             val result = runCatching {
                 coroutineScope {
                     selections.map { selection ->
                         async {
-                            val configId = selection.config.id ?: error("配置 ID 为空")
+                            val configId = selection.config.id ?: error("Configuration ID is missing")
                             val data = loadProductConfig(configId).getOrThrow()
                             ProductComparisonColumn(
                                 selection = selection,
@@ -217,7 +219,7 @@ class TopicContentViewModel @AssistedInject constructor(
                 },
                 onFailure = { error ->
                     productConfigSheetState = ProductConfigSheetState.Error(
-                        error.message ?: "对比加载失败"
+                        error.message ?: AppLanguage.getString(R.string.product_compare_failed)
                     )
                 },
             )

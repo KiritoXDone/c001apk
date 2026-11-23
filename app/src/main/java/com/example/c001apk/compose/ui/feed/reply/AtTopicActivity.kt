@@ -1,5 +1,6 @@
 package com.example.c001apk.compose.ui.feed.reply
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -17,6 +18,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.res.stringResource
+import com.example.c001apk.compose.R
+import com.example.c001apk.compose.logic.settings.AppLanguage
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
@@ -44,6 +48,10 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme
 class AtTopicActivity : ComponentActivity() {
     private val viewModel: AtTopicViewModel by viewModels()
     private var selectingUser = false
+
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(AppLanguage.wrap(newBase))
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -80,7 +88,7 @@ class AtTopicActivity : ComponentActivity() {
                 throw cancelled
             } catch (error: Exception) {
                 Log.e("AtTopic", "Failed to save recent user", error)
-                Toast.makeText(this@AtTopicActivity, "无法保存最近 @ 用户", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@AtTopicActivity, R.string.mention_save_failed, Toast.LENGTH_SHORT).show()
             }
             finishWithSelection("@${user.username} ")
         }
@@ -102,7 +110,7 @@ private fun AtTopicScreen(
 ) {
     val isTopic = type == "topic"
     var keyword by rememberSaveable { mutableStateOf("") }
-    val title = if (isTopic) "搜索话题" else "搜索用户"
+    val title = stringResource(if (isTopic) R.string.mention_search_topic else R.string.mention_search_user)
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -127,7 +135,7 @@ private fun AtTopicScreen(
             if (keyword.isBlank()) {
                 if (isTopic) {
                     Text(
-                        text = "热门话题",
+                        text = stringResource(R.string.mention_hot_topics),
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
                         style =
                             MiuixTheme.textStyles.headline2.copy(

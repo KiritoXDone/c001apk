@@ -1,4 +1,5 @@
 <resources>
-    <string name="app_name">DragDiooto</string>
+    <string name="app_name" translatable="false">DragDiooto</string>
+    <string name="mojito_view_original">查看原图</string>
 
 </resources>

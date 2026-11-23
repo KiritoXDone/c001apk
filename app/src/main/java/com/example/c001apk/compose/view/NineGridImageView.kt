@@ -246,12 +246,12 @@ constructor(
                         }
                         RichMediaHint.ULTRA_HDR -> {
                             setBadge("HDR")
-                            if (isLongImage) setTopStartBadge("长图")
+                            if (isLongImage) setTopStartBadge(context.getString(R.string.image_long))
                         }
                         RichMediaHint.NONE ->
                             when {
                                 isGif -> setBadge("GIF")
-                                isLongImage -> setBadge("长图")
+                                isLongImage -> setBadge(context.getString(R.string.image_long))
                                 else -> Unit
                             }
                     }

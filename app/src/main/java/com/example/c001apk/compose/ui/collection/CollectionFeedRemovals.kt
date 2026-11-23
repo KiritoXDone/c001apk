@@ -3,6 +3,8 @@ package com.example.c001apk.compose.ui.collection
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import com.example.c001apk.compose.R
+import com.example.c001apk.compose.logic.settings.AppLanguage
 import com.example.c001apk.compose.logic.model.CollectionSaveResult
 import com.example.c001apk.compose.logic.model.HomeFeedResponse
 import com.example.c001apk.compose.logic.network.ApiFailures
@@ -27,12 +29,12 @@ internal class CollectionFeedRemovals(
         scope.launch {
             try {
                 val result = remove(id)
-                // collect=1 is valid when the post remains in another collection.
-                check(result.collect == 0 || result.collect == 1) { "未收到收藏状态，请重试" }
+                // collect=1 表示动态仍保留在其他收藏夹中。
+                check(result.collect == 0 || result.collect == 1) { "Collection state is missing" }
                 if (!isCurrentOwner()) return@launch
                 removed = removed + id
                 onRemoved(id)
-                notify("已从当前收藏夹取消收藏")
+                notify(AppLanguage.getString(R.string.collection_item_removed))
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {

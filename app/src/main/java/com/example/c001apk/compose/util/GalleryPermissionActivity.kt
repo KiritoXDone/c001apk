@@ -1,5 +1,7 @@
 package com.example.c001apk.compose.util
 
+import com.example.c001apk.compose.R
+import com.example.c001apk.compose.logic.settings.AppLanguage
 import android.Manifest
 import android.content.Context
 import android.content.Intent
@@ -38,7 +40,7 @@ internal object GalleryPermission {
             )
         } catch (error: Exception) {
             pending.remove(key)
-            context.makeToast("无法请求存储权限，请在系统设置中允许后重试")
+            context.makeToast(context.getString(R.string.image_permission_request_failed))
         }
     }
 
@@ -55,9 +57,13 @@ class GalleryPermissionActivity : ComponentActivity() {
     private val permission =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) {
             GalleryPermission.finish(intent.getStringExtra("request"), it)
-            if (!it) makeToast("未授予存储权限，无法保存图片")
+            if (!it) makeToast(getString(R.string.image_permission_denied))
             finish()
         }
+
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(AppLanguage.wrap(newBase))
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
