@@ -14,6 +14,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
+import com.example.c001apk.compose.R
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.role
@@ -33,10 +35,11 @@ fun MessageListCard(
     count: Int,
     onViewNotice: () -> Unit,
 ) {
+    val description = if (count > 0) stringResource(R.string.unread_description, title, count.toString()) else title
     Card(
         modifier = modifier.testTag("profile_message_$title").semantics(mergeDescendants = true) {
             role = Role.Button
-            contentDescription = if (count > 0) "$title，$count 条未读" else title
+            contentDescription = description
         },
         colors = CardDefaults.defaultColors(color = Color.Transparent),
         onClick = onViewNotice,

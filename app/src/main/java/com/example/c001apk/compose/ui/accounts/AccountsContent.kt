@@ -8,6 +8,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
+import com.example.c001apk.compose.R
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.c001apk.compose.logic.accounts.SavedAccount
@@ -42,11 +44,11 @@ internal fun AccountsContent(
             bottom = padding.calculateBottomPadding() + 24.dp,
         ),
     ) {
-        item(key = "heading") { SmallTitle("已保存的账号") }
+        item(key = "heading") { SmallTitle(stringResource(R.string.accounts_saved)) }
         if (accounts.isEmpty()) {
             item(key = "empty") {
                 PreferenceGroup {
-                    BasicComponent(title = "暂无保存的账号", summary = "添加账号后，可在这里快速切换")
+                    BasicComponent(title = stringResource(R.string.accounts_empty), summary = stringResource(R.string.accounts_empty_summary))
                 }
             }
         }
@@ -59,22 +61,22 @@ internal fun AccountsContent(
         item(key = "actions") {
             PreferenceGroup(modifier = Modifier.padding(top = 16.dp)) {
                 ArrowPreference(
-                    title = "添加账号",
-                    summary = "登录新账号，保留已有账号",
+                    title = stringResource(R.string.accounts_add),
+                    summary = stringResource(R.string.accounts_add_summary),
                     enabled = !busy,
                     onClick = onLogin,
                     startAction = { Icon(MiuixIcons.Glass.AddCircle, null, Modifier.size(24.dp)) },
                 )
                 ArrowPreference(
-                    title = "游客模式",
-                    summary = if (activeUid == null) "当前使用游客模式" else "保留账号，下次可以直接切换",
+                    title = stringResource(R.string.accounts_guest),
+                    summary = stringResource(if (activeUid == null) R.string.accounts_guest_active else R.string.accounts_guest_summary),
                     enabled = !busy && activeUid != null,
                     onClick = onGuest,
                     startAction = { Icon(MiuixIcons.Glass.ContactsCircle, null, Modifier.size(24.dp)) },
                 )
             }
             Text(
-                "账号仅保存在本机，切换不会清除本地内容。",
+                stringResource(R.string.accounts_local_notice),
                 Modifier.padding(horizontal = 28.dp),
                 style = MiuixTheme.textStyles.footnote1,
                 color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
@@ -108,18 +110,18 @@ private fun AccountRow(
         endActions = {
             MiuixMoreMenu(expanded = menu && !busy, onExpandedChange = { if (!busy) menu = it }) {
                 MiuixMenuItem(
-                    text = { Text("删除账号") },
+                    text = { Text(stringResource(R.string.accounts_delete)) },
                     onClick = { menu = false; if (!busy) onRemove() },
                 )
             }
         },
     ) {
-        Text(decodeCookieValue(account.username).ifBlank { "酷安用户" },
+        Text(decodeCookieValue(account.username).ifBlank { stringResource(R.string.accounts_default_name) },
             style = MiuixTheme.textStyles.headline2, maxLines = 2, overflow = TextOverflow.Ellipsis)
         Text(
             when {
-                account.needsLogin -> "登录已失效，点击重新登录"
-                active -> "当前账号"
+                account.needsLogin -> stringResource(R.string.accounts_expired)
+                active -> stringResource(R.string.accounts_current)
                 else -> "UID ${account.uid}"
             },
             style = MiuixTheme.textStyles.footnote1,

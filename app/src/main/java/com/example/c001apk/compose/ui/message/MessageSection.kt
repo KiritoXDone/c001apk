@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.c001apk.compose.ui.component.cards.MessageListCard
 import com.example.c001apk.compose.ui.notification.NoticeType
@@ -22,7 +23,7 @@ internal fun MessageSection(
                 MessageListCard(
                     modifier = Modifier.weight(1f),
                     icon = { MessageEntryIcon(entry) },
-                    title = entry.title,
+                    title = stringResource(entry.titleRes),
                     count = entry.unreadCount(counts),
                     onViewNotice = { onViewNotice(entry.destination) },
                 )

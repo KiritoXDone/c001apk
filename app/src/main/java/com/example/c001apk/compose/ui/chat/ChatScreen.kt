@@ -134,7 +134,7 @@ fun ChatScreen(
                         ) {
                             listOf(
                                     stringResource(id = R.string.menu_check),
-                                    "拉黑",
+                                    stringResource(R.string.menu_block),
                                     stringResource(id = R.string.menu_report),
                                 )
                                 .forEachIndexed { index, menu ->
@@ -337,8 +337,8 @@ fun ChatScreen(
     retryDelivery?.let { delivery ->
         com.example.c001apk.compose.ui.component.MiuixAlertDialog(
             onDismissRequest = { retryDelivery = null },
-            title = { Text("再次发送这条消息？") },
-            text = { Text("上次发送结果未确认，重试可能重复发送。请先查看聊天记录。") },
+            title = { Text(stringResource(R.string.chat_resend_title)) },
+            text = { Text(stringResource(R.string.chat_resend_summary)) },
             confirmButton = {
                 com.example.c001apk.compose.ui.component.MiuixDialogButton(
                     onClick = {
@@ -346,14 +346,14 @@ fun ChatScreen(
                         viewModel.retry(delivery)
                     },
                 ) {
-                    Text("再次发送")
+                    Text(stringResource(R.string.chat_resend))
                 }
             },
             dismissButton = {
                 com.example.c001apk.compose.ui.component.MiuixDialogButton(
                     onClick = { retryDelivery = null },
                 ) {
-                    Text("取消")
+                    Text(stringResource(R.string.action_cancel))
                 }
             },
         )
@@ -362,11 +362,11 @@ fun ChatScreen(
     if (showDialog) {
         com.example.c001apk.compose.ui.component.MiuixAlertDialog(
             onDismissRequest = { showDialog = false },
-            title = { Text("消息操作") },
+            title = { Text(stringResource(R.string.chat_message_actions)) },
             text = {
                 Column {
                     top.yukonga.miuix.kmp.basic.BasicComponent(
-                        title = "删除",
+                        title = stringResource(R.string.menu_delete),
                         onClick = {
                             showDialog = false
                             viewModel.onDeleteMsg()
@@ -374,7 +374,7 @@ fun ChatScreen(
                     )
                     if (viewModel.pic.isNotEmpty()) {
                         top.yukonga.miuix.kmp.basic.BasicComponent(
-                            title = "重新加载图片",
+                            title = stringResource(R.string.image_reload),
                             onClick = {
                                 showDialog = false
                                 viewModel.retryImage(viewModel.deleteId)
@@ -382,7 +382,7 @@ fun ChatScreen(
                         )
                     } else {
                         top.yukonga.miuix.kmp.basic.BasicComponent(
-                            title = "复制",
+                            title = stringResource(R.string.action_copy),
                             onClick = {
                                 showDialog = false
                                 context.copyText(viewModel.message)
@@ -395,7 +395,7 @@ fun ChatScreen(
                 com.example.c001apk.compose.ui.component.MiuixDialogButton(
                     onClick = { showDialog = false },
                     primary = false,
-                ) { Text("取消") }
+                ) { Text(stringResource(R.string.action_cancel)) }
             },
         )
     }

@@ -4,6 +4,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.example.c001apk.compose.R
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.c001apk.compose.logic.filter.*
@@ -80,11 +82,11 @@ internal fun FilterNotice(
 ) {
     Card(modifier = modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp)) {
         Column(Modifier.padding(12.dp)) {
-            Text("已过滤：$reason", color = MiuixTheme.colorScheme.onSurfaceVariantSummary)
+            Text(stringResource(R.string.filter_reason, reason), color = MiuixTheme.colorScheme.onSurfaceVariantSummary)
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Button(onClick = onReveal) { Text("仅本次查看") }
-                Button(onClick = onDisable) { Text("停用此规则") }
-                onAllow?.let { Button(onClick = it) { Text("始终显示此条") } }
+                Button(onClick = onReveal) { Text(stringResource(R.string.filter_reveal)) }
+                Button(onClick = onDisable) { Text(stringResource(R.string.filter_disable_rule)) }
+                onAllow?.let { Button(onClick = it) { Text(stringResource(R.string.filter_allow)) } }
             }
             error?.let { Text(it, color = MiuixTheme.colorScheme.error) }
         }

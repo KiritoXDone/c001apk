@@ -7,6 +7,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
+import com.example.c001apk.compose.R
 import androidx.compose.ui.unit.dp
 import com.example.c001apk.compose.logic.model.BottomBarStyle
 import com.example.c001apk.compose.logic.providable.LocalUserPreferences
@@ -85,7 +87,11 @@ fun MiuixNavigationScaffold(
                     GlassNavigationBar(
                         items = items.mapIndexed { index, (icon, label) ->
                             val description = if (index == badgeIndex && unreadCount > 0) {
-                                "$label，未读 ${if (unreadCount > 99) "99+" else unreadCount} 条"
+                                stringResource(
+                                    R.string.unread_description,
+                                    label,
+                                    if (unreadCount > 99) "99+" else unreadCount.toString(),
+                                )
                             } else label
                             GlassNavigationItem(
                                 icon = icon,

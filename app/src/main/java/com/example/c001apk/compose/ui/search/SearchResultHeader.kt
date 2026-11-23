@@ -26,6 +26,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.stringResource
+import com.example.c001apk.compose.R
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -47,6 +49,7 @@ internal fun SearchResultHeader(
     subtitle: String,
     actions: @Composable RowScope.() -> Unit = {},
 ) {
+    val editDescription = stringResource(R.string.search_edit_query)
     val focusManager = LocalFocusManager.current
     val keyboardController = LocalSoftwareKeyboardController.current
     var editing by remember { mutableStateOf(false) }
@@ -92,10 +95,10 @@ internal fun SearchResultHeader(
                         modifier = Modifier.fillMaxWidth()
                             .heightIn(min = TopAppBarDefaults.SmallTopAppBarCenterHeight)
                             .clickable { editing = true }
-                            .semantics { contentDescription = "搜索关键词，点击编辑" },
+                            .semantics { contentDescription = editDescription },
                         contentAlignment = Alignment.Center,
                     ) {
-                        Text(query.ifEmpty { "搜索" }, style = titleStyle, maxLines = 1)
+                        Text(query.ifEmpty { stringResource(R.string.search_hint) }, style = titleStyle, maxLines = 1)
                     }
                 } else {
                     MiuixSearchTextField(
@@ -103,8 +106,8 @@ internal fun SearchResultHeader(
                         onValueChange = onQueryChange,
                         modifier = Modifier.fillMaxWidth()
                             .focusRequester(focusRequester)
-                            .semantics { contentDescription = "搜索关键词，点击编辑" },
-                        label = "搜索",
+                            .semantics { contentDescription = editDescription },
+                        label = stringResource(R.string.search_hint),
                         textStyle = titleStyle,
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
                         keyboardActions = KeyboardActions(onSearch = { submit(query) }),

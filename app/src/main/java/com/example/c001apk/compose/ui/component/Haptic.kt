@@ -7,6 +7,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.res.stringResource
+import com.example.c001apk.compose.R
 import androidx.compose.ui.unit.dp
 import com.example.c001apk.compose.logic.model.HapticStrength
 import com.example.c001apk.compose.logic.model.TopBarStyle
@@ -58,7 +60,7 @@ fun MoreMenuButton(onClick: () -> Unit) {
         Icon(
             imageVector = if (LocalUserPreferences.current.topBarStyle == TopBarStyle.OS4)
                 MiuixIcons.Glass.GlassMore else MiuixIcons.More,
-            contentDescription = "更多操作",
+            contentDescription = stringResource(R.string.update_more),
             modifier = Modifier.size(21.dp),
         )
     }

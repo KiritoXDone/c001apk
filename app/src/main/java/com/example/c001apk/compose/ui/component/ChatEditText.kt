@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.graphics.ColorUtils.setAlphaComponent
+import com.example.c001apk.compose.R
 import com.example.c001apk.compose.ui.theme.DefaultFontScale
 import com.example.c001apk.compose.util.EmojiTextWatcher
 import com.example.c001apk.compose.util.FastDeleteAtUserKeyListener
@@ -49,7 +50,7 @@ fun ChatEditText(
                 setTextColor(onSurface)
                 setHintTextColor(onSurfaceVariant)
                 maxLines = 4
-                hint = "写私信..."
+                hint = context.getString(R.string.chat_hint)
                 setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f * DefaultFontScale)
                 setLineSpacing(0.0f, 1.2f)
                 setBackgroundColor(Color.TRANSPARENT)

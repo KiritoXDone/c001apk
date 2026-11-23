@@ -7,6 +7,8 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import com.example.c001apk.compose.R
 import androidx.compose.ui.text.style.TextAlign
 import androidx.core.text.isDigitsOnly
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -49,17 +51,17 @@ fun BlackListScreen(
             if (uri == null) return@backup
             try {
                 val output = context.contentResolver.openOutputStream(uri)
-                    ?: throw IOException("无法创建导出文件")
+                    ?: throw IOException("Cannot create export file")
                 output.use { it.write(Gson().toJson(blackList.map { entry -> entry.data }).toByteArray()) }
-                context.makeToast("导出成功")
+                context.makeToast(context.getString(R.string.blocklist_exported))
             } catch (e: Exception) {
-                context.makeToast("导出失败")
+                context.makeToast(context.getString(R.string.export_failed))
             }
         }
 
     fun onBackup() {
         if (blackList.isEmpty()) {
-            context.makeToast("黑名单为空")
+            context.makeToast(context.getString(R.string.blocklist_empty))
         } else {
             try {
                 val date =
@@ -70,7 +72,7 @@ fun BlackListScreen(
                         .format(Date())
                 backupSAFLauncher.launch("${type.lowercase()}_blacklist_$date.json")
             } catch (e: Exception) {
-                context.makeToast("导出失败")
+                context.makeToast(context.getString(R.string.export_failed))
                 e.printStackTrace()
             }
         }
@@ -89,9 +91,9 @@ fun BlackListScreen(
                 val newList: List<String> =
                     if (currentList.isEmpty()) dataList else dataList.filter { it !in currentList }
                 if (newList.isNotEmpty()) viewModel.insertList(newList.map { StringEntity(it) })
-                context.makeToast("导入成功")
+                context.makeToast(context.getString(R.string.blocklist_imported))
             } catch (e: Exception) {
-                context.makeToast(e.message ?: "导入失败")
+                context.makeToast(context.getString(R.string.blocklist_import_failed))
                 e.printStackTrace()
             }
         }
@@ -100,7 +102,7 @@ fun BlackListScreen(
         try {
             restoreSAFLauncher.launch("application/json")
         } catch (e: Exception) {
-            context.makeToast("导入失败")
+            context.makeToast(context.getString(R.string.blocklist_import_failed))
             e.printStackTrace()
         }
     }
@@ -108,14 +110,14 @@ fun BlackListScreen(
     MiuixScaffold(
         topBar = {
             MiuixTopBar(
-                title = if (listType == BlackListType.USER) "用户黑名单" else "话题黑名单",
+                title = stringResource(if (listType == BlackListType.USER) R.string.settings_user_blocklist else R.string.settings_topic_blocklist),
                 navigationIcon = { BackButton(onBackClick) },
                 actions = {
                     MiuixMoreMenu(expanded = menu, onExpandedChange = { menu = it }) {
-                        MiuixMenuItem(text = { Text("导入") }, onClick = { menu = false; onRestore() })
-                        MiuixMenuItem(text = { Text("导出") }, enabled = blackList.isNotEmpty(),
+                        MiuixMenuItem(text = { Text(stringResource(R.string.action_import)) }, onClick = { menu = false; onRestore() })
+                        MiuixMenuItem(text = { Text(stringResource(R.string.action_export)) }, enabled = blackList.isNotEmpty(),
                             onClick = { menu = false; onBackup() })
-                        MiuixMenuItem(text = { Text("清空全部") }, enabled = blackList.isNotEmpty(),
+                        MiuixMenuItem(text = { Text(stringResource(R.string.action_clear_all)) }, enabled = blackList.isNotEmpty(),
                             onClick = { menu = false; showClearDialog = true })
                     }
                 },
@@ -139,12 +141,12 @@ fun BlackListScreen(
     if (showClearDialog) {
         MiuixAlertDialog(
             onDismissRequest = { showClearDialog = false },
-            title = { Text("确定清空全部${if (listType == BlackListType.USER) "用户" else "话题"}黑名单？",
+            title = { Text(stringResource(if (listType == BlackListType.USER) R.string.blocklist_clear_users else R.string.blocklist_clear_topics),
                 Modifier.fillMaxWidth(), textAlign = TextAlign.Center) },
             confirmButton = {
-                MiuixDialogButton(onClick = { showClearDialog = false; viewModel.clearAll() }, destructive = true) { Text("清空") }
+                MiuixDialogButton(onClick = { showClearDialog = false; viewModel.clearAll() }, destructive = true) { Text(stringResource(R.string.action_clear)) }
             },
-            dismissButton = { MiuixDialogButton(onClick = { showClearDialog = false }) { Text("取消") } },
+            dismissButton = { MiuixDialogButton(onClick = { showClearDialog = false }) { Text(stringResource(R.string.action_cancel)) } },
         )
     }
     val toastText = viewModel.toastText

@@ -233,7 +233,7 @@ fun FeedBottomInfo(
             modifier = Modifier.weight(1f),
             text =
                 if (isFeedContent) {
-                    if (ip.isNotEmpty()) "发布于 " + ip else EMPTY_STRING
+                    if (ip.isNotEmpty()) stringResource(R.string.feed_posted_at, ip) else EMPTY_STRING
                 } else fromToday(dateline),
             style = MiuixTheme.textStyles.body2.copy(fontSize = 14.sp),
             color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
@@ -311,7 +311,7 @@ fun FeedMessage(
     if (!data.forwardSourceType.isNullOrEmpty()) {
         if (data.forwardSourceFeed == null) {
             Text(
-                text = "动态已被删除",
+                text = stringResource(R.string.feed_deleted),
                 style = MiuixTheme.textStyles.headline2,
                 color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
                 modifier =
@@ -387,9 +387,9 @@ fun FeedMessage(
                     else ->
                         " <a class=\"feed-forward-pic\" href=" +
                             reply.pic +
-                            ">查看图片(" +
-                            reply.picArr?.size +
-                            ")</a>"
+                            ">" +
+                            stringResource(R.string.feed_view_images, reply.picArr?.size ?: 0) +
+                            "</a>"
                 }
             LinkText(
                 text =
@@ -602,7 +602,7 @@ fun FeedHeader(
 
         if (!isFeedContent && data.isStickTop == 1) {
             Text(
-                text = "置顶",
+                text = stringResource(R.string.action_pin),
                 modifier =
                     Modifier.padding(top = 10.dp)
                         .clip(RoundedCornerShape(4.dp))
@@ -698,14 +698,14 @@ internal fun FeedOverflowMenu(
         modifier = modifier,
     ) {
         DropdownMenuItem(
-            text = { Text("复制") },
+            text = { Text(stringResource(R.string.action_copy)) },
             onClick = {
                 expanded = false
                 context.copyText(getShareText(ShareType.FEED, data.id.orEmpty()))
             },
         )
         DropdownMenuItem(
-            text = { Text("拉黑") },
+            text = { Text(stringResource(R.string.menu_block)) },
             onClick = {
                 expanded = false
                 onBlockUser?.invoke(data.uid.orEmpty())
@@ -722,7 +722,7 @@ internal fun FeedOverflowMenu(
         }
         onRemoveFromCollection?.let { remove ->
             DropdownMenuItem(
-                text = { Text(if (removingFromCollection) "取消收藏中…" else "取消收藏", color = MiuixTheme.colorScheme.error) },
+                text = { Text(stringResource(if (removingFromCollection) R.string.feed_uncollecting else R.string.feed_uncollect), color = MiuixTheme.colorScheme.error) },
                 enabled = !removingFromCollection,
                 onClick = { expanded = false; remove() },
             )

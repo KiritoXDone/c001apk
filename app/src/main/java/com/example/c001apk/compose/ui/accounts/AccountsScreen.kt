@@ -2,6 +2,8 @@ package com.example.c001apk.compose.ui.accounts
 
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.*
+import androidx.compose.ui.res.stringResource
+import com.example.c001apk.compose.R
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -19,20 +21,20 @@ class AccountsViewModel @Inject constructor(private val accounts: AccountStore) 
     var busy by mutableStateOf(false)
         private set
 
-    var error by mutableStateOf<String?>(null)
+    var errorRes by mutableStateOf<Int?>(null)
         private set
 
     private fun act(block: suspend () -> Unit) {
         if (busy) return
         busy = true
-        error = null
+        errorRes = null
         viewModelScope.launch {
             try {
                 block()
             } catch (e: kotlinx.coroutines.CancellationException) {
                 throw e
             } catch (_: Exception) {
-                error = "账号操作未完成，请重试"
+                errorRes = R.string.accounts_action_failed
             } finally {
                 busy = false
             }
@@ -52,7 +54,7 @@ fun AccountsScreen(onBack: () -> Unit, onLogin: () -> Unit) {
     val model = hiltViewModel<AccountsViewModel>()
     var deleting by remember { mutableStateOf<SavedAccount?>(null) }
     MiuixScaffold(
-        topBar = { MiuixTopBar(title = "账号管理", navigationIcon = { BackButton(onBack) }) },
+        topBar = { MiuixTopBar(title = stringResource(R.string.settings_accounts), navigationIcon = { BackButton(onBack) }) },
     ) { padding ->
         val topBarListState = rememberLazyListState()
         TopBarScrollEffect { topBarListState.animateScrollToItem(0) }
@@ -60,7 +62,7 @@ fun AccountsScreen(onBack: () -> Unit, onLogin: () -> Unit) {
             accounts = prefs.savedAccounts,
             activeUid = prefs.uid.takeIf { prefs.isLogin },
             busy = model.busy,
-            error = model.error,
+            error = model.errorRes?.let { stringResource(it) },
             padding = padding,
             listState = topBarListState,
             onLogin = onLogin,
@@ -72,8 +74,8 @@ fun AccountsScreen(onBack: () -> Unit, onLogin: () -> Unit) {
     deleting?.let { account ->
         MiuixAlertDialog(
             onDismissRequest = { deleting = null },
-            title = { Text("删除已保存的账号？") },
-            text = { Text("删除后需要重新登录；本地收藏、历史和关注会保留。") },
+            title = { Text(stringResource(R.string.accounts_delete_title)) },
+            text = { Text(stringResource(R.string.accounts_delete_summary)) },
             confirmButton = {
                 MiuixDialogButton(
                     destructive = true,
@@ -82,10 +84,10 @@ fun AccountsScreen(onBack: () -> Unit, onLogin: () -> Unit) {
                         model.remove(account.uid)
                     },
                 ) {
-                    Text("删除")
+                    Text(stringResource(R.string.menu_delete))
                 }
             },
-            dismissButton = { MiuixDialogButton(onClick = { deleting = null }) { Text("取消") } },
+            dismissButton = { MiuixDialogButton(onClick = { deleting = null }) { Text(stringResource(R.string.action_cancel)) } },
         )
     }
 }

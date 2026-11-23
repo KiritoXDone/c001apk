@@ -7,6 +7,9 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import com.example.c001apk.compose.R
+import com.example.c001apk.compose.logic.settings.AppLanguage
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.c001apk.compose.logic.export.FeedExportService
@@ -47,7 +50,7 @@ class FeedExportViewModel @Inject constructor(private val exporter: FeedExportSe
             } catch (e: CancellationException) {
                 throw e
             } catch (_: Exception) {
-                error = "内容准备失败，请重试"
+                error = AppLanguage.getString(R.string.export_prepare_failed)
             } finally {
                 busy = false
             }
@@ -70,7 +73,7 @@ class FeedExportViewModel @Inject constructor(private val exporter: FeedExportSe
         val file =
             prepared
                 ?: run {
-                    error = "导出已中断，请重新选择格式"
+                    error = AppLanguage.getString(R.string.export_interrupted)
                     return
                 }
         prepared = null
@@ -83,11 +86,11 @@ class FeedExportViewModel @Inject constructor(private val exporter: FeedExportSe
                         ?.bufferedWriter(Charsets.UTF_8)
                         ?.use { it.write(file.content) } ?: error("Cannot open document")
                 }
-                context.makeToast("已保存 ${file.name}")
+                context.makeToast(context.getString(R.string.export_saved, file.name))
             } catch (e: CancellationException) {
                 throw e
             } catch (_: Exception) {
-                error = "文件保存失败，请检查所选位置后重试"
+                error = AppLanguage.getString(R.string.export_save_failed)
             } finally {
                 busy = false
             }
@@ -134,25 +137,25 @@ internal fun FeedExportDialogs(
     if (model.busy)
         MiuixAlertDialog(
             onDismissRequest = model::cancel,
-            title = { Text("正在准备文件") },
-            text = { Text("正在整理正文、评论与图片…") },
-            confirmButton = { MiuixDialogButton(onClick = model::cancel, primary = false) { Text("取消") } },
+            title = { Text(stringResource(R.string.export_preparing)) },
+            text = { Text(stringResource(R.string.export_preparing_summary)) },
+            confirmButton = { MiuixDialogButton(onClick = model::cancel, primary = false) { Text(stringResource(R.string.action_cancel)) } },
         )
     val prepared = model.prepared
     if (prepared != null && prepared.warnings.isNotEmpty() && !model.awaitingFile)
         MiuixAlertDialog(
             onDismissRequest = model::cancel,
-            title = { Text("部分内容未能保存") },
-            text = { Text(prepared.warnings.joinToString("\n\n") + "\n\n继续将保存已有内容，并在文件中注明缺失部分。") },
-            dismissButton = { MiuixDialogButton(onClick = model::cancel) { Text("取消") } },
-            confirmButton = { MiuixDialogButton(onClick = ::save) { Text("继续保存") } },
+            title = { Text(stringResource(R.string.export_partial)) },
+            text = { Text(stringResource(R.string.export_partial_summary, prepared.warnings.joinToString("\n\n"))) },
+            dismissButton = { MiuixDialogButton(onClick = model::cancel) { Text(stringResource(R.string.action_cancel)) } },
+            confirmButton = { MiuixDialogButton(onClick = ::save) { Text(stringResource(R.string.export_continue)) } },
         )
     model.error?.let { message ->
         MiuixAlertDialog(
             onDismissRequest = { model.error = null },
-            title = { Text("导出失败") },
+            title = { Text(stringResource(R.string.export_failed)) },
             text = { Text(message) },
-            confirmButton = { MiuixDialogButton(onClick = { model.error = null }) { Text("知道了") } },
+            confirmButton = { MiuixDialogButton(onClick = { model.error = null }) { Text(stringResource(R.string.action_confirm)) } },
         )
     }
 }
@@ -160,7 +163,7 @@ internal fun FeedExportDialogs(
 @Composable
 internal fun FeedExportMenuItem(enabled: Boolean, onDismissMenu: () -> Unit, onChoose: () -> Unit) {
     MiuixMenuItem(
-        text = { Text("保存内容") },
+        text = { Text(stringResource(R.string.export_content)) },
         enabled = enabled,
         onClick = {
             onDismissMenu()
@@ -173,21 +176,21 @@ internal fun FeedExportMenuItem(enabled: Boolean, onDismissMenu: () -> Unit, onC
 internal fun FeedExportFormatDialog(onDismiss: () -> Unit, onSelect: (FeedExportService.Format) -> Unit) {
     MiuixAlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("保存内容") },
+        title = { Text(stringResource(R.string.export_content)) },
         text = {
             Column {
                 BasicComponent(
                     title = "Markdown",
-                    summary = "可编辑的正文，保留在线图片链接",
+                    summary = stringResource(R.string.export_markdown_summary),
                     onClick = { onSelect(FeedExportService.Format.Markdown) },
                 )
                 BasicComponent(
-                    title = "离线 HTML",
-                    summary = "正文与图片保存在一个文件中",
+                    title = stringResource(R.string.export_html),
+                    summary = stringResource(R.string.export_html_summary),
                     onClick = { onSelect(FeedExportService.Format.Html) },
                 )
             }
         },
-        confirmButton = { MiuixDialogButton(onClick = onDismiss, primary = false) { Text("取消") } },
+        confirmButton = { MiuixDialogButton(onClick = onDismiss, primary = false) { Text(stringResource(R.string.action_cancel)) } },
     )
 }

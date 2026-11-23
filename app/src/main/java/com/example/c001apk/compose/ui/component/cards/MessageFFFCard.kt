@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import com.example.c001apk.compose.R
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -29,9 +31,9 @@ fun MessageFFFCard(
     onViewFFFList: (String, String) -> Unit,
 ) {
     val statistics = listOf(
-        "动态" to FFFListType.FEED,
-        "关注" to FFFListType.FOLLOW,
-        "粉丝" to FFFListType.FAN,
+        stringResource(R.string.label_feed) to FFFListType.FEED,
+        stringResource(R.string.follow) to FFFListType.FOLLOW,
+        stringResource(R.string.label_followers) to FFFListType.FAN,
     )
     Row(
         modifier = modifier.fillMaxWidth().padding(horizontal = ProfileLayoutDefaults.HeaderInset),

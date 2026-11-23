@@ -1,6 +1,8 @@
 package com.example.c001apk.compose.ui.contentfilter
 
 import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.ui.res.stringResource
+import com.example.c001apk.compose.R
 import androidx.compose.runtime.*
 import com.example.c001apk.compose.logic.filter.ContentFilterPreferences
 import com.example.c001apk.compose.ui.component.MiuixAlertDialog
@@ -22,26 +24,26 @@ internal fun LazyListScope.twilightRulesPreferences(
     val rules = preferences.twilight
     item(key = "twilight-controls") {
         var removing by remember { mutableStateOf(false) }
-        PreferenceGroup(title = "秋风远程规则") {
+        PreferenceGroup(title = stringResource(R.string.twilight_title)) {
             BasicListItem(
-                headlineText = if (busy) "正在处理…" else if (rules == null) "导入秋风规则" else "更新秋风规则",
-                supportingText = message ?: "来源：TG-Twilight/c001apk · filters\n手动下载到本机，不会自动开启内容过滤",
+                headlineText = stringResource(if (busy) R.string.status_processing else if (rules == null) R.string.twilight_import else R.string.twilight_update),
+                supportingText = message ?: stringResource(R.string.twilight_source),
                 enabled = !busy, onClick = onImport,
             )
             if (rules != null) {
-                BasicListItem(headlineText = "规则明细",
-                    supportingText = "版本 ${rules.revision} · ${rules.rules.size} 条 · 可逐条停用", onClick = onDetails)
-                SwitchListItem(preferences.twilightStrict, MiuixIcons.Blocklist, "启用严格规则",
-                    "仅影响秋风的严格级别关键词规则", enabled = !busy) { strict ->
+                BasicListItem(headlineText = stringResource(R.string.twilight_details),
+                    supportingText = stringResource(R.string.twilight_details_summary, rules.revision, rules.rules.size), onClick = onDetails)
+                SwitchListItem(preferences.twilightStrict, MiuixIcons.Blocklist, stringResource(R.string.twilight_strict),
+                    stringResource(R.string.twilight_strict_summary), enabled = !busy) { strict ->
                     onUpdate { it.copy(twilightStrict = strict) }
                 }
-                BasicListItem(headlineText = "移除秋风规则", supportingText = "保留个人规则和内容例外",
+                BasicListItem(headlineText = stringResource(R.string.twilight_remove), supportingText = stringResource(R.string.twilight_remove_hint),
                     enabled = !busy, onClick = { removing = true })
             }
         }
-        if (removing) MiuixAlertDialog(onDismissRequest = { removing = false }, title = { Text("移除秋风规则？") },
-            text = { Text("将删除已导入的远程规则和相关停用选择，可随时重新导入。") },
-            confirmButton = { MiuixDialogButton(enabled = !busy, destructive = true, onClick = { removing = false; onRemove() }) { Text("移除") } },
-            dismissButton = { MiuixDialogButton(onClick = { removing = false }) { Text("取消") } })
+        if (removing) MiuixAlertDialog(onDismissRequest = { removing = false }, title = { Text(stringResource(R.string.twilight_remove_title)) },
+            text = { Text(stringResource(R.string.twilight_remove_summary)) },
+            confirmButton = { MiuixDialogButton(enabled = !busy, destructive = true, onClick = { removing = false; onRemove() }) { Text(stringResource(R.string.action_remove)) } },
+            dismissButton = { MiuixDialogButton(onClick = { removing = false }) { Text(stringResource(R.string.action_cancel)) } })
     }
 }

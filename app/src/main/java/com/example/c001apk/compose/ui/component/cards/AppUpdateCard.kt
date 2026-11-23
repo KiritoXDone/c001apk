@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import com.example.c001apk.compose.R
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -79,9 +81,9 @@ fun AppUpdateCard(
         Text(
             text =
                 when (data.pkgBitType) {
-                    1 -> "32位"
+                    1 -> stringResource(R.string.app_arch_32)
                     2,
-                    3 -> "64位"
+                    3 -> stringResource(R.string.app_arch_64)
                     else -> EMPTY_STRING
                 },
             modifier =
@@ -172,7 +174,7 @@ fun AppUpdateCard(
                     end.linkTo(parent.end)
                 },
         ) {
-            Text(text = "下载")
+            Text(text = stringResource(R.string.action_download))
         }
     }
 }

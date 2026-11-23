@@ -8,6 +8,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
+import com.example.c001apk.compose.R
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -31,6 +33,8 @@ internal fun ReceivedLikeCard(
     onCopyText: (String?) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val likerDescription = stringResource(R.string.notice_liker, data.username)
+    val contentDescription = stringResource(R.string.notice_liked_content)
     Column(
         modifier.fillMaxWidth().padding(horizontal = 10.dp)
             .squircleSurface(cardBg(), 16.dp)
@@ -45,9 +49,9 @@ internal fun ReceivedLikeCard(
                 Modifier.weight(1f).clickable(
                     enabled = data.userId != null,
                     role = Role.Button,
-                    onClickLabel = "查看点赞人",
+                    onClickLabel = stringResource(R.string.notice_view_liker),
                 ) { data.userId?.let(onViewUser) }
-                    .semantics { contentDescription = "点赞人：${data.username}" },
+                    .semantics { this.contentDescription = likerDescription },
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
             ) {
@@ -75,10 +79,10 @@ internal fun ReceivedLikeCard(
                 .combinedClickable(
                     enabled = data.url != null,
                     role = Role.Button,
-                    onClickLabel = "查看被赞内容",
+                    onClickLabel = stringResource(R.string.notice_view_liked_content),
                     onClick = { data.url?.let { onOpenLink(it, null) } },
                     onLongClick = { onCopyText(data.copyText) },
-                ).semantics { contentDescription = "被赞内容" }.padding(10.dp),
+                ).semantics { this.contentDescription = contentDescription }.padding(10.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(10.dp),
         ) {

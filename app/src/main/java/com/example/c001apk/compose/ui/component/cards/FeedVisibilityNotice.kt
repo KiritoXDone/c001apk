@@ -2,6 +2,8 @@ package com.example.c001apk.compose.ui.component.cards
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import com.example.c001apk.compose.R
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.semantics
@@ -25,7 +27,7 @@ internal fun FeedVisibilityNotice(publishStatus: Int?) {
     ) {
         Icon(MiuixIcons.Glass.LockOutline, contentDescription = null, modifier = Modifier.size(16.dp),
             tint = MiuixTheme.colorScheme.onSurfaceVariantSummary)
-        Text("仅自己可见", style = MiuixTheme.textStyles.footnote1,
+        Text(stringResource(R.string.label_private), style = MiuixTheme.textStyles.footnote1,
             color = MiuixTheme.colorScheme.onSurfaceVariantSummary)
     }
     HorizontalDivider()

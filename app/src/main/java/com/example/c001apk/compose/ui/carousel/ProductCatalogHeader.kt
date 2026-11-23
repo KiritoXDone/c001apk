@@ -7,6 +7,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import com.example.c001apk.compose.R
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -42,13 +44,13 @@ internal fun ProductCatalogHeader(
                         Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Text("品牌", modifier = Modifier.weight(1f), fontSize = 14.sp)
+                        Text(stringResource(R.string.label_brand), modifier = Modifier.weight(1f), fontSize = 14.sp)
                         if (header.brands.size > columns * 2) {
                             Text(
-                                if (expanded) "收起" else "全部",
+                                stringResource(if (expanded) R.string.action_collapse else R.string.label_all),
                                 modifier = Modifier.clickable(
                                     role = Role.Button,
-                                    onClickLabel = if (expanded) "收起品牌" else "展开全部品牌",
+                                    onClickLabel = stringResource(if (expanded) R.string.brand_collapse else R.string.brand_expand),
                                 ) { expanded = !expanded }.padding(12.dp),
                                 fontSize = 12.sp,
                                 color = MiuixTheme.colorScheme.onSurfaceVariantActions,

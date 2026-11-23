@@ -6,6 +6,8 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import com.example.c001apk.compose.R
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.draw.clip
@@ -32,7 +34,7 @@ fun SearchHistoryCard(
                 .combinedClickable(
                     onClick = onSearch,
                     onLongClick = onDelete,
-                    onLongClickLabel = "删除搜索历史",
+                    onLongClickLabel = stringResource(R.string.search_delete_history),
                     role = Role.Button,
                 )
                 .padding(horizontal = 14.dp, vertical = 8.dp),

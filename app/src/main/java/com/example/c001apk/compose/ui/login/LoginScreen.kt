@@ -25,6 +25,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import com.example.c001apk.compose.R
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -73,7 +75,7 @@ fun LoginScreen(
 
     fun onLogin() {
         if (account.isNotEmpty() && password.isNotEmpty()) {
-            context.makeToast("正在登录...")
+            context.makeToast(context.getString(R.string.login_progress))
             viewModel.loginData["submit"] = "1"
             viewModel.loginData["randomNumber"] = createRandomNumber()
             viewModel.loginData["requestHash"] = viewModel.requestHash
@@ -83,7 +85,7 @@ fun LoginScreen(
             viewModel.loginData["code"] = EMPTY_STRING
             viewModel.onLogin()
         } else {
-            context.makeToast("用户名或密码为空")
+            context.makeToast(context.getString(R.string.login_empty))
         }
     }
 
@@ -96,13 +98,13 @@ fun LoginScreen(
                 navigationIcon = {
                     BackButton { onBackClick() }
                 },
-                title = "登录",
+                title = stringResource(R.string.login_title),
                 actions = {
                     TextButton(
                         onClick = onWebLogin,
                         modifier = Modifier.padding(end = 20.dp),
                     ) {
-                        Text(text = "网页登录")
+                        Text(text = stringResource(R.string.login_web))
                     }
                 },
             )
@@ -121,7 +123,7 @@ fun LoginScreen(
                 value = account,
                 onValueChange = { account = it },
                 singleLine = true,
-                label = "账号",
+                label = stringResource(R.string.login_account),
                 modifier = Modifier.fillMaxWidth().padding(top = 20.dp).padding(horizontal = 20.dp),
                 keyboardOptions =
                     KeyboardOptions(
@@ -151,7 +153,7 @@ fun LoginScreen(
                 value = password,
                 onValueChange = { password = it },
                 singleLine = true,
-                label = "密码",
+                label = stringResource(R.string.login_password),
                 visualTransformation =
                     if (passwordHidden) PasswordVisualTransformation()
                     else VisualTransformation.None,
@@ -234,7 +236,7 @@ fun LoginScreen(
                 },
                 modifier = Modifier.align(Alignment.CenterHorizontally).padding(top = 5.dp),
             ) {
-                Text(text = "登录")
+                Text(text = stringResource(R.string.login_title))
             }
         }
     }

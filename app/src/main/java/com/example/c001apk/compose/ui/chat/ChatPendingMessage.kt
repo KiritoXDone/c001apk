@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import com.example.c001apk.compose.R
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -42,11 +44,11 @@ internal fun ChatPendingMessage(
                 if (delivery.preview != null) {
                     AsyncImage(
                         model = delivery.preview,
-                        contentDescription = "待发送图片",
+                        contentDescription = stringResource(R.string.image_pending),
                         modifier = Modifier.size(140.dp).squircleClip(16.dp),
                     )
                 } else if (delivery.picture.isNotEmpty()) {
-                    Text("[图片]", color = MiuixTheme.colorScheme.onPrimaryContainer)
+                    Text(stringResource(R.string.image_placeholder), color = MiuixTheme.colorScheme.onPrimaryContainer)
                 }
                 if (delivery.text.isNotBlank()) {
                     Text(delivery.text, color = MiuixTheme.colorScheme.onPrimaryContainer)
@@ -54,7 +56,7 @@ internal fun ChatPendingMessage(
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
                     if (delivery.sending) CircularProgressIndicator(modifier = Modifier.size(14.dp))
                     Text(
-                        text = if (delivery.sending) "发送中…" else delivery.error.orEmpty(),
+                        text = if (delivery.sending) stringResource(R.string.status_sending) else delivery.error.orEmpty(),
                         color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
                         style = MiuixTheme.textStyles.body2,
                     )
@@ -62,8 +64,8 @@ internal fun ChatPendingMessage(
             }
             if (!delivery.sending) {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 6.dp)) {
-                    MiuixActionButton(onClick = onRetry) { Text("重试") }
-                    MiuixActionButton(onClick = onDiscard) { Text("移除") }
+                    MiuixActionButton(onClick = onRetry) { Text(stringResource(R.string.action_retry)) }
+                    MiuixActionButton(onClick = onDiscard) { Text(stringResource(R.string.action_remove)) }
                 }
             }
         }

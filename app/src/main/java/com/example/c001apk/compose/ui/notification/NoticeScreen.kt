@@ -15,6 +15,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import com.example.c001apk.compose.R
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -71,7 +73,7 @@ fun NoticeScreen(
                     },
                     title = {
                         Text(
-                            text = destination.title,
+                            text = stringResource(destination.titleRes),
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                         )
@@ -123,7 +125,7 @@ fun NoticeScreen(
 
     deleteNoticeId?.let { id ->
         com.example.c001apk.compose.ui.component.MiuixAlertDialog(
-            title = { Text("删除这条通知？") },
+            title = { Text(stringResource(R.string.notice_delete_title)) },
             onDismissRequest = { deleteNoticeId = null },
             confirmButton = {
                 com.example.c001apk.compose.ui.component.MiuixDialogButton(
@@ -133,7 +135,7 @@ fun NoticeScreen(
                         viewModel.deleteNotice(id)
                     },
                 ) {
-                    Text("删除")
+                    Text(stringResource(R.string.menu_delete))
                 }
             },
             dismissButton = {
@@ -142,7 +144,7 @@ fun NoticeScreen(
                         deleteNoticeId = null
                     },
                 ) {
-                    Text("取消")
+                    Text(stringResource(R.string.action_cancel))
                 }
             },
         )
@@ -151,18 +153,18 @@ fun NoticeScreen(
     if (showMessageDialog) {
         com.example.c001apk.compose.ui.component.MiuixAlertDialog(
             onDismissRequest = { showMessageDialog = false },
-            title = { Text("会话操作") },
+            title = { Text(stringResource(R.string.chat_actions)) },
             text = {
                 Column {
                     top.yukonga.miuix.kmp.basic.BasicComponent(
-                        title = if (viewModel.isTop == 1) "移除置顶" else "置顶",
+                        title = stringResource(if (viewModel.isTop == 1) R.string.action_unpin else R.string.action_pin),
                         onClick = {
                             showMessageDialog = false
                             viewModel.onHandleMessage(FFFContentViewModel.ActionType.TOP)
                         },
                     )
                     top.yukonga.miuix.kmp.basic.BasicComponent(
-                        title = "删除此对话",
+                        title = stringResource(R.string.chat_delete),
                         onClick = {
                             showMessageDialog = false
                             viewModel.onHandleMessage(FFFContentViewModel.ActionType.DELETE)
@@ -174,7 +176,7 @@ fun NoticeScreen(
                 com.example.c001apk.compose.ui.component.MiuixDialogButton(
                     onClick = { showMessageDialog = false },
                     primary = false,
-                ) { Text("取消") }
+                ) { Text(stringResource(R.string.action_cancel)) }
             },
         )
     }

@@ -15,6 +15,9 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.example.c001apk.compose.R
+import com.example.c001apk.compose.ui.component.pullToRefreshTexts
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.c001apk.compose.logic.providable.LocalUserPreferences
@@ -38,7 +41,7 @@ internal fun CloudHistoryList(padding: PaddingValues, onOpenLink: (String, Strin
     LaunchedEffect(prefs.accountRevision) { state.scrollToItem(0) }
     if (!prefs.isLogin || model.accountRevision != prefs.accountRevision) {
         Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
-            Text(if (!prefs.isLogin) "登录后可查看云端浏览历史" else "正在加载…",
+            Text(stringResource(if (!prefs.isLogin) R.string.history_cloud_login else R.string.status_loading),
                 color = MiuixTheme.colorScheme.onSurfaceVariantSummary)
         }
         return
@@ -46,7 +49,7 @@ internal fun CloudHistoryList(padding: PaddingValues, onOpenLink: (String, Strin
     PullToRefresh(
         isRefreshing = model.refreshing,
         onRefresh = model::refresh,
-        refreshTexts = listOf("下拉刷新", "释放刷新", "正在刷新", "刷新完成"),
+        refreshTexts = pullToRefreshTexts(),
         contentPadding = PaddingValues(top = padding.calculateTopPadding()),
     ) {
         LazyColumn(
@@ -58,7 +61,7 @@ internal fun CloudHistoryList(padding: PaddingValues, onOpenLink: (String, Strin
                 val entries = sections[section].orEmpty()
                 if (entries.isNotEmpty()) {
                     item(key = "section:${section.name}") {
-                        SmallTitle(section.title, modifier = Modifier.padding(top = 4.dp))
+                        SmallTitle(stringResource(section.titleRes), modifier = Modifier.padding(top = 4.dp))
                     }
                     itemsIndexed(entries, key = { _, entry -> "entry:${entry.id}" }) { index, entry ->
                         GroupedListItem(first = index == 0, last = index == entries.lastIndex, showDivider = false) {
@@ -73,11 +76,11 @@ internal fun CloudHistoryList(padding: PaddingValues, onOpenLink: (String, Strin
                         model.loading -> CircularProgressIndicator(Modifier.size(24.dp))
                         model.error != null -> {
                             Text(model.error.orEmpty(), color = MiuixTheme.colorScheme.error)
-                            Button(onClick = model::loadMore) { Text("重试") }
+                            Button(onClick = model::loadMore) { Text(stringResource(R.string.action_retry)) }
                         }
-                        model.rows.isEmpty() -> Text("暂无云端浏览历史")
-                        model.hasMore -> Button(onClick = model::loadMore) { Text("加载更多") }
-                        else -> Text("没有更多记录", color = MiuixTheme.colorScheme.onSurfaceVariantSummary)
+                        model.rows.isEmpty() -> Text(stringResource(R.string.history_cloud_empty))
+                        model.hasMore -> Button(onClick = model::loadMore) { Text(stringResource(R.string.action_load_more)) }
+                        else -> Text(stringResource(R.string.history_end), color = MiuixTheme.colorScheme.onSurfaceVariantSummary)
                     }
                 }
                 LaunchedEffect(model.rows.lastOrNull()?.id) {

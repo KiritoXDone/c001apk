@@ -15,6 +15,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import com.example.c001apk.compose.R
 import androidx.compose.ui.unit.dp
 import com.example.c001apk.compose.logic.model.CloudHistoryEntry
 import com.example.c001apk.compose.logic.model.FeedEntity
@@ -44,9 +46,11 @@ internal fun LocalHistoryList(
     onBlockUser: (String) -> Unit,
     onReport: (String, ReportType) -> Unit,
 ) {
-    val entries = remember(records) { records.map { record ->
-        CloudHistoryEntry(record.id, "${record.uname}的动态", record.message, record.avatar,
-            "/feed/${record.id}", "feed", "动态", record.time.toLongOrNull()?.div(1000))
+    val postTitle = stringResource(R.string.history_post_title)
+    val postLabel = stringResource(R.string.label_feed)
+    val entries = remember(records, postTitle, postLabel) { records.map { record ->
+        CloudHistoryEntry(record.id, postTitle.format(record.uname), record.message, record.avatar,
+            "/feed/${record.id}", "feed", postLabel, record.time.toLongOrNull()?.div(1000))
     } }
     val byId = remember(records) { records.associateBy { it.id } }
     val now = System.currentTimeMillis()
@@ -66,7 +70,7 @@ internal fun LocalHistoryList(
         HistoryTimeSection.entries.forEach { section ->
             val rows = sections[section].orEmpty()
             if (rows.isNotEmpty()) {
-                item(key = "section:${section.name}") { SmallTitle(section.title, Modifier.padding(top = 4.dp)) }
+                item(key = "section:${section.name}") { SmallTitle(stringResource(section.titleRes), Modifier.padding(top = 4.dp)) }
                 itemsIndexed(rows, key = { _, entry -> entry.id!! }) { index, entry ->
                     val record = byId.getValue(entry.id!!)
                     GroupedListItem(first = index == 0, last = index == rows.lastIndex, showDivider = false) {
@@ -93,15 +97,15 @@ private fun LocalHistoryMenu(
     val context = LocalContext.current
     val loggedIn = LocalUserPreferences.current.isLogin
     MiuixMoreMenu(expanded, { expanded = it }) {
-        MiuixMenuItem(text = { Text("复制") }, onClick = {
+        MiuixMenuItem(text = { Text(stringResource(R.string.action_copy)) }, onClick = {
             expanded = false
             context.copyText(getShareText(ShareType.FEED, record.id))
         })
-        MiuixMenuItem(text = { Text("拉黑") }, onClick = { expanded = false; onBlockUser(record.uid) })
-        if (loggedIn) MiuixMenuItem(text = { Text("举报") }, onClick = {
+        MiuixMenuItem(text = { Text(stringResource(R.string.menu_block)) }, onClick = { expanded = false; onBlockUser(record.uid) })
+        if (loggedIn) MiuixMenuItem(text = { Text(stringResource(R.string.menu_report)) }, onClick = {
             expanded = false; onReport(record.id, ReportType.FEED)
         })
-        MiuixMenuItem(text = { Text("删除记录", color = MiuixTheme.colorScheme.error) }, onClick = {
+        MiuixMenuItem(text = { Text(stringResource(R.string.history_delete), color = MiuixTheme.colorScheme.error) }, onClick = {
             expanded = false; onDelete(record.id)
         })
     }

@@ -2,6 +2,8 @@ package com.example.c001apk.compose.ui.component
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import com.example.c001apk.compose.R
 import com.example.c001apk.compose.util.*
 import top.yukonga.miuix.kmp.basic.Text
 
@@ -15,14 +17,14 @@ fun ContentShareMenuItems(
 ) {
     val context = LocalContext.current
     MiuixMenuItem(
-        text = { Text("复制") },
+        text = { Text(stringResource(R.string.action_copy)) },
         onClick = {
             dismiss()
             context.copyText(ShareContent.link(type, id))
         },
     )
     MiuixMenuItem(
-        text = { Text("分享") },
+        text = { Text(stringResource(R.string.action_share)) },
         onClick = {
             dismiss()
             context.shareText(ShareContent.text(type, id, title, message))

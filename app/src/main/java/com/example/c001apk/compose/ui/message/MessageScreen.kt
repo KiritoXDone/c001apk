@@ -4,6 +4,9 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import com.example.c001apk.compose.R
+import com.example.c001apk.compose.ui.component.pullToRefreshTexts
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -66,21 +69,21 @@ fun MessageScreen(
         modifier = Modifier.fillMaxSize(),
         topBar = {
             com.example.c001apk.compose.ui.component.MiuixTopBar(
-                title = "我的",
+                title = stringResource(R.string.profile),
                 actions = {
                     com.example.c001apk.compose.ui.component.MiuixToolbarIconButton(
                         onClick = onAccountsClick,
                     ) {
                         top.yukonga.miuix.kmp.basic.Icon(
                             MiuixIcons.Glass.ContactsBook,
-                            contentDescription = "账号",
+                            contentDescription = stringResource(R.string.login_account),
                             modifier = Modifier.size(24.dp),
                         )
                     }
                     com.example.c001apk.compose.ui.component.MiuixToolbarIconButton(onClick = onSettingsClick) {
                         top.yukonga.miuix.kmp.basic.Icon(
                             MiuixIcons.Glass.SettingsOutline,
-                            contentDescription = "设置",
+                            contentDescription = stringResource(R.string.settings),
                             modifier = Modifier.size(24.dp),
                         )
                     }
@@ -103,7 +106,7 @@ fun MessageScreen(
                 isRefreshing = viewModel.isRefreshing,
                 onRefresh = viewModel::refresh,
                 contentPadding = PaddingValues(top = paddingValues.calculateTopPadding() + 10.dp),
-                refreshTexts = listOf("下拉刷新", "释放刷新", "正在刷新", "刷新完成"),
+                refreshTexts = pullToRefreshTexts(),
             ) {
                 BoxWithConstraints(Modifier.fillMaxSize()) {
                     val sideInset = ((maxWidth - 800.dp) / 2).coerceAtLeast(0.dp)
@@ -170,7 +173,7 @@ fun MessageScreen(
                                 },
                             )
                         }
-                        item(key = "toolsTitle") { ProfileSectionTitle("常用功能") }
+                        item(key = "toolsTitle") { ProfileSectionTitle(stringResource(R.string.profile_tools)) }
                         item(key = "widget") {
                             MessageWidgetCard(
                                 modifier = Modifier.padding(horizontal = ProfileLayoutDefaults.HorizontalMargin),

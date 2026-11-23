@@ -20,6 +20,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.res.stringResource
+import com.example.c001apk.compose.R
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -49,10 +51,11 @@ fun MessageCard(
     onHandleMessage: ((String, Int) -> Unit)? = null,
     onViewChat: ((String, String, String) -> Unit)? = null,
 ) {
-    val name = data.messageUsername?.takeIf(String::isNotBlank) ?: "用户"
+    val name = data.messageUsername?.takeIf(String::isNotBlank) ?: stringResource(R.string.accounts_default_name)
+    val profileDescription = stringResource(R.string.user_view_named_profile, name)
     val unreadCount = (data.unreadNum ?: 0).coerceAtLeast(0)
     val preview = data.message?.takeIf(String::isNotBlank)
-        ?: if (!data.messagePic.isNullOrBlank()) "[图片]" else ""
+        ?: if (!data.messagePic.isNullOrBlank()) stringResource(R.string.image_placeholder) else ""
 
     Row(
         modifier = modifier.fillMaxWidth()
@@ -62,7 +65,7 @@ fun MessageCard(
                 onClick = {
                     onViewChat?.invoke(data.ukey.orEmpty(), data.messageUid.orEmpty(), data.messageUsername.orEmpty())
                 },
-                onLongClickLabel = "会话操作",
+                onLongClickLabel = stringResource(R.string.chat_actions),
                 onLongClick = onHandleMessage?.let { handle ->
                     { handle(data.ukey.orEmpty(), data.isTop ?: 0) }
                 },
@@ -74,7 +77,7 @@ fun MessageCard(
             modifier = Modifier.size(48.dp).clip(CircleShape)
                 .background(MiuixTheme.colorScheme.surfaceContainerHigh)
                 .clickable { onViewUser(data.messageUid.orEmpty()) }
-                .semantics { contentDescription = "查看${name}的主页" },
+                .semantics { contentDescription = profileDescription },
             contentAlignment = Alignment.Center,
         ) {
             if (!data.messageUserAvatar.isNullOrBlank()) {
@@ -122,7 +125,7 @@ fun MessageCard(
                 )
                 if (data.isTop == 1) {
                     Text(
-                        text = "置顶",
+                        text = stringResource(R.string.action_pin),
                         color = MiuixTheme.colorScheme.primary,
                         style = MiuixTheme.textStyles.body2,
                     )

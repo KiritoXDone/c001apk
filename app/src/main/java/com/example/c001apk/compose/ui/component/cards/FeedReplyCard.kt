@@ -185,16 +185,14 @@ fun FeedReplyCard(
             text =
                 if (isReply2Reply)
                     data.message?.substring(data.message.indexOfFirst { it == ':' } + 1)
-                else if (isLikeReply) "赞了你的${data.infoHtml}"
+                else if (isLikeReply) stringResource(R.string.feed_liked_your, data.infoHtml.orEmpty())
                 else if (!isFeedReply) {
                     if (data.ruid == "0") data.message.orEmpty()
                     else
-                        "回复<a class=\"feed-link-uname\" href=\"/u/" +
-                            data.ruid +
-                            "\">" +
-                            data.rusername +
-                            "</a>: " +
-                            data.message
+                        stringResource(
+                            R.string.feed_reply_to,
+                            "<a class=\"feed-link-uname\" href=\"/u/${data.ruid}\">${data.rusername}</a>",
+                        ) + ": " + data.message
                 } else data.message.orEmpty(),
             modifier =
                 Modifier.padding(
@@ -458,7 +456,7 @@ fun FeedReplyCard(
                         end.linkTo(parent.end)
                     },
             ) {
-                listOf("拉黑", "显示回复").forEachIndexed { index, menu ->
+                listOf(stringResource(R.string.menu_block), stringResource(R.string.action_show_replies)).forEachIndexed { index, menu ->
                     DropdownMenuItem(
                         text = { Text(menu) },
                         onClick = {
@@ -606,9 +604,9 @@ fun ReplyRows(
                     onDismissRequest = { dropdownMenuExpanded = -1 },
                 ) {
                     listOf(
-                            "复制",
-                            "拉黑",
-                            "显示回复",
+                            stringResource(R.string.action_copy),
+                            stringResource(R.string.menu_block),
+                            stringResource(R.string.action_show_replies),
                         )
                         .forEachIndexed { index, menu ->
                             DropdownMenuItem(
@@ -648,7 +646,7 @@ fun ReplyRows(
         }
         if (replyRowsMore != 0) {
             LinkText(
-                text = "查看更多回复(" + replyNum + ")",
+                text = stringResource(R.string.feed_view_more_replies, replyNum),
                 modifier =
                     Modifier.fillMaxWidth()
                         .clickable {

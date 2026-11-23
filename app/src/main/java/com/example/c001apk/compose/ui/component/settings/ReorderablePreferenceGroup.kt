@@ -15,6 +15,8 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import com.example.c001apk.compose.R
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
@@ -265,6 +267,9 @@ private fun ReorderHandle(
     onMoveUp: () -> Boolean,
     onMoveDown: () -> Boolean,
 ) {
+    val dragDescription = stringResource(R.string.reorder_drag)
+    val moveUpDescription = stringResource(R.string.reorder_up)
+    val moveDownDescription = stringResource(R.string.reorder_down)
     val currentOnStart by rememberUpdatedState(onStart)
     val currentOnDrag by rememberUpdatedState(onDrag)
     val currentOnEnd by rememberUpdatedState(onEnd)
@@ -284,14 +289,14 @@ private fun ReorderHandle(
             Modifier
                 .size(48.dp)
                 .semantics {
-                    contentDescription = "拖动排序"
+                    contentDescription = dragDescription
                     val actions =
                         buildList {
                             if (enabled && canMoveUp) {
-                                add(CustomAccessibilityAction("上移") { currentOnMoveUp() })
+                                add(CustomAccessibilityAction(moveUpDescription) { currentOnMoveUp() })
                             }
                             if (enabled && canMoveDown) {
-                                add(CustomAccessibilityAction("下移") { currentOnMoveDown() })
+                                add(CustomAccessibilityAction(moveDownDescription) { currentOnMoveDown() })
                             }
                         }
                     if (actions.isNotEmpty()) customActions = actions

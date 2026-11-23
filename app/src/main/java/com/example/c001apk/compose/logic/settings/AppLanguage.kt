@@ -5,6 +5,8 @@ import android.content.Context
 import android.content.ContextWrapper
 import android.content.res.Configuration
 import android.os.LocaleList
+import androidx.annotation.StringRes
+import com.example.c001apk.compose.c001Application
 import java.util.Locale
 
 /** 应用内语言：空标签跟随系统，其余按 BCP 47 标签覆盖。 */
@@ -31,6 +33,9 @@ object AppLanguage {
         configuration.setLocales(LocaleList(locale))
         return base.createConfigurationContext(configuration)
     }
+
+    fun getString(@StringRes resId: Int, vararg formatArgs: Any): String =
+        wrap(c001Application).getString(resId, *formatArgs)
 
     fun Context.findActivity(): Activity? =
         generateSequence(this) { (it as? ContextWrapper)?.baseContext }

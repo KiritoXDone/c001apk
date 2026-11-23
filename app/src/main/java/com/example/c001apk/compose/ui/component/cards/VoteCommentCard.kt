@@ -16,6 +16,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import com.example.c001apk.compose.R
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -55,7 +57,7 @@ internal fun VoteCommentCard(
 ) {
     val feedId = data.id.orEmpty()
     val authorId = data.uid.orEmpty()
-    val name = data.username?.takeIf(String::isNotBlank) ?: "匿名用户"
+    val name = data.username?.takeIf(String::isNotBlank) ?: stringResource(R.string.label_anonymous_user)
     val like = data.userAction?.like ?: 0
     val liked = like == 1
     val colors = MiuixTheme.colorScheme
@@ -73,7 +75,7 @@ internal fun VoteCommentCard(
                 modifier = Modifier.weight(1f).heightIn(min = 44.dp).squircleClip(10.dp)
                     .clickable(
                         enabled = authorId.isNotBlank(),
-                        onClickLabel = "查看用户主页",
+                        onClickLabel = stringResource(R.string.user_view_profile),
                     ) { onViewUser(authorId) },
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -125,7 +127,7 @@ internal fun VoteCommentCard(
         ) {
             VoteCommentAction(
                 icon = if (liked) MiuixIcons.Glass.FavoriteFill else MiuixIcons.Glass.FavoriteOutline,
-                label = if (liked) "取消点赞" else "点赞",
+                label = stringResource(if (liked) R.string.action_unlike else R.string.action_like),
                 text = data.likenum?.takeIf(String::isNotBlank) ?: "0",
                 enabled = LocalUserPreferences.current.isLogin && onLike != null && feedId.isNotBlank(),
                 highlighted = liked,
@@ -134,8 +136,8 @@ internal fun VoteCommentCard(
             Box(Modifier.width(1.dp).height(12.dp).background(colors.dividerLine))
             VoteCommentAction(
                 icon = MiuixIcons.Glass.Reply,
-                label = "查看回复",
-                text = "回复",
+                label = stringResource(R.string.action_view_replies),
+                text = stringResource(R.string.feed_reply),
                 enabled = feedId.isNotBlank(),
                 onClick = { onViewFeed(feedId, true) },
             )

@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import com.example.c001apk.compose.R
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
@@ -67,7 +69,7 @@ fun AppInfoCard(
 
         Text(
             text =
-                data?.apkversionname?.let { "版本: ${data.apkversionname}(${data.apkversioncode})" }
+                data?.apkversionname?.let { stringResource(R.string.app_version, it, data.apkversioncode.toString()) }
                     ?: EMPTY_STRING,
             style = MiuixTheme.textStyles.body2.copy(fontSize = 14.sp),
             modifier =
@@ -80,7 +82,7 @@ fun AppInfoCard(
         )
 
         Text(
-            text = data?.apksize?.let { "大小: " + data.apksize } ?: EMPTY_STRING,
+            text = data?.apksize?.let { stringResource(R.string.app_size, it) } ?: EMPTY_STRING,
             style = MiuixTheme.textStyles.body2.copy(fontSize = 14.sp),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
@@ -96,7 +98,7 @@ fun AppInfoCard(
         Text(
             text =
                 data?.let {
-                    "更新时间: ${if (data.lastupdate != null) fromToday(data.lastupdate) else "null"}"
+                    stringResource(R.string.app_updated, if (data.lastupdate != null) fromToday(data.lastupdate) else "null")
                 } ?: EMPTY_STRING,
             style = MiuixTheme.textStyles.body2.copy(fontSize = 14.sp),
             maxLines = 1,
@@ -122,7 +124,7 @@ fun AppInfoCard(
                         end.linkTo(parent.end)
                     },
             ) {
-                Text(text = "下载")
+                Text(text = stringResource(R.string.action_download))
             }
         }
     }

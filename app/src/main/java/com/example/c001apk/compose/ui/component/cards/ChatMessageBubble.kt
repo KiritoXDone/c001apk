@@ -16,6 +16,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import com.example.c001apk.compose.R
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -119,11 +121,12 @@ internal fun ChatMessageBubble(
 
 @Composable
 private fun ChatAvatar(avatar: String?, onClick: () -> Unit) {
+    val avatarDescription = stringResource(R.string.user_view_profile)
     Box(
         modifier = Modifier.size(36.dp).clip(CircleShape)
             .background(MiuixTheme.colorScheme.surfaceContainerHigh)
             .clickable(onClick = onClick)
-            .semantics { contentDescription = "查看用户主页" },
+            .semantics { contentDescription = avatarDescription },
         contentAlignment = Alignment.Center,
     ) {
         if (!avatar.isNullOrBlank()) {

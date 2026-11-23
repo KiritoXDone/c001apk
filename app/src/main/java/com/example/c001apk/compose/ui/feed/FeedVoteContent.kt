@@ -29,6 +29,8 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.res.stringResource
+import com.example.c001apk.compose.R
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -58,12 +60,12 @@ internal fun FeedVoteContent(
     Column(Modifier.fillMaxWidth().padding(top = 12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         HorizontalDivider()
         Text(
-            text = title ?: "投票选项",
+            text = title ?: stringResource(R.string.vote_options),
             style = MiuixTheme.textStyles.headline2.copy(fontWeight = FontWeight.SemiBold),
         )
         val options = vote?.availableOptions.orEmpty()
         if (vote == null || options.isEmpty()) {
-            VoteSummary("暂无投票选项")
+            VoteSummary(stringResource(R.string.vote_empty))
             return@Column
         }
 
@@ -95,9 +97,9 @@ internal fun FeedVoteContent(
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         Text(option.title.orEmpty(), Modifier.weight(1f))
-                        if (option.id in votedIds) VoteSummary("已选")
+                        if (option.id in votedIds) VoteSummary(stringResource(R.string.vote_selected))
                         if (count != null && fraction != null) {
-                            VoteSummary("${(fraction * 100).roundToInt()}% · ${count} 票")
+                            VoteSummary(stringResource(R.string.vote_result, (fraction * 100).roundToInt(), count))
                         }
                     }
                     if (fraction != null) {
@@ -107,7 +109,10 @@ internal fun FeedVoteContent(
             }
         } else {
             if (canSelect && multiSelect) {
-                VoteSummary(if (limits.first == limits.last) "选 ${limits.last} 项" else "选 ${limits.first}–${limits.last} 项")
+                VoteSummary(
+                    if (limits.first == limits.last) stringResource(R.string.vote_select_count, limits.last)
+                    else stringResource(R.string.vote_select_range, limits.first, limits.last),
+                )
             }
             Column(
                 modifier = if (multiSelect) Modifier else Modifier.selectableGroup(),
@@ -131,11 +136,11 @@ internal fun FeedVoteContent(
         }
 
         val status = when {
-            closed -> "投票已结束"
-            upcoming -> "投票未开始"
-            votedIds.isNotEmpty() -> "已投票"
-            !canVote -> "登录后投票"
-            !canSelect -> "投票暂不可用"
+            closed -> stringResource(R.string.vote_closed)
+            upcoming -> stringResource(R.string.vote_upcoming)
+            votedIds.isNotEmpty() -> stringResource(R.string.vote_submitted)
+            !canVote -> stringResource(R.string.vote_login)
+            !canSelect -> stringResource(R.string.vote_unavailable)
             else -> null
         }
         if (canSelect && vote.anonymousStatus == 1) {
@@ -145,13 +150,13 @@ internal fun FeedVoteContent(
                 onCheckedChange = { anonymous = it },
             )
         }
-        val participation = vote.totalVoteNum?.let { "${it} 人参与" }
+        val participation = vote.totalVoteNum?.let { stringResource(R.string.vote_participants, it) }
         listOfNotNull(participation, status).joinToString(" · ")
             .takeIf(String::isNotEmpty)?.let { VoteSummary(it) }
         if (canSelect) {
             error?.let { Text(it, color = MiuixTheme.colorScheme.error) }
             TextButton(
-                text = if (submitting) "正在投票…" else "投票",
+                text = stringResource(if (submitting) R.string.vote_submitting else R.string.vote_submit),
                 onClick = { onSubmit(selected, anonymous) },
                 enabled = !submitting && !refreshing && selected.size in limits,
                 colors = ButtonDefaults.textButtonColorsPrimary(),
@@ -251,7 +256,7 @@ private fun AnonymousVoteSwitch(
                 .padding(horizontal = 2.dp, vertical = 4.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text("匿名投票", Modifier.weight(1f), style = MiuixTheme.textStyles.body2)
+            Text(stringResource(R.string.vote_anonymous), Modifier.weight(1f), style = MiuixTheme.textStyles.body2)
             Switch(checked = checked, onCheckedChange = null, enabled = enabled)
         }
     }

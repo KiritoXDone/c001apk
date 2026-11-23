@@ -18,6 +18,8 @@ import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import com.example.c001apk.compose.R
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -120,7 +122,7 @@ internal fun ChatComposerContent(
         ) {
             ChatComposerIcon(
                 icon = MiuixIcons.Glass.Smile,
-                description = if (showEmojiPanel) "收起表情" else "选择表情",
+                description = stringResource(if (showEmojiPanel) R.string.emoji_collapse else R.string.emoji_pick),
                 selected = showEmojiPanel,
                 onClick = {
                     onClearFocus()
@@ -152,7 +154,7 @@ internal fun ChatComposerContent(
             )
             if (!shouldShowSendBtn) {
                 Row {
-                    ChatComposerIcon(MiuixIcons.Photos, "选择图片", onClick = onPickImage)
+                    ChatComposerIcon(MiuixIcons.Photos, stringResource(R.string.image_pick), onClick = onPickImage)
                     IconButton(
                         onClick = onPickOtherImage,
                         modifier = Modifier.size(44.dp),
@@ -160,7 +162,7 @@ internal fun ChatComposerContent(
                     ) {
                         Icon(
                             imageVector = MiuixIcons.File,
-                            contentDescription = "从文件选择图片",
+                            contentDescription = stringResource(R.string.image_pick_file),
                             modifier = Modifier.size(22.dp),
                             tint = MiuixTheme.colorScheme.onSurfaceVariantSummary,
                         )
@@ -169,7 +171,7 @@ internal fun ChatComposerContent(
             } else {
                 ChatComposerIcon(
                     icon = MiuixIcons.Send,
-                    description = "发送",
+                    description = stringResource(R.string.action_send),
                     primary = true,
                     onClick = { onSendMessage(textInput) },
                 )
@@ -234,7 +236,7 @@ internal fun ChatComposerContent(
                                     } else if (it == 27) {
                                         Icon(
                                             imageVector = MiuixIcons.Glass.Delete,
-                                            contentDescription = "删除表情",
+                                            contentDescription = stringResource(R.string.emoji_delete),
                                             modifier = Modifier.size(28.dp),
                                         )
                                     }
@@ -252,7 +254,7 @@ internal fun ChatComposerContent(
             }
             HorizontalDivider()
             Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 6.dp)) {
-                (listOf("最近") + pickerCategories.map { it.title }).forEachIndexed { index, title ->
+                (listOf(stringResource(R.string.label_recent)) + pickerCategories.map { it.title }).forEachIndexed { index, title ->
                     TextIndicator(index = index, title = title, pagerState = pagerState)
                 }
             }

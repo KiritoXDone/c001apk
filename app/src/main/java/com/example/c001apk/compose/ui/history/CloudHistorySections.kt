@@ -1,12 +1,14 @@
 package com.example.c001apk.compose.ui.history
 
+import androidx.annotation.StringRes
+import com.example.c001apk.compose.R
 import com.example.c001apk.compose.logic.model.CloudHistoryEntry
 import java.util.Calendar
 
-internal enum class HistoryTimeSection(val title: String) {
-    RECENT("刚刚"),
-    TODAY("今天早些时候"),
-    EARLIER("昨天或更早"),
+internal enum class HistoryTimeSection(@param:StringRes val titleRes: Int) {
+    RECENT(R.string.history_recent),
+    TODAY(R.string.history_today),
+    EARLIER(R.string.history_earlier),
 }
 
 internal fun cloudHistorySections(rows: List<CloudHistoryEntry>, nowMillis: Long): Map<HistoryTimeSection, List<CloudHistoryEntry>> {

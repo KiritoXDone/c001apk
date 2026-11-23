@@ -11,6 +11,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import com.example.c001apk.compose.R
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.decode.GifDecoder
@@ -114,7 +116,7 @@ fun CoilLoader(
                     ) {
                         Icon(
                             MiuixIcons.Refresh,
-                            contentDescription = "图片加载失败，重试",
+                            contentDescription = stringResource(R.string.image_retry),
                             modifier = Modifier.size(20.dp),
                             tint = MiuixTheme.colorScheme.onSurfaceVariantSummary,
                         )

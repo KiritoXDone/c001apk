@@ -1,6 +1,8 @@
 package com.example.c001apk.compose.ui.component
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import com.example.c001apk.compose.R
 import com.example.c001apk.compose.logic.model.TopBarStyle
 import com.example.c001apk.compose.logic.providable.LocalUserPreferences
 import com.example.c001apk.compose.util.composeClick
@@ -23,7 +25,7 @@ fun BackButton(
         Icon(
             imageVector = if (LocalUserPreferences.current.topBarStyle == TopBarStyle.OS4)
                 MiuixIcons.Glass.ChevronBackward else MiuixIcons.Back,
-            contentDescription = "返回",
+            contentDescription = stringResource(R.string.action_back),
         )
     }
 }

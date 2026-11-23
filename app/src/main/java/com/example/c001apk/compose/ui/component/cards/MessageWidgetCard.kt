@@ -11,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.semantics.Role
 import com.example.c001apk.compose.R
@@ -35,12 +36,12 @@ fun MessageWidgetCard(
     onViewHistory: (String) -> Unit,
 ) {
     val tools = listOf(
-        ProfileTool("本地收藏", MiuixIcons.Glass.FolderOutline, FFFListType.FAV),
-        ProfileTool("浏览历史", MiuixIcons.Glass.ClockOutline, FFFListType.HISTORY),
-        ProfileTool("我的常去", ImageVector.vectorResource(R.drawable.ic_location_outline), FFFListType.RECENT),
-        ProfileTool("我的收藏", MiuixIcons.Glass.StarOutline, FFFListType.COLLECTION),
-        ProfileTool("我的赞", MiuixIcons.Glass.FavoriteOutline, FFFListType.LIKE),
-        ProfileTool("我的回复", MiuixIcons.Glass.Reply, FFFListType.REPLY),
+        ProfileTool(stringResource(R.string.profile_local_favorites), MiuixIcons.Glass.FolderOutline, FFFListType.FAV),
+        ProfileTool(stringResource(R.string.profile_history), MiuixIcons.Glass.ClockOutline, FFFListType.HISTORY),
+        ProfileTool(stringResource(R.string.profile_recent), ImageVector.vectorResource(R.drawable.ic_location_outline), FFFListType.RECENT),
+        ProfileTool(stringResource(R.string.profile_collections), MiuixIcons.Glass.StarOutline, FFFListType.COLLECTION),
+        ProfileTool(stringResource(R.string.profile_likes), MiuixIcons.Glass.FavoriteOutline, FFFListType.LIKE),
+        ProfileTool(stringResource(R.string.profile_replies), MiuixIcons.Glass.Reply, FFFListType.REPLY),
     )
     Column(
         modifier = modifier.fillMaxWidth(),

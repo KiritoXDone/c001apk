@@ -178,7 +178,7 @@ fun HistoryHeader(
                     height = Dimension.fillToConstraints
                 },
         ) {
-            listOf("复制", "拉黑").forEachIndexed { index, menu ->
+            listOf(stringResource(R.string.action_copy), stringResource(R.string.menu_block)).forEachIndexed { index, menu ->
                 DropdownMenuItem(
                     text = { Text(menu) },
                     onClick = {

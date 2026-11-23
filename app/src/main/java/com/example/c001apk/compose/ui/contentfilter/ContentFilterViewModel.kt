@@ -1,5 +1,8 @@
 package com.example.c001apk.compose.ui.contentfilter
 
+import android.util.Log
+import com.example.c001apk.compose.R
+import com.example.c001apk.compose.logic.settings.AppLanguage
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -27,7 +30,7 @@ class ContentFilterViewModel @Inject constructor(
         importMessage = null
         val candidate = twilight.fetch()
         store.importTwilight(candidate)
-        importMessage = "已导入版本 ${candidate.revision}，共 ${candidate.rules.size} 条；过滤开关保持原设置"
+        importMessage = AppLanguage.getString(R.string.twilight_imported, candidate.revision, candidate.rules.size)
     }
 
     fun removeTwilight() = save {
@@ -46,7 +49,10 @@ class ContentFilterViewModel @Inject constructor(
         viewModelScope.launch {
             try { operation(); done() }
             catch (e: CancellationException) { throw e }
-            catch (e: Exception) { error = "操作失败，已有规则已保留：${e.message ?: "请重试"}" }
+            catch (e: Exception) {
+                Log.w("ContentFilter", "Could not update filtering rules", e)
+                error = AppLanguage.getString(R.string.filter_operation_failed)
+            }
             finally { saving = false }
         }
     }

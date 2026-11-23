@@ -9,6 +9,8 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.example.c001apk.compose.R
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
@@ -39,7 +41,6 @@ internal fun BlackListContent(
     onRemove: (String) -> Unit,
 ) {
     val users = type == BlackListType.USER
-    val label = if (users) "用户" else "话题"
     val listState = rememberLazyListState()
     TopBarScrollEffect { listState.animateScrollToItem(0) }
     LazyColumn(
@@ -48,7 +49,7 @@ internal fun BlackListContent(
         contentPadding = PaddingValues(top = padding.calculateTopPadding(), bottom = padding.calculateBottomPadding() + 24.dp),
     ) {
         item(key = "add") {
-            PreferenceGroup(title = "添加$label") {
+            PreferenceGroup(title = stringResource(if (users) R.string.blocklist_add_user else R.string.blocklist_add_topic)) {
                 Row(
                     Modifier.fillMaxWidth().padding(12.dp),
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -58,7 +59,7 @@ internal fun BlackListContent(
                         value = query,
                         onValueChange = onQueryChange,
                         modifier = Modifier.weight(1f),
-                        label = if (users) "输入用户 UID" else "输入话题名称",
+                        label = stringResource(if (users) R.string.blocklist_user_hint else R.string.blocklist_topic_hint),
                         useLabelAsPlaceholder = true,
                         singleLine = true,
                         insideMargin = DpSize(12.dp, 12.dp),
@@ -73,20 +74,23 @@ internal fun BlackListContent(
                         colors = ButtonDefaults.buttonColorsPrimary(),
                         minWidth = 64.dp, minHeight = 48.dp,
                         insideMargin = PaddingValues(horizontal = 16.dp, vertical = 12.dp)) {
-                        Text("添加")
+                        Text(stringResource(R.string.action_add))
                     }
                 }
             }
-            Text("名单仅保存在本机", Modifier.padding(horizontal = 28.dp).padding(bottom = 16.dp),
+            Text(stringResource(R.string.blocklist_local_notice), Modifier.padding(horizontal = 28.dp).padding(bottom = 16.dp),
                 style = MiuixTheme.textStyles.footnote1, color = MiuixTheme.colorScheme.onSurfaceVariantSummary)
-            if (entries != null) SmallTitle("已屏蔽 ${entries.size} 个$label")
+            if (entries != null) SmallTitle(stringResource(if (users) R.string.blocklist_users_count else R.string.blocklist_topics_count, entries.size))
         }
         if (entries == null) {
             item(key = "loading") { LoadingCard(state = LoadingState.Loading) }
         } else if (entries.isEmpty()) {
             item(key = "empty") {
                 PreferenceGroup {
-                    BasicComponent(title = "还没有屏蔽的$label", summary = "可在上方添加，或从右上角菜单导入。")
+                    BasicComponent(
+                        title = stringResource(if (users) R.string.blocklist_users_empty else R.string.blocklist_topics_empty),
+                        summary = stringResource(R.string.blocklist_add_hint),
+                    )
                 }
             }
         } else {
@@ -105,7 +109,7 @@ internal fun BlackListContent(
                         },
                         endActions = {
                             IconButton(onClick = { onRemove(entry.data) }) {
-                                Icon(MiuixIcons.Remove, "移除${if (users) "用户 UID " else "话题 "}${entry.data}",
+                                Icon(MiuixIcons.Remove, stringResource(if (users) R.string.blocklist_remove_user else R.string.blocklist_remove_topic, entry.data),
                                     Modifier.size(22.dp), tint = MiuixTheme.colorScheme.onSurfaceVariantSummary)
                             }
                         },
@@ -117,7 +121,7 @@ internal fun BlackListContent(
                 }
             }
             item(key = "hint") {
-                Text(if (users) "点击条目查看用户主页" else "点击条目查看话题",
+                Text(stringResource(if (users) R.string.blocklist_view_user else R.string.blocklist_view_topic),
                     Modifier.padding(horizontal = 28.dp, vertical = 12.dp),
                     style = MiuixTheme.textStyles.footnote1, color = MiuixTheme.colorScheme.onSurfaceVariantSummary)
             }

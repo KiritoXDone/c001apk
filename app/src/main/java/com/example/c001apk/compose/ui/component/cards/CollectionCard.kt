@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import com.example.c001apk.compose.R
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextOverflow
@@ -84,7 +86,7 @@ fun CollectionCard(
         )
 
         Text(
-            text = data.followNum.toString() + "人关注",
+            text = stringResource(R.string.stat_followed_by, data.followNum.toString()),
             modifier =
                 Modifier.padding(start = 10.dp).constrainAs(follow) {
                     start.linkTo(type.end)
@@ -96,7 +98,7 @@ fun CollectionCard(
         )
 
         Text(
-            text = data.itemNum.toString() + "个内容",
+            text = stringResource(R.string.stat_items, data.itemNum.toString()),
             modifier =
                 Modifier.padding(start = 10.dp).constrainAs(size) {
                     start.linkTo(follow.end)

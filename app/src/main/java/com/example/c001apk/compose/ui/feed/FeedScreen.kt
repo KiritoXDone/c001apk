@@ -57,6 +57,7 @@ import com.example.c001apk.compose.ui.component.FeedListEntry
 import com.example.c001apk.compose.ui.component.FooterCard
 import com.example.c001apk.compose.ui.component.ItemCard
 import com.example.c001apk.compose.ui.component.LocalMarkdownRaw
+import com.example.c001apk.compose.ui.component.pullToRefreshTexts
 import com.example.c001apk.compose.ui.component.MiuixAlertDialog
 import com.example.c001apk.compose.ui.component.MiuixDialogButton
 import com.example.c001apk.compose.ui.component.MiuixToolbarIconButton
@@ -174,14 +175,14 @@ fun FeedScreen(
             if (result.resultCode == RESULT_OK) {
                 result.data?.let { VoteCommentTarget.fromIntent(it) }?.let { target ->
                     viewModel.onVoteCommentPublished(target)
-                    context.makeToast("评论已发布")
+                    context.makeToast(context.getString(R.string.feed_comment_published))
                     return@rememberLauncherForActivityResult
                 }
                 val data =
                     result.data?.getParcelableExtraCompat<HomeFeedResponse.Data>("response_data")
                 data?.let {
                     viewModel.updateReply(it)
-                    context.makeToast("回复成功")
+                    context.makeToast(context.getString(R.string.feed_reply_published))
                     if (viewModel.replyType == "feed" && shouldShowSortCard) {
                         scope.launch {
                             lazyListState.scrollToItem(viewModel.itemSize)
@@ -218,7 +219,7 @@ fun FeedScreen(
         val filters: ContentFilterViewModel = hiltViewModel()
         Scaffold(topBar = {
             com.example.c001apk.compose.ui.component.MiuixTopBar(
-                title = "内容已过滤", navigationIcon = { BackButton(onBackClick) },
+                title = stringResource(R.string.feed_filtered), navigationIcon = { BackButton(onBackClick) },
                 actions = { ReadingSidebarButton(sidebarHidden, onToggleSidebar) },
             )
         }) { padding ->
@@ -271,11 +272,11 @@ fun FeedScreen(
                             }
                         },
                         title =
-                            viewModel.feedTypeName.ifBlank { "动态" } +
+                            viewModel.feedTypeName.ifBlank { stringResource(R.string.label_feed) } +
                                 if (
                                     (viewModel.feedState as? LoadingState.Success)?.isPublic == true
                                 )
-                                    " · 公开内容"
+                                    stringResource(R.string.feed_public_suffix)
                                 else "",
                         actions = {
                             ReadingSidebarButton(sidebarHidden, onToggleSidebar)
@@ -290,7 +291,7 @@ fun FeedScreen(
                                             launchReply()
                                         },
                                     ) {
-                                        Icon(MiuixIcons.Glass.Reply, contentDescription = "回复动态", modifier = Modifier.size(24.dp))
+                                        Icon(MiuixIcons.Glass.Reply, contentDescription = stringResource(R.string.feed_reply_action), modifier = Modifier.size(24.dp))
                                     }
                                 }
                                 val feed = (viewModel.feedState as LoadingState.Success).response
@@ -305,7 +306,7 @@ fun FeedScreen(
                                         },
                                         holdDownState = menuHeld,
                                     ) {
-                                        Icon(MiuixIcons.ExpandMore, contentDescription = "更多操作", modifier = Modifier.size(24.dp))
+                                        Icon(MiuixIcons.ExpandMore, contentDescription = stringResource(R.string.update_more), modifier = Modifier.size(24.dp))
                                     }
                                     DropdownMenu(
                                         expanded = dropdownMenuExpanded,
@@ -318,7 +319,7 @@ fun FeedScreen(
                                             onChoose = { chooseExport = true },
                                         )
                                         DropdownMenuItem(
-                                            text = { Text(if (rawMarkdown) "格式化正文" else "查看原文") },
+                                            text = { Text(stringResource(if (rawMarkdown) R.string.feed_format_body else R.string.feed_original_body)) },
                                             onClick = {
                                                 dropdownMenuExpanded = false
                                                 rawMarkdown = !rawMarkdown
@@ -339,20 +340,20 @@ fun FeedScreen(
                                                 dismiss = { dropdownMenuExpanded = false },
                                             )
                                         DropdownMenuItem(
-                                            text = { Text(if (viewModel.isAccountCollected) "取消收藏" else "收藏") },
+                                            text = { Text(stringResource(if (viewModel.isAccountCollected) R.string.feed_uncollect else R.string.feed_collect)) },
                                             onClick = {
                                                 dropdownMenuExpanded = false
                                                 viewModel.collections.open(id)
                                             },
                                             onLongClick = localFavoriteClick,
                                             onLongClickLabel =
-                                                if (viewModel.isFav) "取消本地收藏" else "保存到本地收藏",
+                                                stringResource(if (viewModel.isFav) R.string.feed_remove_local else R.string.feed_save_local),
                                         )
                                         if (ownFeed) {
                                             DropdownMenuItem(
                                                 text = {
                                                     Text(
-                                                        "删除",
+                                                        stringResource(R.string.menu_delete),
                                                         color = MiuixTheme.colorScheme.error,
                                                     )
                                                 },
@@ -371,7 +372,7 @@ fun FeedScreen(
                                                                 id = R.string.menu_unblock,
                                                             )
                                                         } else {
-                                                            "拉黑"
+                                                            stringResource(R.string.menu_block)
                                                         },
                                                     )
                                                 },
@@ -404,7 +405,7 @@ fun FeedScreen(
                 },
             ) { paddingValues ->
                 top.yukonga.miuix.kmp.basic.PullToRefresh(
-                    refreshTexts = listOf("下拉刷新", "释放刷新", "正在刷新", "刷新完成"),
+                    refreshTexts = pullToRefreshTexts(),
                     modifier =
                         Modifier.padding(
                             end =
@@ -699,14 +700,14 @@ fun FeedScreen(
     if (confirmDelete && ownFeed) {
         MiuixAlertDialog(
             onDismissRequest = { if (!viewModel.deletingFeed) confirmDelete = false },
-            title = { Text("删除动态") },
-            text = { Text("确定删除这条动态吗？删除后无法恢复。") },
+            title = { Text(stringResource(R.string.feed_delete_title)) },
+            text = { Text(stringResource(R.string.feed_delete_summary)) },
             dismissButton = {
                 MiuixDialogButton(
                     onClick = { confirmDelete = false },
                     enabled = !viewModel.deletingFeed,
                 ) {
-                    Text("取消")
+                    Text(stringResource(R.string.action_cancel))
                 }
             },
             confirmButton = {
@@ -715,7 +716,7 @@ fun FeedScreen(
                     enabled = !viewModel.deletingFeed,
                     destructive = true,
                 ) {
-                    Text(if (viewModel.deletingFeed) "删除中…" else "删除")
+                    Text(stringResource(if (viewModel.deletingFeed) R.string.status_deleting else R.string.menu_delete))
                 }
             },
         )

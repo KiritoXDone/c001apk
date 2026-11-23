@@ -7,6 +7,8 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.res.stringResource
+import com.example.c001apk.compose.R
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -41,13 +43,13 @@ fun ReplyThreadContent(
     Column(Modifier.fillMaxSize().background(MiuixTheme.colorScheme.surface)) {
         Box(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp)) {
             Text(
-                "全部回复",
+                stringResource(R.string.feed_all_replies),
                 modifier = Modifier.align(Alignment.Center),
                 style = MiuixTheme.textStyles.body1,
                 fontWeight = FontWeight.SemiBold,
             )
             IconButton(onClick = onDismiss, modifier = Modifier.align(Alignment.CenterEnd)) {
-                Icon(MiuixIcons.Basic.Close, "关闭全部回复", Modifier.size(20.dp))
+                Icon(MiuixIcons.Basic.Close, stringResource(R.string.feed_close_replies), Modifier.size(20.dp))
             }
         }
         BoxWithConstraints(Modifier.weight(1f).fillMaxWidth()) {
@@ -70,7 +72,7 @@ fun ReplyThreadContent(
                 ) {
                     if (state is LoadingState.Success) {
                         if (original != null) {
-                            item(key = "originalLabel") { ThreadSectionLabel("原评论") }
+                            item(key = "originalLabel") { ThreadSectionLabel(stringResource(R.string.feed_original_comment)) }
                             item(key = "original") {
                                 CompositionLocalProvider(
                                     LocalReplyThreadCorners provides ReplyThreadCorners(true, true),
@@ -80,7 +82,7 @@ fun ReplyThreadContent(
                             }
                         }
                         if (replies.isNotEmpty()) {
-                            item(key = "replyLabel") { ThreadSectionLabel("回复", original != null) }
+                            item(key = "replyLabel") { ThreadSectionLabel(stringResource(R.string.feed_reply), original != null) }
                             itemsIndexed(
                                 replies,
                                 key = { index, item -> "reply:${item.id}:$index" },

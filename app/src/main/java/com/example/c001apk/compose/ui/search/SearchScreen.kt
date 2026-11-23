@@ -68,7 +68,7 @@ fun SearchScreen(
     MiuixScaffold(
         topBar = {
             Column {
-                MiuixTopBar(title = "搜索", navigationIcon = { BackButton(onBackClick) })
+                MiuixTopBar(title = stringResource(R.string.search_hint), navigationIcon = { BackButton(onBackClick) })
                 Row(
                     Modifier.fillMaxWidth().padding(horizontal = 12.dp).padding(bottom = 8.dp),
                     verticalAlignment = Alignment.CenterVertically,
@@ -82,12 +82,12 @@ fun SearchScreen(
                         shouldAutoFocus = true,
                         interactionSource = interactionSource,
                         label = if (!title.isNullOrEmpty()) stringResource(R.string.search_hint_in, title)
-                            else "搜索动态、用户、话题和应用",
+                            else stringResource(R.string.search_all_hint),
                         modifier = Modifier.weight(1f),
                     )
                     AnimatedVisibility(visible = focused || searchExpanded || query.isNotEmpty()) {
                         IconButton(onClick = ::cancelSearch, modifier = Modifier.padding(start = 4.dp)) {
-                            Text("取消", color = MiuixTheme.colorScheme.primary,
+                            Text(stringResource(R.string.action_cancel), color = MiuixTheme.colorScheme.primary,
                                 style = MiuixTheme.textStyles.body1)
                         }
                     }
@@ -104,10 +104,10 @@ fun SearchScreen(
                     Modifier.fillMaxWidth().padding(top = 8.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Text("搜索历史", Modifier.weight(1f).padding(start = 4.dp),
+                    Text(stringResource(R.string.search_history), Modifier.weight(1f).padding(start = 4.dp),
                         style = MiuixTheme.textStyles.title4.copy(fontWeight = FontWeight.SemiBold))
                     IconButton(onClick = { showClearDialog = true }) {
-                        Text("清空", color = MiuixTheme.colorScheme.primary,
+                        Text(stringResource(R.string.action_clear), color = MiuixTheme.colorScheme.primary,
                             style = MiuixTheme.textStyles.body2)
                     }
                 }
@@ -140,7 +140,7 @@ fun SearchScreen(
                         },
                         destructive = true,
                     ) {
-                        Text("清空")
+                        Text(stringResource(R.string.action_clear))
                     }
                 },
                 dismissButton = {
@@ -149,7 +149,7 @@ fun SearchScreen(
                             showClearDialog = false
                         },
                     ) {
-                        Text("取消")
+                        Text(stringResource(R.string.action_cancel))
                     }
                 },
                 title = {

@@ -19,6 +19,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import com.example.c001apk.compose.R
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -67,6 +69,8 @@ fun UserProfileHeader(
     onViewFFFList: (String, String) -> Unit,
 ) {
     val context = LocalContext.current
+    val coverDescription = stringResource(R.string.user_view_cover)
+    val avatarDescription = stringResource(R.string.user_view_avatar)
     val colors = MiuixTheme.colorScheme
     val prefs = LocalUserPreferences.current
     val locallyFollowed = prefs.localFollows.any { it.uid == data.uid }
@@ -79,7 +83,7 @@ fun UserProfileHeader(
         ) {
             if (!data.cover.isNullOrBlank()) {
                 ImageView(
-                    Modifier.fillMaxSize().semantics { contentDescription = "查看用户封面" },
+                    Modifier.fillMaxSize().semantics { contentDescription = coverDescription },
                     url = data.cover,
                 )
             }
@@ -112,7 +116,7 @@ fun UserProfileHeader(
                 Text(data.username.orEmpty().take(1), style = MiuixTheme.textStyles.title1)
                 if (!data.userAvatar.isNullOrBlank()) {
                     ImageView(
-                        Modifier.fillMaxSize().semantics { contentDescription = "查看用户头像" },
+                        Modifier.fillMaxSize().semantics { contentDescription = avatarDescription },
                         url = data.userAvatar,
                     )
                 }
@@ -143,7 +147,7 @@ fun UserProfileHeader(
             ProfileCopyText(
                 text = buildString {
                     append("UID ${data.uid.orEmpty()}")
-                    if ((data.logintime ?: 0) > 0) append(" · ${fromToday(data.logintime ?: 0)}活跃")
+                    if ((data.logintime ?: 0) > 0) append(" · " + stringResource(R.string.user_active_at, fromToday(data.logintime ?: 0)))
                 },
                 onClick = { context.copyText(data.uid.orEmpty()) },
                 modifier = Modifier.padding(top = 6.dp).testTag("user_copy_uid"),
@@ -162,12 +166,12 @@ fun UserProfileHeader(
                 Modifier.fillMaxWidth().padding(top = 8.dp, bottom = if (ownProfile) 0.dp else 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
             ) {
-                UserStatistic("动态", (data.feed?.id ?: 0).toString(), Modifier.weight(1f))
-                UserStatistic("获赞", (data.beLikeNum ?: 0).toString(), Modifier.weight(1f))
-                UserStatistic("关注", (data.follow ?: 0).toString(), Modifier.weight(1f)) {
+                UserStatistic(stringResource(R.string.label_feed), (data.feed?.id ?: 0).toString(), Modifier.weight(1f))
+                UserStatistic(stringResource(R.string.label_likes_received), (data.beLikeNum ?: 0).toString(), Modifier.weight(1f))
+                UserStatistic(stringResource(R.string.follow), (data.follow ?: 0).toString(), Modifier.weight(1f)) {
                     onViewFFFList(data.uid.orEmpty(), FFFListType.USER_FOLLOW.name)
                 }
-                UserStatistic("粉丝", (data.fans ?: 0).toString(), Modifier.weight(1f)) {
+                UserStatistic(stringResource(R.string.label_followers), (data.fans ?: 0).toString(), Modifier.weight(1f)) {
                     onViewFFFList(data.uid.orEmpty(), FFFListType.FAN.name)
                 }
             }
@@ -189,9 +193,11 @@ fun UserProfileHeader(
                             Spacer(Modifier.width(6.dp))
                         }
                         Text(
-                            if (!prefs.isLogin) {
-                                if (locallyFollowed) "已本地关注" else "本地关注"
-                            } else if (data.isFollow == 1) "已关注" else "关注",
+                            stringResource(
+                                if (!prefs.isLogin) {
+                                    if (locallyFollowed) R.string.user_locally_followed else R.string.user_local_follow
+                                } else if (data.isFollow == 1) R.string.user_following else R.string.menu_follow,
+                            ),
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Medium,
                         )
@@ -203,13 +209,13 @@ fun UserProfileHeader(
                     ) {
                         Icon(MiuixIcons.Glass.Email, null, Modifier.size(18.dp))
                         Spacer(Modifier.width(6.dp))
-                        Text("私信", fontSize = 16.sp, fontWeight = FontWeight.Medium)
+                        Text(stringResource(R.string.label_private_message), fontSize = 16.sp, fontWeight = FontWeight.Medium)
                     }
                 }
                 if (prefs.isLogin && prefs.quietFollow) {
                     Spacer(Modifier.height(8.dp))
                     TextButton(
-                        text = if (locallyFollowed) "已悄悄关注" else "悄悄关注",
+                        text = stringResource(if (locallyFollowed) R.string.user_quietly_followed else R.string.user_quiet_follow),
                         onClick = onLocalFollow,
                         modifier = Modifier.fillMaxWidth().testTag("user_quiet_follow"),
                     )

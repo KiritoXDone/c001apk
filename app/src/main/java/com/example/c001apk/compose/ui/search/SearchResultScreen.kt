@@ -17,6 +17,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.example.c001apk.compose.R
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.c001apk.compose.ui.component.MiuixScaffold as Scaffold
@@ -59,37 +61,44 @@ enum class SearchOrderType(val title: String, val sort: String, val isStrict: Bo
     EXACT("精确", "none", isStrict = true),
 }
 
-private fun searchTypeTitle(type: SearchType): String {
+private fun searchTypeTitleRes(type: SearchType): Int {
     return when (type) {
-        SearchType.FEED -> "动态"
-        SearchType.APP -> "应用"
-        SearchType.GAME -> "游戏"
-        SearchType.PRODUCT -> "设备"
-        SearchType.USER -> "用户"
-        SearchType.TOPIC -> "话题"
+        SearchType.FEED -> R.string.label_feed
+        SearchType.APP -> R.string.label_app
+        SearchType.GAME -> R.string.label_game
+        SearchType.PRODUCT -> R.string.label_device
+        SearchType.USER -> R.string.label_user
+        SearchType.TOPIC -> R.string.label_topic
     }
 }
 
-private fun searchFeedTitle(type: SearchFeedType): String {
+private fun searchFeedTitleRes(type: SearchFeedType): Int {
     return when (type) {
-        SearchFeedType.ALL -> "全部"
-        SearchFeedType.FEED -> "动态"
-        SearchFeedType.ARTICLE -> "文章"
-        SearchFeedType.COOLPIC -> "酷图"
-        SearchFeedType.COMMENT -> "评论"
-        SearchFeedType.RATING -> "评分"
-        SearchFeedType.ANSWER -> "回答"
-        SearchFeedType.QUESTION -> "问题"
-        SearchFeedType.VOTE -> "投票"
+        SearchFeedType.ALL -> R.string.label_all
+        SearchFeedType.FEED -> R.string.label_feed
+        SearchFeedType.ARTICLE -> R.string.label_article
+        SearchFeedType.COOLPIC -> R.string.label_coolpic
+        SearchFeedType.COMMENT -> R.string.label_comment
+        SearchFeedType.RATING -> R.string.label_rating
+        SearchFeedType.ANSWER -> R.string.label_answer
+        SearchFeedType.QUESTION -> R.string.label_question
+        SearchFeedType.VOTE -> R.string.label_vote
     }
 }
 
-private fun searchOrderTitle(type: SearchOrderType): String = type.title
+private fun searchOrderTitleRes(type: SearchOrderType): Int = when (type) {
+    SearchOrderType.COMPREHENSIVE -> R.string.search_order_comprehensive
+    SearchOrderType.DATELINE -> R.string.search_order_dateline
+    SearchOrderType.HOT -> R.string.search_order_hot
+    SearchOrderType.REPLY -> R.string.search_order_reply
+    SearchOrderType.EXACT -> R.string.search_order_exact
+}
 
+@Composable
 private fun pageTypeTitle(pageType: String?): String? {
     if (pageType.isNullOrEmpty()) return pageType
     val match = SearchType.entries.firstOrNull { it.name.equals(pageType, ignoreCase = true) }
-    return match?.let { searchTypeTitle(it) } ?: pageType
+    return match?.let { stringResource(searchTypeTitleRes(it)) } ?: pageType
 }
 
 @Composable
@@ -124,36 +133,30 @@ fun SearchResultScreen(
         mutableStateOf(SearchOrderType.entries.firstOrNull { it.name == defaultOrder }
             ?: SearchOrderType.COMPREHENSIVE)
     }
-    val filterMenu =
-        remember(feedType, orderType) {
-            DropdownEntry(
-                items =
-                    listOf(
-                        DropdownItem(
-                            text = "类型",
-                            children =
-                                SearchFeedType.entries.map { feed ->
-                                    DropdownItem(
-                                        text = searchFeedTitle(feed),
-                                        selected = feedType == feed,
-                                        onClick = { feedType = feed },
-                                    )
-                                },
-                        ),
-                        DropdownItem(
-                            text = "排序",
-                            children =
-                                SearchOrderType.entries.map { order ->
-                                    DropdownItem(
-                                        text = searchOrderTitle(order),
-                                        selected = orderType == order,
-                                        onClick = { orderType = order },
-                                    )
-                                },
-                        ),
-                    ),
-            )
-        }
+    val filterMenu = DropdownEntry(
+        items = listOf(
+            DropdownItem(
+                text = stringResource(R.string.search_type),
+                children = SearchFeedType.entries.map { feed ->
+                    DropdownItem(
+                        text = stringResource(searchFeedTitleRes(feed)),
+                        selected = feedType == feed,
+                        onClick = { feedType = feed },
+                    )
+                },
+            ),
+            DropdownItem(
+                text = stringResource(R.string.menu_sort),
+                children = SearchOrderType.entries.map { order ->
+                    DropdownItem(
+                        text = stringResource(searchOrderTitleRes(order)),
+                        selected = orderType == order,
+                        onClick = { orderType = order },
+                    )
+                },
+            ),
+        ),
+    )
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -181,7 +184,7 @@ fun SearchResultScreen(
                             WindowIconCascadingDropdownMenu(entry = filterMenu) {
                                 Icon(
                                     imageVector = MiuixIcons.More,
-                                    contentDescription = "搜索筛选",
+                                    contentDescription = stringResource(R.string.search_filter),
                                     modifier = Modifier.size(21.dp),
                                 )
                             }
@@ -190,7 +193,7 @@ fun SearchResultScreen(
                 )
                 if (pageType.isNullOrEmpty()) {
                     MiuixPagerTabRow(
-                        tabs = tabList.map(::searchTypeTitle),
+                        tabs = tabList.map { stringResource(searchTypeTitleRes(it)) },
                         pagerState = pagerState,
                         onReselect = { refreshState = true },
                     )

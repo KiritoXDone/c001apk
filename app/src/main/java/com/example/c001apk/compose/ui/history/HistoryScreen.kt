@@ -26,6 +26,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.c001apk.compose.R
 import com.example.c001apk.compose.logic.state.LoadingState
 import com.example.c001apk.compose.ui.component.MiuixToolbarIconButton
 import com.example.c001apk.compose.ui.component.MiuixMoreMenu
@@ -81,8 +82,8 @@ fun HistoryScreen(
                 windowInsets = WindowInsets.systemBars.only(WindowInsetsSides.Start + WindowInsetsSides.Top),
                 navigationIcon = { BackButton { onBackClick() } },
                 title = when (type) {
-                    HistoryType.FAV.name -> "本地收藏"
-                    HistoryType.HISTORY.name -> "浏览历史"
+                    HistoryType.FAV.name -> stringResource(R.string.profile_local_favorites)
+                    HistoryType.HISTORY.name -> stringResource(R.string.profile_history)
                     else -> type
                 },
                 actions = {
@@ -91,16 +92,16 @@ fun HistoryScreen(
                         enter = fadeIn(), exit = fadeOut(),
                     ) {
                         MiuixToolbarIconButton(onClick = { showClearDialog = true }, enabled = dataList.isNotEmpty()) {
-                            Icon(MiuixIcons.Delete, contentDescription = "清除本地记录")
+                            Icon(MiuixIcons.Delete, contentDescription = stringResource(R.string.history_clear))
                         }
                     }
                     if (type == HistoryType.HISTORY.name) {
                         MiuixMoreMenu(expanded = sourceMenu, onExpandedChange = { sourceMenu = it }) {
-                            listOf(false to "本地", true to "云端").forEach { (cloud, label) ->
+                            listOf(false to stringResource(R.string.history_local), true to stringResource(R.string.history_cloud)).forEach { (cloud, label) ->
                                 val selected = cloudSelected == cloud
                                 MiuixMenuItem(
                                     text = {
-                                        Text(if (selected) "$label（当前）" else label,
+                                        Text(if (selected) stringResource(R.string.history_current, label) else label,
                                             color = if (selected) MiuixTheme.colorScheme.primary else MiuixTheme.colorScheme.onSurface)
                                     },
                                     onClick = {
@@ -182,7 +183,7 @@ fun HistoryScreen(
                             viewModel.clearAll()
                         },
                     ) {
-                        Text("清除")
+                        Text(stringResource(R.string.action_clear))
                     }
                 },
                 dismissButton = {
@@ -194,10 +195,9 @@ fun HistoryScreen(
                         Text(text = stringResource(id = android.R.string.cancel))
                     }
                 },
-                title = { Text(if (type == HistoryType.HISTORY.name) "清除全部本地浏览历史？" else "确定清除全部？") },
+                title = { Text(stringResource(if (type == HistoryType.HISTORY.name) R.string.history_clear_title else R.string.favorites_clear_title)) },
                 text = {
-                    Text(if (type == HistoryType.HISTORY.name) "仅清除本机保存的浏览记录，不影响云端历史。"
-                        else "仅清除本地收藏，不影响账号收藏夹。")
+                    Text(stringResource(if (type == HistoryType.HISTORY.name) R.string.history_clear_summary else R.string.favorites_clear_summary))
                 },
             )
         }

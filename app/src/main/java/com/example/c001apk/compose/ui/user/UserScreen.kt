@@ -41,6 +41,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.c001apk.compose.R
+import com.example.c001apk.compose.ui.component.pullToRefreshTexts
 import com.example.c001apk.compose.logic.state.LoadingState
 import com.example.c001apk.compose.ui.component.FooterCard
 import com.example.c001apk.compose.ui.component.ItemCard
@@ -163,10 +164,10 @@ fun UserScreen(
                         modifier = Modifier.testTag("user_back"),
                         backgroundColor = buttonBackground,
                     ) {
-                        Icon(MiuixIcons.Back, "返回", Modifier.size(24.dp), tint = foreground)
+                        Icon(MiuixIcons.Back, stringResource(R.string.action_back), Modifier.size(24.dp), tint = foreground)
                     }
                 },
-                title = if (topBarProgress >= 0.8f) profile?.username ?: "用户主页" else "",
+                title = if (topBarProgress >= 0.8f) profile?.username ?: stringResource(R.string.user_profile) else "",
                 actions = {
                     if (viewModel.userState is LoadingState.Success) {
                         Row(Modifier.wrapContentSize(Alignment.TopEnd)) {
@@ -177,7 +178,7 @@ fun UserScreen(
                                 modifier = Modifier.testTag("user_search"),
                                 backgroundColor = buttonBackground,
                             ) {
-                                Icon(MiuixIcons.Basic.Search, "搜索此用户的动态", Modifier.size(24.dp), tint = foreground)
+                                Icon(MiuixIcons.Basic.Search, stringResource(R.string.search_user_feeds), Modifier.size(24.dp), tint = foreground)
                             }
                             Box {
                                 IconButton(
@@ -186,7 +187,7 @@ fun UserScreen(
                                     modifier = Modifier.testTag("user_more"),
                                     backgroundColor = buttonBackground,
                                 ) {
-                                    Icon(MiuixIcons.ExpandMore, "更多操作", Modifier.size(24.dp), tint = foreground)
+                                    Icon(MiuixIcons.ExpandMore, stringResource(R.string.update_more), Modifier.size(24.dp), tint = foreground)
                                 }
                                 DropdownMenu(
                                     expanded = dropdownMenuExpanded,
@@ -195,9 +196,9 @@ fun UserScreen(
                                     alignment = PopupPositionProvider.Align.End,
                                     contentScale = 1f,
                                 ) {
-                                    listOf("复制", "分享", "用户信息").forEachIndexed { index, menu ->
+                                    listOf(R.string.action_copy, R.string.action_share, R.string.user_info).forEachIndexed { index, menu ->
                                         DropdownMenuItem(
-                                            text = { Text(menu) },
+                                            text = { Text(stringResource(menu)) },
                                             leadingIcon = {
                                                 Icon(
                                                     listOf(MiuixIcons.Copy, MiuixIcons.Share, MiuixIcons.Info)[index],
@@ -236,7 +237,7 @@ fun UserScreen(
                                                 if (viewModel.isBlocked) {
                                                     stringResource(id = R.string.menu_unblock)
                                                 } else {
-                                                    "拉黑"
+                                                    stringResource(R.string.menu_block)
                                                 },
                                             )
                                         },
@@ -330,7 +331,7 @@ fun UserScreen(
                             modifier = Modifier.fillMaxWidth().height(feedViewportHeight)
                                 .nestedScroll(profileScrollConnection)
                                 .testTag("user_feed_refresh"),
-                            refreshTexts = listOf("下拉刷新", "释放刷新", "正在刷新", "刷新完成"),
+                            refreshTexts = pullToRefreshTexts(),
                             pullToRefreshState = feedRefreshState,
                             contentPadding = PaddingValues(top = paddingValues.calculateTopPadding()),
                             isRefreshing = viewModel.isRefreshing || viewModel.loadingState is LoadingState.Loading,
@@ -355,7 +356,7 @@ fun UserScreen(
                                         verticalAlignment = Alignment.CenterVertically,
                                     ) {
                                         Text(
-                                            "动态",
+                                            stringResource(R.string.label_feed),
                                             style =
                                                 top.yukonga.miuix.kmp.theme.MiuixTheme.textStyles.subtitle,
                                             fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold,
@@ -426,18 +427,18 @@ fun UserScreen(
                 text = {
                     Text(
                         text =
-                            """
-                                UID: ${data.uid}
-                                
-                                等级: Lv.${data.level}
-                                
-                                性别: ${if (data.gender == 0) "女" else if (data.gender == 1) "男" else "未知"}
-                                
-                                注册时长: ${((System.currentTimeMillis() / 1000 - (data.regdate ?: 0)) / 24 / 3600)} 天
-                                
-                                注册时间: ${timeStamp2Date(data.regdate ?: 0)}
-                            """
-                                .trimIndent(),
+                            stringResource(
+                                R.string.user_details,
+                                data.uid.toString(),
+                                data.level.toString(),
+                                stringResource(when (data.gender) {
+                                    0 -> R.string.user_gender_female
+                                    1 -> R.string.user_gender_male
+                                    else -> R.string.user_gender_unknown
+                                }),
+                                (System.currentTimeMillis() / 1000 - (data.regdate ?: 0)) / 24 / 3600,
+                                timeStamp2Date(data.regdate ?: 0),
+                            ),
                     )
                 },
             )

@@ -110,7 +110,7 @@
     <string name="settings_clear_cache_on_exit">退出时清除图片缓存</string>
     <string name="settings_clear_cache_on_exit_summary">下次启动时自动清除图片缓存</string>
     <string name="settings_check_app_updates">检查已安装应用更新</string>
-    <string name="settings_szlm_id">数字联盟ID</string>
+    <string name="settings_szlm_id">数字联盟 ID</string>
     <string name="settings_szlm_id_empty">尚未生成，点击获取</string>
     <string name="settings_szlm_id_saved">已保存，点击管理</string>
     <string name="settings_device_params">机型参数</string>
@@ -169,17 +169,17 @@
     <string name="settings_about_license">开源许可证</string>
     <string name="settings_szlm_title">数字联盟 ID</string>
     <string name="settings_szlm_desc">用于连接酷安服务，可自动获取，也可粘贴已有 ID。</string>
-    <string name="settings_szlm_fetching">正在获取…</string>
+    <string name="settings_szlm_fetching">获取中…</string>
     <string name="settings_szlm_auto">自动获取</string>
     <string name="settings_szlm_refetch">重新获取</string>
     <string name="settings_szlm_import">从官方酷安导入</string>
     <string name="settings_bar_order_display">显示顺序</string>
-    <string name="settings_bar_order_saving">正在保存</string>
+    <string name="settings_bar_order_saving">保存中…</string>
     <string name="settings_bar_order_done">完成</string>
     <string name="settings_bar_order_hint">拖动右侧手柄调整顺序，同时应用于底栏与大屏侧栏。启动和返回主页的行为保持不变，点击完成后保存。</string>
     <string name="settings_device_import_title">导入官方设备标识</string>
     <string name="settings_device_import_steps">1. 打开官方酷安的“检查日志和测试”页。
-2. 在同一页面累计点击“复制 OAID”5 次。
+2. 在同一页面累计点击“复制 OAID” 5 次。
 3. 返回此处粘贴完整内容，识别后保存。</string>
     <string name="settings_device_import_open">打开酷安 OAID 界面</string>
     <string name="settings_device_import_note">仅识别 ShuzlmID（数盟 ID），忽略 OAID、AndroidID 和 UUID。其他设备参数与账号保持原值。</string>
@@ -187,7 +187,7 @@
     <string name="settings_device_import_recognized">已识别数盟 ID，复制内容已隐藏。</string>
     <string name="settings_device_import_saved">已保存，返回内容页后刷新即可。</string>
     <string name="settings_device_import_paste">粘贴并识别</string>
-    <string name="settings_device_import_saving">正在保存…</string>
+    <string name="settings_device_import_saving">保存中…</string>
     <string name="settings_device_import_apply">保存并应用</string>
     <string name="settings_device_import_error">无法打开官方酷安，请确认已安装并启用支持此入口的版本</string>
     <string name="settings_params_group_protocol">酷安协议</string>

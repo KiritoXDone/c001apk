@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import com.example.c001apk.compose.R
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -59,8 +61,8 @@ fun FFFListScreen(
 ) {
 
     val isMe by lazy { uid == CookieUtil.uid }
-    val followList by lazy { listOf("用户", "话题", "数码", "应用") }
-    val replyList by lazy { listOf("我的回复", "我收到的回复") }
+    val followList = listOf(R.string.label_user, R.string.label_topic, R.string.label_product, R.string.label_app).map { stringResource(it) }
+    val replyList = listOf(R.string.profile_replies, R.string.replies_received).map { stringResource(it) }
     val pagerState = rememberPagerState {
         if (type == FFFListType.FOLLOW.name) followList.size else replyList.size
     }
@@ -86,25 +88,25 @@ fun FFFListScreen(
                             text =
                                 title
                                     ?: when (type) {
-                                        FFFListType.FEED.name -> "我的动态"
+                                        FFFListType.FEED.name -> stringResource(R.string.profile_posts)
 
-                                        FFFListType.FOLLOW.name -> "我的关注"
+                                        FFFListType.FOLLOW.name -> stringResource(R.string.profile_following)
 
                                         FFFListType.USER_FOLLOW.name -> {
-                                            if (isMe) "我关注的人" else "TA关注的人"
+                                            stringResource(if (isMe) R.string.follow_mine else R.string.follow_theirs)
                                         }
 
                                         FFFListType.FAN.name -> {
-                                            if (isMe) "关注我的人" else "TA的粉丝"
+                                            stringResource(if (isMe) R.string.followers_mine else R.string.followers_theirs)
                                         }
 
-                                        FFFListType.RECENT.name -> "我的常去"
+                                        FFFListType.RECENT.name -> stringResource(R.string.profile_recent)
 
-                                        FFFListType.LIKE.name -> "我的赞"
+                                        FFFListType.LIKE.name -> stringResource(R.string.profile_likes)
 
-                                        FFFListType.REPLY.name -> "我的回复"
+                                        FFFListType.REPLY.name -> stringResource(R.string.profile_replies)
 
-                                        FFFListType.COLLECTION.name -> "我的收藏"
+                                        FFFListType.COLLECTION.name -> stringResource(R.string.profile_collections)
 
                                         else -> EMPTY_STRING
                                     },

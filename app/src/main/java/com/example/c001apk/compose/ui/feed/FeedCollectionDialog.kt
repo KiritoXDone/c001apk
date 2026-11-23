@@ -6,6 +6,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.example.c001apk.compose.R
 import androidx.compose.ui.unit.dp
 import com.example.c001apk.compose.ui.component.MiuixAlertDialog
 import com.example.c001apk.compose.ui.component.MiuixDialogButton
@@ -37,7 +39,7 @@ fun FeedCollectionDialog(collections: FeedCollections) {
                 Modifier.fillMaxWidth().padding(bottom = 8.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text("收藏到", style = MiuixTheme.textStyles.title3, modifier = Modifier.weight(1f))
+                Text(stringResource(R.string.collection_save_to), style = MiuixTheme.textStyles.title3, modifier = Modifier.weight(1f))
                 IconButton(
                     onClick = {
                         title = ""
@@ -50,7 +52,7 @@ fun FeedCollectionDialog(collections: FeedCollections) {
                 ) {
                     Icon(
                         MiuixIcons.Add,
-                        contentDescription = "新建收藏夹",
+                        contentDescription = stringResource(R.string.collection_create),
                         modifier = Modifier.size(20.dp),
                     )
                 }
@@ -58,7 +60,7 @@ fun FeedCollectionDialog(collections: FeedCollections) {
             LazyColumn(Modifier.weight(1f, fill = false).fillMaxWidth()) {
                 items(collections.items, key = { it.id.orEmpty() }) { collection ->
                     CheckboxPreference(
-                        title = collection.title.orEmpty().ifBlank { "默认收藏夹" },
+                        title = collection.title.orEmpty().ifBlank { stringResource(R.string.collection_default) },
                         checked = collection.id in collections.selected,
                         enabled = !collections.busy,
                         insideMargin = PaddingValues(horizontal = 4.dp, vertical = 10.dp),
@@ -85,11 +87,11 @@ fun FeedCollectionDialog(collections: FeedCollections) {
                                 onClick = collections::loadMore,
                                 modifier = Modifier.fillMaxWidth(),
                             ) {
-                                Text("重试")
+                                Text(stringResource(R.string.action_retry))
                             }
                         }
                     } else if (collections.items.isEmpty()) {
-                        Text("还没有收藏夹，先新建一个吧", modifier = Modifier.padding(vertical = 16.dp))
+                        Text(stringResource(R.string.collection_empty), modifier = Modifier.padding(vertical = 16.dp))
                     } else if (collections.hasMore) {
                         LaunchedEffect(collections.items.lastOrNull()?.id) {
                             collections.loadMore()
@@ -104,7 +106,7 @@ fun FeedCollectionDialog(collections: FeedCollections) {
                     enabled = !collections.saving && !collections.creating,
                     modifier = Modifier.weight(1f),
                 ) {
-                    Text("取消", style = MiuixTheme.textStyles.button)
+                    Text(stringResource(R.string.action_cancel), style = MiuixTheme.textStyles.button)
                 }
                 GlassDialogButton(
                     onClick = collections::save,
@@ -115,7 +117,7 @@ fun FeedCollectionDialog(collections: FeedCollections) {
                     modifier = Modifier.weight(1f),
                     role = GlassDialogButtonRole.Primary,
                 ) {
-                    Text(if (collections.saving) "保存中…" else "保存", style = MiuixTheme.textStyles.button)
+                    Text(stringResource(if (collections.saving) R.string.status_saving else R.string.action_save), style = MiuixTheme.textStyles.button)
                 }
             }
         }
@@ -123,19 +125,19 @@ fun FeedCollectionDialog(collections: FeedCollections) {
     if (create) {
         MiuixAlertDialog(
             onDismissRequest = { if (!collections.creating) create = false },
-            title = { Text("新建收藏夹") },
+            title = { Text(stringResource(R.string.collection_create)) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     TextField(
                         value = title,
                         onValueChange = { title = it },
-                        label = "收藏夹名称",
+                        label = stringResource(R.string.collection_name),
                         useLabelAsPlaceholder = true,
                         modifier = Modifier.fillMaxWidth(),
                     )
                     SwitchPreference(
-                        title = "公开收藏夹",
-                        summary = "关闭后仅自己可见",
+                        title = stringResource(R.string.collection_public),
+                        summary = stringResource(R.string.collection_public_summary),
                         checked = isOpen,
                         enabled = !collections.creating,
                         onCheckedChange = { isOpen = it },
@@ -146,7 +148,7 @@ fun FeedCollectionDialog(collections: FeedCollections) {
             },
             dismissButton = {
                 MiuixDialogButton(onClick = { create = false }, enabled = !collections.creating) {
-                    Text("取消")
+                    Text(stringResource(R.string.action_cancel))
                 }
             },
             confirmButton = {
@@ -154,7 +156,7 @@ fun FeedCollectionDialog(collections: FeedCollections) {
                     onClick = { collections.create(title, isOpen) { create = false } },
                     enabled = !collections.busy && title.isNotBlank(),
                 ) {
-                    Text(if (collections.creating) "创建中…" else "创建")
+                    Text(stringResource(if (collections.creating) R.string.status_creating else R.string.action_create))
                 }
             },
         )

@@ -36,6 +36,7 @@ import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.c001apk.compose.R
+import androidx.compose.ui.res.stringResource
 import com.example.c001apk.compose.logic.model.HomeMenu
 import com.example.c001apk.compose.logic.model.UpdateCheckItem
 import com.example.c001apk.compose.ui.component.MiuixToolbarIconButton
@@ -77,15 +78,15 @@ enum class TabType {
 
 val homeTabTypes = TabType.entries.filter { it != TabType.FOLLOW }
 
-private fun tabTitle(type: TabType): String {
+private fun tabTitleRes(type: TabType): Int {
     return when (type) {
-        TabType.FOLLOW -> "关注"
-        TabType.APP -> "应用"
-        TabType.FEED -> "动态"
-        TabType.HOT -> "热门"
-        TabType.TOPIC -> "话题"
-        TabType.PRODUCT -> "数码"
-        TabType.COOLPIC -> "酷图"
+        TabType.FOLLOW -> R.string.follow
+        TabType.APP -> R.string.label_app
+        TabType.FEED -> R.string.label_feed
+        TabType.HOT -> R.string.label_hot
+        TabType.TOPIC -> R.string.label_topic
+        TabType.PRODUCT -> R.string.label_product
+        TabType.COOLPIC -> R.string.label_coolpic
     }
 }
 
@@ -117,10 +118,10 @@ fun HomeTabEditorScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = "首页板块",
+                title = stringResource(R.string.settings_home_tabs),
                 navigationIcon = {
                     MiuixToolbarIconButton(onClick = { if (!saving) onBackClick() }, enabled = !saving) {
-                        Icon(MiuixIcons.Back, contentDescription = "返回")
+                        Icon(MiuixIcons.Back, contentDescription = stringResource(R.string.action_back))
                     }
                 },
                 actions = {
@@ -128,7 +129,7 @@ fun HomeTabEditorScreen(
                         enabled = !saving && menus.isNotEmpty(),
                         onClick = { viewModel.saveMenus(menus, onSaved = onBackClick) },
                     ) {
-                        Text(if (saving) "保存中" else "完成")
+                        Text(stringResource(if (saving) R.string.status_saving else R.string.settings_bar_order_done))
                     }
                 },
             )
@@ -146,13 +147,13 @@ fun HomeTabEditorScreen(
                     items = menus,
                     key = HomeMenu::title,
                     onReorder = { draft = it },
-                    title = "板块顺序",
+                    title = stringResource(R.string.home_tab_order),
                     enabled = !saving,
                 ) { menu, dragging, dragHandle ->
                     val type = homeTabTypes.firstOrNull { it.name == menu.title }
                     if (type != null) {
                         CheckboxPreference(
-                            title = tabTitle(type),
+                            title = stringResource(tabTitleRes(type)),
                             checked = menu.isEnable,
                             // The last enabled tab stays checkable-looking but inert; disabling the
                             // whole row would also take its drag handle and checkbox away.
@@ -178,14 +179,14 @@ fun HomeTabEditorScreen(
                     }
                 }
                 Text(
-                    "拖动右侧手柄调整板块顺序，勾选决定是否显示。至少保留一个板块，点击完成后保存。",
+                    stringResource(R.string.home_tab_order_hint),
                     modifier = Modifier.padding(horizontal = 28.dp, vertical = 8.dp),
                     style = MiuixTheme.textStyles.footnote1,
                     color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
                 )
                 if (saveError) {
                     Text(
-                        "保存失败，请重试",
+                        stringResource(R.string.settings_device_save_failed),
                         modifier = Modifier.padding(horizontal = 28.dp, vertical = 8.dp),
                         style = MiuixTheme.textStyles.footnote1,
                         color = MiuixTheme.colorScheme.error,
@@ -296,13 +297,13 @@ fun HomeScreen(
                                         ContextCompat.startActivity(context, intent, animationBundle)
                                     },
                                 ) {
-                                    Icon(MiuixIcons.Edit, contentDescription = "发布动态", modifier = Modifier.size(24.dp))
+                                    Icon(MiuixIcons.Edit, contentDescription = stringResource(R.string.feed_publish), modifier = Modifier.size(24.dp))
                                 }
                             }
                             if (currentTabType == TabType.APP) {
                                 updateAction?.let { onUpdate ->
                                     MiuixToolbarIconButton(onClick = onUpdate) {
-                                        Icon(MiuixIcons.Update, contentDescription = "检查应用更新", modifier = Modifier.size(24.dp))
+                                        Icon(MiuixIcons.Update, contentDescription = stringResource(R.string.settings_check_app_updates), modifier = Modifier.size(24.dp))
                                     }
                                 }
                             }
@@ -311,7 +312,7 @@ fun HomeScreen(
                     MiuixPagerTabRow(
                         modifier = Modifier.padding(start = 12.dp, end = 12.dp, bottom = 8.dp),
                         withContour = true,
-                        tabs = tabList.map(::tabTitle),
+                        tabs = tabList.map { stringResource(tabTitleRes(it)) },
                         pagerState = pagerState,
                         onReselect = onRefresh,
                     )
@@ -381,9 +382,9 @@ private fun HomeTopBar(
     onSearch: () -> Unit,
     actions: @Composable RowScope.() -> Unit = {},
 ) {
-    TopAppBar(title = "主页", actions = {
+    TopAppBar(title = stringResource(R.string.home), actions = {
         MiuixToolbarIconButton(onClick = onSearch) {
-            Icon(MiuixIcons.Basic.Search, contentDescription = "搜索", modifier = Modifier.size(24.dp))
+            Icon(MiuixIcons.Basic.Search, contentDescription = stringResource(R.string.search_hint), modifier = Modifier.size(24.dp))
         }
         actions()
     })

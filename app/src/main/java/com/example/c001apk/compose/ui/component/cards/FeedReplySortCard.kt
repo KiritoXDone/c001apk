@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import com.example.c001apk.compose.R
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
@@ -32,7 +34,7 @@ fun FeedReplySortCard(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            Text("评论", style = MiuixTheme.textStyles.subtitle, fontWeight = FontWeight.SemiBold)
+            Text(stringResource(R.string.label_comment), style = MiuixTheme.textStyles.subtitle, fontWeight = FontWeight.SemiBold)
             Text(
                 replyCount,
                 style = MiuixTheme.textStyles.footnote1,
@@ -40,7 +42,7 @@ fun FeedReplySortCard(
             )
         }
         Row(Modifier.selectableGroup()) {
-            listOf("默认", "最新", "热门", "楼主").forEachIndexed { index, label ->
+            listOf(R.string.theme_type_default, R.string.label_latest, R.string.label_hot, R.string.label_author).forEachIndexed { index, labelRes ->
                 val isSelected = index == selected
                 Box(
                     modifier =
@@ -59,7 +61,7 @@ fun FeedReplySortCard(
                     contentAlignment = Alignment.Center,
                 ) {
                     Text(
-                        text = label,
+                        text = stringResource(labelRes),
                         fontSize = 13.sp,
                         fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
                         color =

@@ -3,6 +3,8 @@ package com.example.c001apk.compose.ui.component
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.example.c001apk.compose.R
 import com.example.c001apk.compose.ui.chat.ChatFeedLink
 import com.example.c001apk.compose.util.ShareContent
 import com.example.c001apk.compose.util.ShareType
@@ -36,8 +38,8 @@ fun ChatMessageText(
     if (feedId == null) LinkText(text = text, modifier = modifier, onOpenLink = onOpenLink)
     else
         BasicComponent(
-            title = "酷安动态",
-            summary = "动态 $feedId",
+            title = stringResource(R.string.feed_coolapk),
+            summary = stringResource(R.string.feed_with_id, feedId),
             modifier = modifier,
             onClick = { onOpenLink?.invoke(ShareContent.link(ShareType.FEED, feedId), null) },
         )

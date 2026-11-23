@@ -40,6 +40,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.stringResource
+import com.example.c001apk.compose.R
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Density
@@ -58,6 +60,14 @@ import top.yukonga.miuix.kmp.theme.LocalContentColor
 import top.yukonga.miuix.kmp.theme.LocalDismissState
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.MiuixPopupUtils.Companion.PopupLayout
+
+@Composable
+fun pullToRefreshTexts(): List<String> = listOf(
+    stringResource(R.string.refresh_pull),
+    stringResource(R.string.refresh_release),
+    stringResource(R.string.refresh_loading),
+    stringResource(R.string.refresh_complete),
+)
 
 @Composable
 fun MiuixMenu(
@@ -147,7 +157,7 @@ fun MiuixMoreMenu(
             ) {
                 Icon(
                     imageVector = MiuixIcons.More,
-                    contentDescription = "更多操作",
+                    contentDescription = stringResource(R.string.update_more),
                     modifier = Modifier.size(17.5.dp),
                     tint = MiuixTheme.colorScheme.onSurfaceVariantSummary,
                 )

@@ -7,6 +7,8 @@ import androidx.compose.foundation.text.appendInlineContent
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.example.c001apk.compose.R
 import androidx.compose.ui.text.Placeholder
 import androidx.compose.ui.text.PlaceholderVerticalAlign
 import androidx.compose.ui.text.buildAnnotatedString
@@ -32,6 +34,7 @@ import top.yukonga.miuix.kmp.utils.SinkFeedback
 
 @Composable
 fun FeedDetailAuthor(data: HomeFeedResponse.Data, onViewUser: (String) -> Unit) {
+    val deviceLabel = stringResource(R.string.label_device)
     ReadingSurface(first = true, topPadding = if (data.publishStatus == 1) 0.dp else 6.dp) {
         FeedVisibilityNotice(data.publishStatus)
         Column(
@@ -80,7 +83,7 @@ fun FeedDetailAuthor(data: HomeFeedResponse.Data, onViewUser: (String) -> Unit) 
                                 data.deviceTitle?.richToString()?.takeIf(String::isNotBlank)?.let {
                                     device ->
                                     append(" · ")
-                                    appendInlineContent("device", "机型")
+                                    appendInlineContent("device", deviceLabel)
                                     append(" $device")
                                 }
                             },
@@ -111,7 +114,7 @@ fun FeedDetailAuthor(data: HomeFeedResponse.Data, onViewUser: (String) -> Unit) 
                 }
                 Icon(
                     MiuixIcons.Glass.ChevronForward,
-                    contentDescription = "查看用户主页",
+                    contentDescription = stringResource(R.string.user_view_profile),
                     tint = MiuixTheme.colorScheme.onSurfaceVariantActions,
                     modifier = Modifier.size(18.dp),
                 )

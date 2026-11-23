@@ -6,6 +6,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.example.c001apk.compose.R
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.c001apk.compose.logic.filter.*
@@ -35,40 +37,40 @@ fun ContentRuleScreen(id: String?, onBack: () -> Unit) {
     var user by rememberSaveable { mutableStateOf(original?.scopes?.contains(FilterScope.USER) ?: true) }
     var deleting by remember { mutableStateOf(false) }
     fun lines(value: String) = value.lineSequence().map(String::trim).filter(String::isNotBlank).distinct().toList()
-    MiuixScaffold(topBar = { MiuixTopBar(title = if (id == null) "添加规则" else "编辑规则", navigationIcon = { BackButton(onBack) }) }) { padding ->
+    MiuixScaffold(topBar = { MiuixTopBar(title = stringResource(if (id == null) R.string.filter_add else R.string.filter_edit), navigationIcon = { BackButton(onBack) }) }) { padding ->
         Column(Modifier.fillMaxSize().padding(padding).imePadding().verticalScroll(rememberScrollState()).padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            TextField(value = title, onValueChange = { title = it.take(80) }, label = "规则名称")
-            PreferenceGroup(title = "匹配方式") {
-                SelectionListItem(leadingImageVector = MiuixIcons.Blocklist, title = "规则类型", value = kind.ordinal,
-                    selections = FilterKind.entries.map { SelectionItem(it.title, it.ordinal) },
+            TextField(value = title, onValueChange = { title = it.take(80) }, label = stringResource(R.string.filter_rule_name))
+            PreferenceGroup(title = stringResource(R.string.filter_matching)) {
+                SelectionListItem(leadingImageVector = MiuixIcons.Blocklist, title = stringResource(R.string.filter_rule_type), value = kind.ordinal,
+                    selections = FilterKind.entries.map { SelectionItem(stringResource(it.titleRes), it.ordinal) },
                     onSelected = { value -> kind = FilterKind.entries[value] })
             }
             TextField(value = terms, onValueChange = { terms = it.take(6500) }, label = when (kind) {
-                FilterKind.TEXT -> "关键词，每行一项"
-                FilterKind.AUTHOR -> "数字 UID，每行一个"
-                FilterKind.TOPIC -> "完整话题名称，每行一个"
+                FilterKind.TEXT -> stringResource(R.string.filter_terms_hint)
+                FilterKind.AUTHOR -> stringResource(R.string.filter_authors_hint)
+                FilterKind.TOPIC -> stringResource(R.string.filter_topics_hint)
             })
-            Text("命中任意一项即过滤；关键词不区分大小写和全角半角。", color = MiuixTheme.colorScheme.onSurfaceVariantSummary)
+            Text(stringResource(R.string.filter_matching_hint), color = MiuixTheme.colorScheme.onSurfaceVariantSummary)
             if (kind == FilterKind.TEXT) {
-                TextField(value = exceptions, onValueChange = { exceptions = it.take(6500) }, label = "例外词，每行一项（可选）")
-                Text("同一句包含例外词时放行，不影响其他句子的匹配。", color = MiuixTheme.colorScheme.onSurfaceVariantSummary)
+                TextField(value = exceptions, onValueChange = { exceptions = it.take(6500) }, label = stringResource(R.string.filter_exception_hint))
+                Text(stringResource(R.string.filter_exception_summary), color = MiuixTheme.colorScheme.onSurfaceVariantSummary)
             }
-            PreferenceGroup(title = "生效范围") {
-                SwitchListItem(enabled, MiuixIcons.Blocklist, "启用此规则") { enabled = it }
-                SwitchListItem(feed, MiuixIcons.Blocklist, "动态") { feed = it }
-                SwitchListItem(comment, MiuixIcons.Blocklist, "评论") { comment = it }
-                SwitchListItem(user, MiuixIcons.Blocklist, "用户卡片") { user = it }
+            PreferenceGroup(title = stringResource(R.string.filter_scopes)) {
+                SwitchListItem(enabled, MiuixIcons.Blocklist, stringResource(R.string.filter_enable_rule)) { enabled = it }
+                SwitchListItem(feed, MiuixIcons.Blocklist, stringResource(R.string.label_feed)) { feed = it }
+                SwitchListItem(comment, MiuixIcons.Blocklist, stringResource(R.string.label_comment)) { comment = it }
+                SwitchListItem(user, MiuixIcons.Blocklist, stringResource(R.string.label_user_card)) { user = it }
             }
             model.error?.let { Text(it, color = MiuixTheme.colorScheme.error) }
             top.yukonga.miuix.kmp.basic.Button(enabled = !model.saving, onClick = {
                 model.saveRule(ContentRule(ruleId, title.trim(), kind, lines(terms), if (kind == FilterKind.TEXT) lines(exceptions) else emptyList(),
                     buildSet { if (feed) add(FilterScope.FEED); if (comment) add(FilterScope.COMMENT); if (user) add(FilterScope.USER) }, enabled), onBack)
-            }) { Text(if (model.saving) "正在保存" else "保存规则") }
-            if (original != null) MiuixDialogButton(enabled = !model.saving, onClick = { deleting = true }) { Text("删除规则") }
+            }) { Text(stringResource(if (model.saving) R.string.status_saving else R.string.filter_save_rule)) }
+            if (original != null) MiuixDialogButton(enabled = !model.saving, onClick = { deleting = true }) { Text(stringResource(R.string.filter_delete_rule)) }
         }
     }
-    if (deleting) MiuixAlertDialog(onDismissRequest = { deleting = false }, title = { Text("删除规则？") },
-        text = { Text("删除后，此规则过滤的内容将恢复显示。") },
-        confirmButton = { MiuixDialogButton(onClick = { model.removeRule(ruleId, onBack) }, destructive = true) { Text("删除") } },
-        dismissButton = { MiuixDialogButton(onClick = { deleting = false }) { Text("取消") } })
+    if (deleting) MiuixAlertDialog(onDismissRequest = { deleting = false }, title = { Text(stringResource(R.string.filter_delete_title)) },
+        text = { Text(stringResource(R.string.filter_delete_summary)) },
+        confirmButton = { MiuixDialogButton(onClick = { model.removeRule(ruleId, onBack) }, destructive = true) { Text(stringResource(R.string.menu_delete)) } },
+        dismissButton = { MiuixDialogButton(onClick = { deleting = false }) { Text(stringResource(R.string.action_cancel)) } })
 }

@@ -24,6 +24,7 @@ import coil.request.ImageRequest
 import com.example.c001apk.compose.logic.model.UpdateCheckItem
 import com.example.c001apk.compose.logic.providable.LocalUserPreferences
 import com.example.c001apk.compose.ui.component.AdaptiveCardColumn
+import com.example.c001apk.compose.ui.component.pullToRefreshTexts
 import com.example.c001apk.compose.util.longVersionCodeCompat
 
 /** Created by bggRGjQaUbCoE on 2024/6/9 */
@@ -69,7 +70,7 @@ fun AppListScreen(
         isRefreshing = viewModel.isRefreshing || viewModel.isLoading,
         onRefresh = viewModel::refresh,
         contentPadding = paddingValues,
-        refreshTexts = listOf("下拉刷新", "释放刷新", "正在刷新", "刷新完成"),
+        refreshTexts = pullToRefreshTexts(),
     ) {
         AdaptiveCardColumn(
             modifier = Modifier.fillMaxSize(),

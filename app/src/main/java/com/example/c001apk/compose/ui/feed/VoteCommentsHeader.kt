@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.example.c001apk.compose.R
 import androidx.compose.ui.unit.dp
 import com.example.c001apk.compose.logic.model.HomeFeedResponse.Vote
 import com.example.c001apk.compose.ui.component.MiuixActionButton
@@ -30,13 +32,13 @@ internal fun VoteCommentsHeader(count: String, onWriteComment: (() -> Unit)?) {
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
-            text = "投票评论 $count",
+            text = stringResource(R.string.vote_comments, count),
             modifier = Modifier.weight(1f),
             style = MiuixTheme.textStyles.headline2,
         )
         if (onWriteComment != null) {
             MiuixActionButton(onClick = rememberHapticClick(onClick = onWriteComment)) {
-                Text("写评论")
+                Text(stringResource(R.string.feed_write_comment))
             }
         }
     }

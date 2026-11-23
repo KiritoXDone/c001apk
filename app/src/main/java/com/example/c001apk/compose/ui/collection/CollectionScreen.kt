@@ -19,6 +19,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import com.example.c001apk.compose.R
+import com.example.c001apk.compose.ui.component.pullToRefreshTexts
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -99,7 +102,7 @@ fun CollectionScreen(
                         if (it) {
                             Text(text = viewModel.title)
                         } else {
-                            Text(text = "收藏单")
+                            Text(text = stringResource(R.string.collection_title))
                         }
                     }
                 },
@@ -107,7 +110,7 @@ fun CollectionScreen(
         },
     ) { paddingValues ->
         top.yukonga.miuix.kmp.basic.PullToRefresh(
-            refreshTexts = listOf("下拉刷新", "释放刷新", "正在刷新", "刷新完成"),
+            refreshTexts = pullToRefreshTexts(),
             modifier =
                 Modifier.padding(
                     top = paddingValues.calculateTopPadding(),
@@ -188,7 +191,7 @@ fun CollectionScreen(
                                         modifier = Modifier.padding(start = 10.dp),
                                     )
                                     Text(
-                                        text = "${fromToday(response.lastupdate ?: 0)}更新",
+                                        text = stringResource(R.string.stat_updated_at, fromToday(response.lastupdate ?: 0)),
                                         color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
                                         style = MiuixTheme.textStyles.body1,
                                         modifier = Modifier.weight(1f).padding(start = 10.dp),
@@ -196,7 +199,7 @@ fun CollectionScreen(
                                         overflow = TextOverflow.Ellipsis,
                                     )
                                     Text(
-                                        text = response.followNum.toString() + "人关注",
+                                        text = stringResource(R.string.stat_followed_by, response.followNum.toString()),
                                         color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
                                         style = MiuixTheme.textStyles.body1,
                                         maxLines = 1,

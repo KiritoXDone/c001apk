@@ -15,6 +15,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.res.stringResource
+import com.example.c001apk.compose.R
 import androidx.compose.ui.semantics.ProgressBarRangeInfo
 import androidx.compose.ui.semantics.progressBarRangeInfo
 import androidx.compose.ui.semantics.semantics
@@ -55,7 +57,7 @@ fun createMiuixLoadingDialog(context: Context): ComponentDialog =
                                     size = 20.dp,
                                     color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
                                 )
-                                Text("正在发送…", style = MiuixTheme.textStyles.main)
+                                Text(stringResource(R.string.status_sending), style = MiuixTheme.textStyles.main)
                             }
                         }
                     }

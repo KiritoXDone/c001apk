@@ -15,6 +15,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
+import com.example.c001apk.compose.R
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.role
@@ -47,10 +49,11 @@ fun MessageHeaderCard(
     onLogin: () -> Unit,
     onViewUser: (String) -> Unit,
 ) {
+    val headerDescription = stringResource(if (isLogin) R.string.profile_view_own else R.string.profile_login)
     Card(
         modifier = modifier.fillMaxWidth().testTag("profile_header").semantics(mergeDescendants = true) {
             role = Role.Button
-            contentDescription = if (isLogin) "查看个人主页" else "登录酷安"
+            contentDescription = headerDescription
         },
         colors = CardDefaults.defaultColors(
             color = Color.Transparent,
@@ -91,7 +94,7 @@ fun MessageHeaderCard(
                 verticalArrangement = Arrangement.spacedBy(ProfileLayoutDefaults.HeaderTextSpacing),
             ) {
                 Text(
-                    if (isLogin) decodeCookieValue(userName) else "登录酷安",
+                    if (isLogin) decodeCookieValue(userName) else stringResource(R.string.profile_login),
                     fontSize = ProfileLayoutDefaults.UserNameFontSize,
                     fontWeight = FontWeight.SemiBold,
                     maxLines = 1,
@@ -99,7 +102,7 @@ fun MessageHeaderCard(
                 )
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        if (isLogin) "查看个人主页" else "同步关注、收藏与消息",
+                        stringResource(if (isLogin) R.string.profile_view_own else R.string.profile_login_summary),
                         style = MiuixTheme.textStyles.footnote1,
                         color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
                         modifier = Modifier.weight(1f, fill = false),
@@ -142,9 +145,9 @@ fun MessageLevelCard(
                 Text("Lv.${level.ifBlank { "0" }}", fontWeight = FontWeight.SemiBold)
                 Text(
                     if (requiredExperience > currentExperience && nextLevel != null) {
-                        "还差 ${requiredExperience - currentExperience} 经验升到 Lv.$nextLevel"
+                        stringResource(R.string.profile_experience_remaining, requiredExperience - currentExperience, nextLevel)
                     } else {
-                        "${experience.ifBlank { "0" }} / ${nextLevelExperience.ifBlank { "0" }} 经验"
+                        stringResource(R.string.profile_experience, experience.ifBlank { "0" }, nextLevelExperience.ifBlank { "0" })
                     },
                     modifier = Modifier.weight(1f),
                     style = MiuixTheme.textStyles.footnote1,

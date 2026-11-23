@@ -93,7 +93,7 @@ fun AppScreen(
 
     val context = LocalContext.current
 
-    val tabList by lazy { listOf("最近回复", "最新发布", "热度排序") }
+    val tabList = listOf(R.string.sort_reply, R.string.sort_dateline, R.string.sort_hot).map { stringResource(it) }
     var dropdownMenuExpanded by remember { mutableStateOf(false) }
     var menuHeld by remember { mutableStateOf(false) }
 
@@ -152,7 +152,7 @@ fun AppScreen(
                                         onSearch(viewModel.title, "apk", viewModel.id)
                                     },
                                 ) {
-                                    Icon(MiuixIcons.Basic.Search, contentDescription = "搜索此应用的动态", modifier = Modifier.size(24.dp))
+                                    Icon(MiuixIcons.Basic.Search, contentDescription = stringResource(R.string.search_app_feeds), modifier = Modifier.size(24.dp))
                                 }
                                 if (isLogin) {
                                     MiuixToolbarIconButton(
@@ -173,7 +173,7 @@ fun AppScreen(
                                             ContextCompat.startActivity(context, intent, animationBundle)
                                         },
                                     ) {
-                                        Icon(MiuixIcons.Edit, contentDescription = "发布动态", modifier = Modifier.size(24.dp))
+                                        Icon(MiuixIcons.Edit, contentDescription = stringResource(R.string.feed_publish), modifier = Modifier.size(24.dp))
                                     }
                                 }
                                 Box {
@@ -184,7 +184,7 @@ fun AppScreen(
                                         },
                                         holdDownState = menuHeld,
                                     ) {
-                                        Icon(MiuixIcons.ExpandMore, contentDescription = "更多操作", modifier = Modifier.size(24.dp))
+                                        Icon(MiuixIcons.ExpandMore, contentDescription = stringResource(R.string.update_more), modifier = Modifier.size(24.dp))
                                     }
                                     DropdownMenu(
                                         expanded = dropdownMenuExpanded,
@@ -223,7 +223,7 @@ fun AppScreen(
                                                     if (viewModel.isBlocked) {
                                                         stringResource(id = R.string.menu_unblock)
                                                     } else {
-                                                        "拉黑"
+                                                        stringResource(R.string.menu_block)
                                                     },
                                                 )
                                             },
@@ -294,13 +294,7 @@ fun AppScreen(
                                                 2 -> "&sort=popular"
                                                 else -> EMPTY_STRING
                                             },
-                                        appCommentTitle =
-                                            when (index) {
-                                                0 -> "最近回复"
-                                                1 -> "最新发布"
-                                                2 -> "热度排序"
-                                                else -> "最近回复"
-                                            },
+                                        appCommentTitle = tabList[index],
                                         onViewUser = onViewUser,
                                         onViewFeed = onViewFeed,
                                         onOpenLink = onOpenLink,

@@ -14,6 +14,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.example.c001apk.compose.R
 import com.example.c001apk.compose.ui.component.BackButton
 import com.example.c001apk.compose.ui.component.MiuixScaffold as Scaffold
 import com.example.c001apk.compose.ui.component.MiuixPagerTabRow
@@ -34,7 +36,7 @@ fun DyhScreen(
     onReport: (String, ReportType) -> Unit,
 ) {
 
-    val tabList = listOf("精选", "广场")
+    val tabList = listOf(R.string.label_featured, R.string.label_square).map { stringResource(it) }
     val typeList = listOf("all", "square")
     val pagerState =
         rememberPagerState(

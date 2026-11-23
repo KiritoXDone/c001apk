@@ -139,7 +139,7 @@ fun NotificationCard(
                     end.linkTo(parent.end)
                 },
         ) {
-            listOf("拉黑", stringResource(id = R.string.menu_report)).forEachIndexed { index, menu ->
+            listOf(stringResource(R.string.menu_block), stringResource(id = R.string.menu_report)).forEachIndexed { index, menu ->
                 DropdownMenuItem(
                     text = { Text(menu) },
                     onClick = {

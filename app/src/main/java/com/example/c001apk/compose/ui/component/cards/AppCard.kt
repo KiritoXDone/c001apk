@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import com.example.c001apk.compose.R
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextOverflow
@@ -142,13 +144,13 @@ fun AppCard(
         Text(
             text =
                 when (appCardType) {
-                    AppCardType.APP -> "${data.commentnum}讨论"
+                    AppCardType.APP -> stringResource(R.string.stat_discussions, data.commentnum.toString())
                     AppCardType.PRODUCT,
-                    AppCardType.TOPIC -> data.hotNumTxt + "热度"
-                    AppCardType.USER -> data.follow.toString() + "关注"
+                    AppCardType.TOPIC -> stringResource(R.string.stat_popularity, data.hotNumTxt.toString())
+                    AppCardType.USER -> stringResource(R.string.stat_following, data.follow.toString())
                     AppCardType.CONTACTS ->
-                        (data.userInfo?.follow ?: data.fUserInfo?.follow).toString() + "关注"
-                    AppCardType.RECENT -> data.followNum.toString() + "关注"
+                        stringResource(R.string.stat_following, (data.userInfo?.follow ?: data.fUserInfo?.follow).toString())
+                    AppCardType.RECENT -> stringResource(R.string.stat_followed_by, data.followNum.toString())
                 },
             modifier =
                 Modifier.padding(start = 10.dp, top = 5.dp).constrainAs(commentNum) {
@@ -164,15 +166,15 @@ fun AppCard(
         Text(
             text =
                 when (appCardType) {
-                    AppCardType.APP -> "${data.downCount}下载"
-                    AppCardType.PRODUCT -> "${data.feedCommentNumTxt}讨论"
-                    AppCardType.TOPIC -> "${data.commentnumTxt}讨论"
-                    AppCardType.USER -> "${data.fans}粉丝"
-                    AppCardType.CONTACTS -> "${data.userInfo?.fans ?: data.fUserInfo?.fans}粉丝"
+                    AppCardType.APP -> stringResource(R.string.stat_downloads, data.downCount.toString())
+                    AppCardType.PRODUCT -> stringResource(R.string.stat_discussions, data.feedCommentNumTxt.toString())
+                    AppCardType.TOPIC -> stringResource(R.string.stat_discussions, data.commentnumTxt.toString())
+                    AppCardType.USER -> stringResource(R.string.stat_followers, data.fans.toString())
+                    AppCardType.CONTACTS -> stringResource(R.string.stat_followers, (data.userInfo?.fans ?: data.fUserInfo?.fans).toString())
                     AppCardType.RECENT ->
                         when (data.targetType) {
-                            "user" -> "${data.fansNum}粉丝"
-                            else -> "${data.commentNum}讨论" /*"apk","topic"*/
+                            "user" -> stringResource(R.string.stat_followers, data.fansNum.toString())
+                            else -> stringResource(R.string.stat_discussions, data.commentNum.toString()) /*"apk","topic"*/
                         }
                 },
             modifier =
@@ -189,9 +191,9 @@ fun AppCard(
         if (appCardType in listOf(AppCardType.USER, AppCardType.CONTACTS)) {
             Text(
                 text =
-                    if (appCardType == AppCardType.USER) "${fromToday(data.logintime ?: 0)}活跃"
+                    if (appCardType == AppCardType.USER) stringResource(R.string.user_active_at, fromToday(data.logintime ?: 0))
                     else
-                        "${fromToday(data.userInfo?.logintime ?: data.fUserInfo?.logintime ?: 0)}活跃",
+                        stringResource(R.string.user_active_at, fromToday(data.userInfo?.logintime ?: data.fUserInfo?.logintime ?: 0)),
                 modifier =
                     Modifier.padding(start = 10.dp, top = 5.dp).constrainAs(active) {
                         start.linkTo(downCount.end)
@@ -221,7 +223,7 @@ fun AppCard(
                         },
                 ) {
                     Text(
-                        text = if (data.isFollow == 1) "取消关注" else "关注",
+                        text = stringResource(if (data.isFollow == 1) R.string.menu_unfollow else R.string.menu_follow),
                         color =
                             if (data.isFollow == 1) MiuixTheme.colorScheme.onSurfaceVariantSummary
                             else MiuixTheme.colorScheme.primary,

@@ -7,6 +7,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.res.stringResource
+import com.example.c001apk.compose.R
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -41,9 +43,16 @@ fun FollowScreen(
 ) {
     val prefs = LocalUserPreferences.current
     val settings = hiltViewModel<FollowSettingsViewModel>()
-    val labels = mapOf(1 to "用户关注", 2 to "话题关注", 3 to "数码关注", 4 to "应用关注", 0 to "全部关注", 5 to "悄悄关注")
+    val labels = mapOf(
+        1 to R.string.follow_users,
+        2 to R.string.follow_topics,
+        3 to R.string.follow_products,
+        4 to R.string.follow_apps,
+        0 to R.string.follow_all,
+        5 to R.string.user_quiet_follow,
+    )
     val local = !prefs.isLogin || prefs.followSelection == 5
-    val label = if (!prefs.isLogin) "本地关注" else labels[prefs.followSelection] ?: "用户关注"
+    val label = stringResource(if (!prefs.isLogin) R.string.follow_local_title else labels[prefs.followSelection] ?: R.string.follow_users)
     var menu by remember { mutableStateOf(false) }
     MiuixScaffold(
         topBar = {
@@ -67,10 +76,10 @@ fun FollowScreen(
                                     MiuixMenuItem(
                                         text = {
                                             Column {
-                                                Text(title)
+                                                Text(stringResource(title))
                                                 if (prefs.followSelection == value) {
                                                     Text(
-                                                        "当前分类",
+                                                        stringResource(R.string.follow_current_category),
                                                         style = MiuixTheme.textStyles.body2,
                                                         color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
                                                     )
@@ -87,7 +96,7 @@ fun FollowScreen(
                         }
                     }
                 },
-                actions = { MiuixToolbarIconButton(onClick = onSearch) { Icon(MiuixIcons.Basic.Search, "搜索") } },
+                actions = { MiuixToolbarIconButton(onClick = onSearch) { Icon(MiuixIcons.Basic.Search, stringResource(R.string.search_hint)) } },
             )
         },
     ) { padding ->
@@ -107,8 +116,7 @@ fun FollowScreen(
                 ) {
                     localHeader()
                     Text(
-                        if (prefs.isLogin) "在设置中开启悄悄关注后，长按用户主页的关注按钮即可添加。"
-                        else "在用户主页点击“本地关注”，即可在这里查看动态。",
+                        stringResource(if (prefs.isLogin) R.string.follow_quiet_hint else R.string.follow_local_hint),
                         Modifier.padding(horizontal = 28.dp, vertical = 12.dp),
                         style = top.yukonga.miuix.kmp.theme.MiuixTheme.textStyles.body2,
                         color = top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme.onSurfaceVariantSummary,
