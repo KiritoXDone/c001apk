@@ -393,8 +393,14 @@ internal class DebugAutomation(
 
     private fun requireComposeView(): View {
         val current = requireActivity()
-        return onMain { findComposeView(current.window.decorView) }
-            ?: throw IllegalStateException("Compose view is not attached yet")
+        return onMain {
+            val roots = if (android.os.Build.VERSION.SDK_INT >= 29) {
+                android.view.inspector.WindowInspector.getGlobalWindowViews()
+            } else listOf(current.window.decorView)
+            roots.asReversed().firstOrNull { it.hasWindowFocus() }
+                ?.let(::findComposeView)
+                ?: findComposeView(current.window.decorView)
+        } ?: throw IllegalStateException("Compose view is not attached yet")
     }
 
     private fun requireComposeOwner(): SemanticsOwner {
