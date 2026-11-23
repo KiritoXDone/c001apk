@@ -25,7 +25,7 @@ python .codex/skills/app-debug/scripts/run.py control.wait --text 搜索结果 -
 - `control.list`：列出可交互节点，字段为 `id`、`tag`、`desc`、`text`、`role`、`clickable`、`enabled`、`scrollable`、`bounds`（屏幕像素）。过滤参数 `--tag/--desc/--text` 与 `--contains`、`--index` 作用于列表本身。
 - `control.click` / `control.long-click`：按 `--tag/--desc/--text` 定位，`--contains` 改为包含匹配，`--index` 选择第 n 个匹配。
 - `control.scroll`：省略选择器时作用于面积最大的可滚动节点。
-- `control.text`：`--value` 与 `--clear` 至少给一个；省略选择器时直接投递给当前焦点输入框。`--clear` 先清空现有文本，`--submit` 在输入后发送 IME 动作，`--ime-action` 选择 `search`（默认）、`done`、`go`、`send`、`next`。
+- `control.text`：`--value` 与 `--clear` 至少给一个；省略选择器时直接投递给当前焦点输入框。`--clear` 先清空现有文本并等待两帧，再通过新的输入连接写入文本；`--submit` 等待文本状态更新后发送 IME 动作，`--ime-action` 选择 `search`（默认）、`done`、`go`、`send`、`next`。
 - `control.wait`：轮询语义树直到目标出现，`--absent` 改为等待消失，`--timeout-ms` 默认 10000、上限 120000；超时返回非零退出码与匹配数量。
 
 ## 定位注意

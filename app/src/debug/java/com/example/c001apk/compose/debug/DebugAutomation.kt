@@ -141,11 +141,18 @@ internal class DebugAutomation(
             onMain { tap(view, center.x, center.y) }
             awaitFrames(2)
         }
-        onMain {
-            val connection = view.onCreateInputConnection(EditorInfo())
-                ?: throw IllegalStateException("No focused text field accepts input")
-            if (clear) clearText(connection)
-            if (value.isNotEmpty()) {
+        if (clear) {
+            onMain {
+                val connection = view.onCreateInputConnection(EditorInfo())
+                    ?: throw IllegalStateException("No focused text field accepts input")
+                clearText(connection)
+            }
+            awaitFrames(2)
+        }
+        if (value.isNotEmpty()) {
+            onMain {
+                val connection = view.onCreateInputConnection(EditorInfo())
+                    ?: throw IllegalStateException("No focused text field accepts input")
                 connection.commitText(value, 1)
                 connection.finishComposingText()
             }
