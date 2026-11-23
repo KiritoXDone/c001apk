@@ -24,7 +24,7 @@ on:
         type: string
         default: ''
       focused_checks:
-        description: Run only the bar and startup regression tests
+        description: Run only the relevant release regression tests
         type: boolean
         default: false
     secrets:
@@ -81,8 +81,12 @@ jobs:
         if: inputs.focused_checks
         run: |
           set -euo pipefail
-          python3 scripts/build.py gradle --jobs 2 :app:testDebugUnitTest \
-            --tests '*BarPreferencesTest' --tests '*HomeMenuOrderTest' --tests '*MainStartupStateTest'
+          if [[ "$APP_VERSION" == 1.6.5 ]]; then
+            filters=(--tests '*BarPreferencesTest' --tests '*MainNavigationOrderTest' --tests '*MainPageStateTest' --tests '*MessageEntryTest')
+          else
+            filters=(--tests '*BarPreferencesTest' --tests '*HomeMenuOrderTest' --tests '*MainStartupStateTest')
+          fi
+          python3 scripts/build.py gradle --jobs 2 :app:testDebugUnitTest "${filters[@]}"
       - name: Build APK
         run: |
           set -euo pipefail
