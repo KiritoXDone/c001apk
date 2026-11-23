@@ -25,8 +25,9 @@ import com.example.c001apk.compose.util.ReportType
 import top.yukonga.miuix.kmp.basic.DropdownEntry
 import top.yukonga.miuix.kmp.basic.DropdownItem
 import top.yukonga.miuix.kmp.basic.Icon
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.extended.More
 import top.yukonga.miuix.kmp.menu.WindowIconCascadingDropdownMenu
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteMore2Line
 
 /** Created by bggRGjQaUbCoE on 2024/6/9 */
 enum class SearchType {
@@ -179,7 +180,7 @@ fun SearchResultScreen(
                         ) {
                             WindowIconCascadingDropdownMenu(entry = filterMenu) {
                                 Icon(
-                                    imageVector = MingCuteMore2Line,
+                                    imageVector = MiuixIcons.More,
                                     contentDescription = "搜索筛选",
                                     modifier = Modifier.size(21.dp),
                                 )

@@ -7,8 +7,9 @@ import com.example.c001apk.compose.logic.model.BottomBarStyle
 import com.example.c001apk.compose.logic.model.TopBarStyle
 import com.example.c001apk.compose.ui.component.settings.SelectionItem
 import com.example.c001apk.compose.ui.component.settings.SelectionListItem
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteLayoutBottomLine
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteLayoutTopLine
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.glass.BottomSplitScreenOutline
+import top.yukonga.miuix.kmp.icon.glass.TopSplitScreenOutline
 
 @Composable
 private fun topBarStyleItems() =
@@ -34,14 +35,14 @@ internal fun BarStylePreferences(
     onBottomBarStyleChange: (BottomBarStyle) -> Unit,
 ) {
     SelectionListItem(
-        leadingImageVector = MingCuteLayoutTopLine,
+        leadingImageVector = MiuixIcons.Glass.TopSplitScreenOutline,
         title = stringResource(R.string.settings_top_bar_style),
         value = topBarStyle,
         selections = topBarStyleItems(),
         onSelected = onTopBarStyleChange,
     )
     SelectionListItem(
-        leadingImageVector = MingCuteLayoutBottomLine,
+        leadingImageVector = MiuixIcons.Glass.BottomSplitScreenOutline,
         title = stringResource(R.string.settings_bottom_bar_style),
         value = bottomBarStyle,
         selections = bottomBarStyleItems(),

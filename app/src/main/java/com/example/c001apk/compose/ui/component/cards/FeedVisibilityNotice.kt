@@ -9,8 +9,9 @@ import androidx.compose.ui.unit.dp
 import top.yukonga.miuix.kmp.basic.HorizontalDivider
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.Text
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.glass.LockOutline
 import top.yukonga.miuix.kmp.theme.MiuixTheme
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteLockLine
 
 /** Visibility comes from the server, never inferred from the current account or post text. */
 @Composable
@@ -22,7 +23,7 @@ internal fun FeedVisibilityNotice(publishStatus: Int?) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(6.dp),
     ) {
-        Icon(MingCuteLockLine, contentDescription = null, modifier = Modifier.size(16.dp),
+        Icon(MiuixIcons.Glass.LockOutline, contentDescription = null, modifier = Modifier.size(16.dp),
             tint = MiuixTheme.colorScheme.onSurfaceVariantSummary)
         Text("仅自己可见", style = MiuixTheme.textStyles.footnote1,
             color = MiuixTheme.colorScheme.onSurfaceVariantSummary)

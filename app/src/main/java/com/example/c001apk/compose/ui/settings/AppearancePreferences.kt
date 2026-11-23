@@ -13,25 +13,26 @@ import com.example.c001apk.compose.ui.component.settings.BasicListItem
 import com.example.c001apk.compose.ui.component.settings.PreferenceGroup
 import com.example.c001apk.compose.ui.component.settings.SelectionItem
 import com.example.c001apk.compose.ui.component.settings.SelectionListItem
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteArrowLeftCircleLine
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteCellphoneVibrationLine
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteClockwiseLine
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteColorPickerLine
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteColumns2Line
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteContrastLine
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteDashboardLine
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteDropletsLine
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteFontSizeLine
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteMoonLine
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCutePaletteLine
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteBrightnessLine
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteListCollapseLine
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteSettings2Line
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteLayersLine
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteSortAscendingLine
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteText2Line
 import com.example.c001apk.compose.ui.component.settings.SwitchListItem
 import com.example.c001apk.compose.ui.theme.paletteStyleOptions
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.extended.Back
+import top.yukonga.miuix.kmp.icon.extended.Background
+import top.yukonga.miuix.kmp.icon.extended.Rename
+import top.yukonga.miuix.kmp.icon.extended.RotateLeft
+import top.yukonga.miuix.kmp.icon.extended.Sort
+import top.yukonga.miuix.kmp.icon.extended.Theme
+import top.yukonga.miuix.kmp.icon.extended.Tune
+import top.yukonga.miuix.kmp.icon.extended.VerticalSplit
+import top.yukonga.miuix.kmp.icon.glass.CollapseList
+import top.yukonga.miuix.kmp.icon.glass.Custom
+import top.yukonga.miuix.kmp.icon.glass.DisplayBrightness
+import top.yukonga.miuix.kmp.icon.glass.EyeProtection
+import top.yukonga.miuix.kmp.icon.glass.HapticIntensity
+import top.yukonga.miuix.kmp.icon.glass.HighlighterPen
+import top.yukonga.miuix.kmp.icon.glass.Layers
+import top.yukonga.miuix.kmp.icon.glass.ScreenSize
+import top.yukonga.miuix.kmp.icon.glass.SoundVibration
 
 @Composable
 private fun themeModeItems() =
@@ -62,13 +63,13 @@ internal fun LazyListScope.appearancePreferences(
         PreferenceGroup {
             SwitchListItem(
                 value = prefs.materialYou,
-                leadingImageVector = MingCutePaletteLine,
+                leadingImageVector = MiuixIcons.Theme,
                 headlineText = stringResource(R.string.settings_material_you),
                 onValueChanged = viewModel::setMaterialYou,
             )
             if (!prefs.materialYou) {
                 SelectionListItem(
-                    leadingImageVector = MingCuteColorPickerLine,
+                    leadingImageVector = MiuixIcons.Glass.HighlighterPen,
                     title = stringResource(R.string.settings_theme_color),
                     value = prefs.themeType,
                     selections =
@@ -82,7 +83,7 @@ internal fun LazyListScope.appearancePreferences(
                 )
                 if (prefs.themeType != ThemeType.Default && prefs.themeType != ThemeType.UNRECOGNIZED) {
                     SelectionListItem(
-                        leadingImageVector = MingCuteDropletsLine,
+                        leadingImageVector = MiuixIcons.Glass.Custom,
                         title = stringResource(R.string.settings_palette_style),
                         value = prefs.paletteStyle,
                         selections =
@@ -94,7 +95,7 @@ internal fun LazyListScope.appearancePreferences(
                 }
             }
             SelectionListItem(
-                leadingImageVector = MingCuteMoonLine,
+                leadingImageVector = MiuixIcons.Glass.DisplayBrightness,
                 title = stringResource(R.string.settings_dark_theme),
                 value = prefs.themeMode,
                 selections = themeModeItems(),
@@ -103,13 +104,13 @@ internal fun LazyListScope.appearancePreferences(
             if (prefs.themeMode != ThemeMode.ALWAYS_OFF) {
                 SwitchListItem(
                     value = prefs.pureBlack,
-                    leadingImageVector = MingCuteContrastLine,
+                    leadingImageVector = MiuixIcons.Background,
                     headlineText = stringResource(R.string.settings_pure_black),
                     onValueChanged = viewModel::setPureBlack,
                 )
                 SwitchListItem(
                     value = prefs.imageFilter,
-                    leadingImageVector = MingCuteBrightnessLine,
+                    leadingImageVector = MiuixIcons.Glass.EyeProtection,
                     headlineText = stringResource(R.string.settings_dim_images),
                     onValueChanged = viewModel::setImageFilter,
                 )
@@ -124,11 +125,11 @@ internal fun LazyListScope.appearancePreferences(
                 onTopBarStyleChange = viewModel::setTopBarStyle,
                 onBottomBarStyleChange = viewModel::setBottomBarStyle,
             )
-            BasicListItem(headlineText = stringResource(R.string.settings_bar_order), leadingImageVector = MingCuteSortAscendingLine, onClick = onNavigationOrder)
+            BasicListItem(headlineText = stringResource(R.string.settings_bar_order), leadingImageVector = MiuixIcons.Sort, onClick = onNavigationOrder)
             SwitchListItem(
                 value = prefs.blurBars && Build.VERSION.SDK_INT >= 33,
                 enabled = Build.VERSION.SDK_INT >= 33,
-                leadingImageVector = MingCuteLayersLine,
+                leadingImageVector = MiuixIcons.Glass.Layers,
                 headlineText = stringResource(R.string.settings_blur_bars),
                 supportingText =
                     if (Build.VERSION.SDK_INT < 33) stringResource(R.string.settings_blur_bars_needs_android13)
@@ -137,7 +138,7 @@ internal fun LazyListScope.appearancePreferences(
             )
             SwitchListItem(
                 value = prefs.collapseTabsOnScroll,
-                leadingImageVector = MingCuteListCollapseLine,
+                leadingImageVector = MiuixIcons.Glass.CollapseList,
                 headlineText = stringResource(R.string.settings_collapse_tabs),
                 onValueChanged = viewModel::setCollapseTabsOnScroll,
             )
@@ -145,10 +146,10 @@ internal fun LazyListScope.appearancePreferences(
     }
     item(key = "Appearance_scale") {
         PreferenceGroup {
-            BasicListItem(headlineText = stringResource(R.string.settings_font_size), leadingImageVector = MingCuteFontSizeLine, onClick = onFontSize)
-            BasicListItem(headlineText = stringResource(R.string.settings_content_size), leadingImageVector = MingCuteText2Line, onClick = onContentScale)
+            BasicListItem(headlineText = stringResource(R.string.settings_font_size), leadingImageVector = MiuixIcons.Rename, onClick = onFontSize)
+            BasicListItem(headlineText = stringResource(R.string.settings_content_size), leadingImageVector = MiuixIcons.Glass.ScreenSize, onClick = onContentScale)
             SelectionListItem(
-                leadingImageVector = MingCuteColumns2Line,
+                leadingImageVector = MiuixIcons.VerticalSplit,
                 title = stringResource(R.string.settings_split_reading),
                 value = prefs.readingMode,
                 selections = readingModeItems(),
@@ -160,26 +161,26 @@ internal fun LazyListScope.appearancePreferences(
         PreferenceGroup {
             SwitchListItem(
                 value = prefs.predictiveBack,
-                leadingImageVector = MingCuteArrowLeftCircleLine,
+                leadingImageVector = MiuixIcons.Back,
                 headlineText = stringResource(R.string.settings_predictive_back),
                 onValueChanged = viewModel::setPredictiveBack,
             )
             SwitchListItem(
                 value = prefs.hapticFeedback,
-                leadingImageVector = MingCuteCellphoneVibrationLine,
+                leadingImageVector = MiuixIcons.Glass.SoundVibration,
                 headlineText = stringResource(R.string.settings_haptic_feedback),
                 onValueChanged = viewModel::setHapticFeedback,
             )
             if (prefs.hapticFeedback) {
                 SwitchListItem(
                     value = prefs.customHaptics,
-                    leadingImageVector = MingCuteSettings2Line,
+                    leadingImageVector = MiuixIcons.Tune,
                     headlineText = stringResource(R.string.settings_custom_haptics),
                     onValueChanged = viewModel::setCustomHaptics,
                 )
                 if (prefs.customHaptics) {
                     BasicListItem(
-                        leadingImageVector = MingCuteDashboardLine,
+                        leadingImageVector = MiuixIcons.Glass.HapticIntensity,
                         headlineText = stringResource(R.string.settings_haptic_strength),
                         supportingText = hapticStrengthLabel(prefs.hapticStrength),
                         onClick = onHapticStrength,
@@ -187,7 +188,7 @@ internal fun LazyListScope.appearancePreferences(
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                         SwitchListItem(
                             value = prefs.reverseHapticEffects,
-                            leadingImageVector = MingCuteClockwiseLine,
+                            leadingImageVector = MiuixIcons.RotateLeft,
                             headlineText = stringResource(R.string.settings_haptic_compat),
                             onValueChanged = viewModel::setReverseHapticEffects,
                         )

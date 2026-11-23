@@ -25,8 +25,9 @@ import com.example.c001apk.compose.util.logImageFailure
 import jp.wasabeef.transformers.coil.ColorFilterTransformation
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.extended.Refresh
 import top.yukonga.miuix.kmp.theme.MiuixTheme
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteClockwiseLine
 
 /** Created by bggRGjQaUbCoE on 2024/6/11 */
 @Composable
@@ -112,7 +113,7 @@ fun CoilLoader(
                         },
                     ) {
                         Icon(
-                            MingCuteClockwiseLine,
+                            MiuixIcons.Refresh,
                             contentDescription = "图片加载失败，重试",
                             modifier = Modifier.size(20.dp),
                             tint = MiuixTheme.colorScheme.onSurfaceVariantSummary,

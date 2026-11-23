@@ -48,9 +48,10 @@ import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TextField
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteCloseLine
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteEye2Line
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteEyeOffLine
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.basic.Close
+import top.yukonga.miuix.kmp.icon.extended.Hide
+import top.yukonga.miuix.kmp.icon.extended.Show
 
 /** Created by bggRGjQaUbCoE on 2024/6/10 */
 @Composable
@@ -139,7 +140,7 @@ fun LoginScreen(
                             },
                         ) {
                             Icon(
-                                imageVector = MingCuteCloseLine,
+                                imageVector = MiuixIcons.Basic.Close,
                                 contentDescription = null,
                             )
                         }
@@ -168,7 +169,7 @@ fun LoginScreen(
                 trailingIcon = {
                     IconButton(onClick = { passwordHidden = !passwordHidden }) {
                         val visibilityIcon =
-                            if (passwordHidden) MingCuteEye2Line else MingCuteEyeOffLine
+                            if (passwordHidden) MiuixIcons.Show else MiuixIcons.Hide
                         Icon(imageVector = visibilityIcon, contentDescription = null)
                     }
                 },
@@ -216,7 +217,7 @@ fun LoginScreen(
                                     },
                                 ) {
                                     Icon(
-                                        imageVector = MingCuteCloseLine,
+                                        imageVector = MiuixIcons.Basic.Close,
                                         contentDescription = null,
                                     )
                                 }

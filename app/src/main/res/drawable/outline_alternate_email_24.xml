@@ -1,10 +1,8 @@
-<vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="24dp"
-    android:height="24dp"
-    android:tint="?attr/colorControlNormal"
-    android:viewportWidth="24"
-    android:viewportHeight="24">
-    <path
-        android:fillColor="@android:color/white"
-        android:pathData="M12,1.95c-5.52,0 -10,4.48 -10,10s4.48,10 10,10h5v-2h-5c-4.34,0 -8,-3.66 -8,-8s3.66,-8 8,-8 8,3.66 8,8v1.43c0,0.79 -0.71,1.57 -1.5,1.57s-1.5,-0.78 -1.5,-1.57v-1.43c0,-2.76 -2.24,-5 -5,-5s-5,2.24 -5,5 2.24,5 5,5c1.38,0 2.64,-0.56 3.54,-1.47 0.65,0.89 1.77,1.47 2.96,1.47 1.97,0 3.5,-1.6 3.5,-3.57v-1.43c0,-5.52 -4.48,-10 -10,-10zM12,14.95c-1.66,0 -3,-1.34 -3,-3s1.34,-3 3,-3 3,1.34 3,3 -1.34,3 -3,3z" />
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="24dp" android:height="24dp" android:tint="?attr/colorControlNormal" android:viewportWidth="24" android:viewportHeight="24">
+    <group android:scaleX="0.01800000045000001" android:scaleY="0.01800000045000001" android:translateX="0" android:translateY="0">
+        <group android:scaleX="1" android:scaleY="-1" android:translateX="1.6667" android:translateY="1045.4667">
+            <path android:fillColor="#FF000000" android:pathData="M636,617 V486 H505 Q475,486,475,456 V430 Q475,400,505,400 H636 V269 Q636,239,666,239 H692 Q706,239,714,247 Q722,255,722,269 V400 H853 Q867,400,875,408 Q883,416,883,430 V456 Q883,486,853,486 H722 V617 Q722,647,692,647 H666 Q636,647,636,617 Z M1192,433 Q1192,556,1120.5,655 Q1049,754,928,810.5 Q807,867,665,867 Q533,867,411,813 Q289,759,213.5,660 Q138,561,138,433 Q138,343,178.5,265.5 Q219,188,288,130 Q357,72,442,39 Q449,37,452.5,30.5 Q456,24,454,16 L420,-98 Q419,-101,420.5,-104 Q422,-107,425,-108.5 Q428,-110,432,-109 L778,-9 Q968,46,1080,150 Q1192,254,1192,433 Z M474,124 Q407,149,351.5,194 Q296,239,262.5,300.5 Q229,362,229,433 Q229,535,292,613.5 Q355,692,455.5,734.5 Q556,777,665,777 Q789,777,888.5,729.5 Q988,682,1044.5,603 Q1101,524,1101,433 Q1101,332,1055,262 Q1009,192,933,149.5 Q857,107,752,77 L545,17 Q547,52,527.5,81.5 Q508,111,474,124 Z" />
+        </group>
+    </group>
 </vector>

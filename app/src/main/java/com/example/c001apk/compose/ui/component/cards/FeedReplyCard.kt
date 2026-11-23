@@ -48,12 +48,14 @@ import com.example.c001apk.compose.util.CookieUtil
 import com.example.c001apk.compose.util.CookieUtil.isLogin
 import com.example.c001apk.compose.util.DateUtils.fromToday
 import com.example.c001apk.compose.util.ReportType
-import com.example.c001apk.compose.ui.component.icons.FlutterProfileIcons
 import top.yukonga.miuix.kmp.basic.Text
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.glass.FavoriteFill
+import top.yukonga.miuix.kmp.icon.glass.FavoriteOutline
+import top.yukonga.miuix.kmp.icon.glass.Reply
 import top.yukonga.miuix.kmp.squircle.squircleClip
 import top.yukonga.miuix.kmp.squircle.squircleSurface
 import top.yukonga.miuix.kmp.theme.MiuixTheme
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteThumbUpLine
 
 val LocalDetailComments = staticCompositionLocalOf { false }
 
@@ -420,7 +422,7 @@ fun FeedReplyCard(
                         )
                         end.linkTo(like.start)
                     },
-                imageVector = FlutterProfileIcons.Comment,
+                imageVector = MiuixIcons.Glass.Reply,
                 title = data.replynum.orEmpty(),
             )
 
@@ -434,8 +436,8 @@ fun FeedReplyCard(
                         end.linkTo(parent.end)
                     },
                 imageVector =
-                    if (data.userAction?.like == 1) MingCuteThumbUpLine
-                    else MingCuteThumbUpLine,
+                    if (data.userAction?.like == 1) MiuixIcons.Glass.FavoriteFill
+                    else MiuixIcons.Glass.FavoriteOutline,
                 title = data.likenum.orEmpty(),
                 onClick = {
                     if (isLogin) {

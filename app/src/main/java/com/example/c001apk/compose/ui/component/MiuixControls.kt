@@ -52,11 +52,12 @@ import top.yukonga.miuix.kmp.glass.GlassBottomSheet
 import top.yukonga.miuix.kmp.glass.GlassDropdownPopup
 import top.yukonga.miuix.kmp.glass.GlassMotion
 import top.yukonga.miuix.kmp.glass.GlassPopupDefaults
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.extended.More
 import top.yukonga.miuix.kmp.theme.LocalContentColor
 import top.yukonga.miuix.kmp.theme.LocalDismissState
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.MiuixPopupUtils.Companion.PopupLayout
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteMore2Line
 
 @Composable
 fun MiuixMenu(
@@ -145,7 +146,7 @@ fun MiuixMoreMenu(
                 backgroundColor = Color.Transparent,
             ) {
                 Icon(
-                    imageVector = MingCuteMore2Line,
+                    imageVector = MiuixIcons.More,
                     contentDescription = "更多操作",
                     modifier = Modifier.size(17.5.dp),
                     tint = MiuixTheme.colorScheme.onSurfaceVariantSummary,

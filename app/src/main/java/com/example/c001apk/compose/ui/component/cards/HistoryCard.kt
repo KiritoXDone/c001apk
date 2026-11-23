@@ -39,9 +39,10 @@ import com.example.c001apk.compose.util.Utils.richToString
 import com.example.c001apk.compose.util.copyText
 import com.example.c001apk.compose.util.getShareText
 import top.yukonga.miuix.kmp.basic.Text
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.glass.MyDevice
 import top.yukonga.miuix.kmp.squircle.squircleSurface
 import top.yukonga.miuix.kmp.theme.MiuixTheme
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteCellphone2Line
 
 /** Created by bggRGjQaUbCoE on 2024/6/17 */
 @OptIn(ExperimentalFoundationApi::class)
@@ -161,7 +162,7 @@ fun HistoryHeader(
                     end.linkTo(parent.end)
                     width = Dimension.fillToConstraints
                 },
-            imageVector = MingCuteCellphone2Line,
+            imageVector = MiuixIcons.Glass.MyDevice,
             title = data.device.richToString(),
             textSize = 13f,
         )

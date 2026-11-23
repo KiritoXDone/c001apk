@@ -50,10 +50,13 @@ import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.Surface
 import top.yukonga.miuix.kmp.basic.Text
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.basic.Close
+import top.yukonga.miuix.kmp.icon.extended.Share
+import top.yukonga.miuix.kmp.icon.glass.LockOutline
+import top.yukonga.miuix.kmp.icon.glass.Send
 import top.yukonga.miuix.kmp.squircle.addSquircleRect
 import top.yukonga.miuix.kmp.theme.MiuixTheme
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteLockLine
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteShare2Line
 
 internal object ReplyEditorDefaults {
     val CardRadius = 16.dp
@@ -142,7 +145,7 @@ class ReplyVisibilityChipView @JvmOverloads constructor(context: Context, attrs:
                     horizontalArrangement = Arrangement.spacedBy(ReplyEditorDefaults.ChipSpacing),
                 ) {
                     Icon(
-                        if (isReply) MingCuteShare2Line else MingCuteLockLine,
+                        if (isReply) MiuixIcons.Share else MiuixIcons.Glass.LockOutline,
                         null,
                         Modifier.size(ReplyEditorDefaults.ChipIconSize),
                     )
@@ -173,7 +176,7 @@ class ReplyPublishButtonView @JvmOverloads constructor(context: Context, attrs: 
                 cornerRadius = ReplyEditorDefaults.SendSize / 2,
             ) {
                 Icon(
-                    painterResource(R.drawable.reply_arrow_up),
+                    MiuixIcons.Glass.Send,
                     actionLabel,
                     Modifier.size(24.dp),
                 )
@@ -236,7 +239,7 @@ class ReplyAttachmentDeleteView @JvmOverloads constructor(context: Context, attr
                 minHeight = 24.dp,
             ) {
                 Icon(
-                    painterResource(R.drawable.reply_attachment_close),
+                    MiuixIcons.Basic.Close,
                     "删除图片",
                     Modifier.size(14.dp),
                     tint = Color.White,

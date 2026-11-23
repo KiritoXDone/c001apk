@@ -9,13 +9,11 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
-import com.example.c001apk.compose.R
 import com.example.c001apk.compose.logic.model.StringEntity
 import com.example.c001apk.compose.logic.state.LoadingState
 import com.example.c001apk.compose.ui.component.GroupedListItem
@@ -23,9 +21,11 @@ import com.example.c001apk.compose.ui.component.TopBarScrollEffect
 import com.example.c001apk.compose.ui.component.cards.LoadingCard
 import com.example.c001apk.compose.ui.component.settings.PreferenceGroup
 import top.yukonga.miuix.kmp.basic.*
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.extended.Remove
+import top.yukonga.miuix.kmp.icon.glass.ContactsCircle
 import top.yukonga.miuix.kmp.squircle.squircleSurface
 import top.yukonga.miuix.kmp.theme.MiuixTheme
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteUser3Line
 
 @Composable
 internal fun BlackListContent(
@@ -99,13 +99,13 @@ internal fun BlackListContent(
                                 Modifier.size(40.dp).squircleSurface(MiuixTheme.colorScheme.surfaceContainerHigh, 12.dp),
                                 contentAlignment = Alignment.Center,
                             ) {
-                                if (users) Icon(MingCuteUser3Line, null, Modifier.size(24.dp))
+                                if (users) Icon(MiuixIcons.Glass.ContactsCircle, null, Modifier.size(24.dp))
                                 else Text("#", style = MiuixTheme.textStyles.title3)
                             }
                         },
                         endActions = {
                             IconButton(onClick = { onRemove(entry.data) }) {
-                                Icon(painterResource(R.drawable.ic_remove_circle), "移除${if (users) "用户 UID " else "话题 "}${entry.data}",
+                                Icon(MiuixIcons.Remove, "移除${if (users) "用户 UID " else "话题 "}${entry.data}",
                                     Modifier.size(22.dp), tint = MiuixTheme.colorScheme.onSurfaceVariantSummary)
                             }
                         },

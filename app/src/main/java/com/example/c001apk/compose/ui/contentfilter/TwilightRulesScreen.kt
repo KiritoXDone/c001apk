@@ -16,8 +16,9 @@ import com.example.c001apk.compose.ui.component.MiuixScaffold
 import com.example.c001apk.compose.ui.component.MiuixTopBar
 import com.example.c001apk.compose.ui.component.settings.SwitchListItem
 import top.yukonga.miuix.kmp.basic.Text
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.extended.Blocklist
 import top.yukonga.miuix.kmp.theme.MiuixTheme
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteUserForbidLine
 
 @Composable
 fun TwilightRulesScreen(onBack: () -> Unit) {
@@ -41,7 +42,7 @@ fun TwilightRulesScreen(onBack: () -> Unit) {
                     if (rule.kind == "text") append("\n同句内间距不超过 ${rule.maxDistance} 字符")
                     if (rule.exceptions.isNotEmpty()) append("\n例外：${rule.exceptions.joinToString("、")}")
                 }
-                SwitchListItem(rule.key !in prefs.disabledTwilightRules, MingCuteUserForbidLine, rule.reason, summary, enabled = !model.saving) { enabled ->
+                SwitchListItem(rule.key !in prefs.disabledTwilightRules, MiuixIcons.Blocklist, rule.reason, summary, enabled = !model.saving) { enabled ->
                     model.update { it.copy(disabledTwilightRules = if (enabled) it.disabledTwilightRules - rule.key else it.disabledTwilightRules + rule.key) }
                 }
             }

@@ -28,16 +28,18 @@ import com.example.c001apk.compose.logic.model.HomeFeedResponse
 import com.example.c001apk.compose.logic.providable.LocalUserPreferences
 import com.example.c001apk.compose.ui.base.LikeType
 import com.example.c001apk.compose.ui.component.CoilLoader
-import com.example.c001apk.compose.ui.component.icons.FlutterProfileIcons
 import com.example.c001apk.compose.ui.component.rememberHapticClick
 import com.example.c001apk.compose.util.DateUtils.fromToday
 import com.example.c001apk.compose.util.ReportType
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.Text
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.glass.FavoriteFill
+import top.yukonga.miuix.kmp.icon.glass.FavoriteOutline
+import top.yukonga.miuix.kmp.icon.glass.Reply
 import top.yukonga.miuix.kmp.squircle.squircleClip
 import top.yukonga.miuix.kmp.theme.MiuixTheme
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteThumbUpLine
 
 @Composable
 internal fun VoteCommentCard(
@@ -122,7 +124,7 @@ internal fun VoteCommentCard(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             VoteCommentAction(
-                icon = if (liked) MingCuteThumbUpLine else MingCuteThumbUpLine,
+                icon = if (liked) MiuixIcons.Glass.FavoriteFill else MiuixIcons.Glass.FavoriteOutline,
                 label = if (liked) "取消点赞" else "点赞",
                 text = data.likenum?.takeIf(String::isNotBlank) ?: "0",
                 enabled = LocalUserPreferences.current.isLogin && onLike != null && feedId.isNotBlank(),
@@ -131,7 +133,7 @@ internal fun VoteCommentCard(
             )
             Box(Modifier.width(1.dp).height(12.dp).background(colors.dividerLine))
             VoteCommentAction(
-                icon = FlutterProfileIcons.Comment,
+                icon = MiuixIcons.Glass.Reply,
                 label = "查看回复",
                 text = "回复",
                 enabled = feedId.isNotBlank(),

@@ -27,11 +27,12 @@ import top.yukonga.miuix.kmp.basic.Card as Surface
 import top.yukonga.miuix.kmp.basic.HorizontalDivider
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.Text
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.basic.Check
+import top.yukonga.miuix.kmp.icon.extended.Add
+import top.yukonga.miuix.kmp.icon.glass.ChevronForward
+import top.yukonga.miuix.kmp.icon.glass.SettingsOutline
 import top.yukonga.miuix.kmp.theme.MiuixTheme
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteAddLine
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteCheckLine
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteRightLine
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteSettings3Line
 
 @Composable
 fun ProductConfigListCard(
@@ -63,7 +64,7 @@ fun ProductConfigListCard(
                 TextButton(onClick = onShowComparison) {
                     Text("配置对比")
                     Icon(
-                        imageVector = MingCuteRightLine,
+                        imageVector = MiuixIcons.Glass.ChevronForward,
                         contentDescription = null,
                         modifier = Modifier.size(18.dp),
                     )
@@ -88,7 +89,7 @@ fun ProductConfigListCard(
             ) {
                 Text("跨机型对比（${selectedCompareIds.size}/10）")
                 Icon(
-                    imageVector = MingCuteRightLine,
+                    imageVector = MiuixIcons.Glass.ChevronForward,
                     contentDescription = null,
                     modifier = Modifier.size(18.dp),
                 )
@@ -136,7 +137,7 @@ private fun ProductConfigRow(
                     onClick = { onViewConfig(config) },
                 ) {
                     Icon(
-                        MingCuteSettings3Line,
+                        MiuixIcons.Glass.SettingsOutline,
                         contentDescription = null,
                         modifier = Modifier.size(16.dp),
                     )
@@ -151,7 +152,7 @@ private fun ProductConfigRow(
                     onClick = { onToggleCompare(config) },
                 ) {
                     Icon(
-                        if (selectedForCompare) MingCuteCheckLine else MingCuteAddLine,
+                        if (selectedForCompare) MiuixIcons.Basic.Check else MiuixIcons.Add,
                         contentDescription = null,
                         modifier = Modifier.size(16.dp),
                     )
@@ -267,7 +268,7 @@ private fun ProductListRow(
                         insideMargin = PaddingValues(horizontal = 9.dp),
                     ) {
                         Icon(
-                            if (selectedForCompare) MingCuteCheckLine else MingCuteAddLine,
+                            if (selectedForCompare) MiuixIcons.Basic.Check else MiuixIcons.Add,
                             contentDescription = null,
                             modifier = Modifier.size(15.dp),
                         )

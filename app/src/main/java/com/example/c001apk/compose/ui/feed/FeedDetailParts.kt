@@ -21,13 +21,14 @@ import com.example.c001apk.compose.ui.component.cards.FeedVisibilityNotice
 import com.example.c001apk.compose.util.DateUtils.fromToday
 import com.example.c001apk.compose.util.Utils.richToString
 import top.yukonga.miuix.kmp.basic.*
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.glass.ChevronForward
+import top.yukonga.miuix.kmp.icon.glass.MyDevice
 import top.yukonga.miuix.kmp.squircle.squircleBackground
 import top.yukonga.miuix.kmp.squircle.squircleClip
 import top.yukonga.miuix.kmp.squircle.squircleSurface
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.SinkFeedback
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteCellphone2Line
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteRightLine
 
 @Composable
 fun FeedDetailAuthor(data: HomeFeedResponse.Data, onViewUser: (String) -> Unit) {
@@ -94,7 +95,7 @@ fun FeedDetailAuthor(data: HomeFeedResponse.Data, onViewUser: (String) -> Unit) 
                                         ),
                                     ) {
                                         Icon(
-                                            MingCuteCellphone2Line,
+                                            MiuixIcons.Glass.MyDevice,
                                             null,
                                             Modifier.fillMaxSize(),
                                             tint = MiuixTheme.colorScheme.onSurfaceVariantSummary,
@@ -109,7 +110,7 @@ fun FeedDetailAuthor(data: HomeFeedResponse.Data, onViewUser: (String) -> Unit) 
                     )
                 }
                 Icon(
-                    MingCuteRightLine,
+                    MiuixIcons.Glass.ChevronForward,
                     contentDescription = "查看用户主页",
                     tint = MiuixTheme.colorScheme.onSurfaceVariantActions,
                     modifier = Modifier.size(18.dp),

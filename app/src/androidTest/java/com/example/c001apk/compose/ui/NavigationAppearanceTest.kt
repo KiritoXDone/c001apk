@@ -18,7 +18,6 @@ import com.example.c001apk.compose.logic.datastore.UserPreferencesCompat
 import com.example.c001apk.compose.logic.model.BottomBarStyle
 import com.example.c001apk.compose.logic.providable.LocalUserPreferences
 import com.example.c001apk.compose.ui.component.MiuixNavigationScaffold
-import com.example.c001apk.compose.ui.component.icons.FlutterProfileIcons
 import com.example.c001apk.compose.ui.theme.C001apkComposeTheme
 import org.junit.Assert.assertEquals
 import org.junit.Rule
@@ -26,6 +25,10 @@ import org.junit.Test
 import org.junit.rules.ExternalResource
 import org.junit.rules.RuleChain
 import top.yukonga.miuix.kmp.basic.Text
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.extended.FavoritesFill
+import top.yukonga.miuix.kmp.icon.glass.ContactsBook
+import top.yukonga.miuix.kmp.icon.glass.HomeOutline
 
 class NavigationAppearanceTest {
     private val compose = createComposeRule()
@@ -52,9 +55,9 @@ class NavigationAppearanceTest {
                 C001apkComposeTheme(materialYou = false) {
                     MiuixNavigationScaffold(
                         items = listOf(
-                            FlutterProfileIcons.Comment to "首页",
-                            FlutterProfileIcons.PersonAdd to "关注",
-                            FlutterProfileIcons.Account to "我的",
+                            MiuixIcons.Glass.HomeOutline to "首页",
+                            MiuixIcons.FavoritesFill to "关注",
+                            MiuixIcons.Glass.ContactsBook to "我的",
                         ),
                         selectedIndex = selected.intValue,
                         wide = false,

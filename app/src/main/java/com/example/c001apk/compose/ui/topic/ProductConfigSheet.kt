@@ -48,10 +48,11 @@ import top.yukonga.miuix.kmp.basic.Surface
 import top.yukonga.miuix.kmp.basic.Switch
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.VerticalDivider
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.basic.Close
+import top.yukonga.miuix.kmp.icon.extended.Add
+import top.yukonga.miuix.kmp.icon.extended.Share
 import top.yukonga.miuix.kmp.theme.MiuixTheme
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteAddLine
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteCloseLine
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteShare2Line
 
 @Composable
 fun ProductConfigSheet(
@@ -209,7 +210,7 @@ private fun ComparisonContent(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             IconButton(onClick = onDismiss) {
-                Icon(MingCuteCloseLine, contentDescription = "关闭")
+                Icon(MiuixIcons.Basic.Close, contentDescription = "关闭")
             }
             Text(
                 text = state.title,
@@ -237,7 +238,7 @@ private fun ComparisonContent(
                     context.startActivity(Intent.createChooser(intent, state.title))
                 },
             ) {
-                Icon(MingCuteShare2Line, contentDescription = "分享")
+                Icon(MiuixIcons.Share, contentDescription = "分享")
             }
         }
         HorizontalDivider()
@@ -355,7 +356,7 @@ private fun ComparisonHeader(
                     TextButton(onClick = onAddComparison) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Icon(
-                                MingCuteAddLine,
+                                MiuixIcons.Add,
                                 contentDescription = null,
                                 modifier = Modifier.size(36.dp),
                             )
@@ -395,7 +396,7 @@ private fun ProductComparisonHeaderColumn(
                     modifier = Modifier.size(28.dp).align(Alignment.TopEnd),
                 ) {
                     Icon(
-                        MingCuteCloseLine,
+                        MiuixIcons.Basic.Close,
                         contentDescription = "移除",
                         modifier = Modifier.size(18.dp),
                     )

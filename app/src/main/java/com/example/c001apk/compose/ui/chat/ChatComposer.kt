@@ -30,7 +30,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
@@ -39,7 +38,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.content.res.ResourcesCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.c001apk.compose.R
 import com.example.c001apk.compose.constant.Constants.EMPTY_STRING
 import com.example.c001apk.compose.logic.model.StringEntity
 import com.example.c001apk.compose.ui.component.ChatEditText
@@ -52,13 +50,14 @@ import top.yukonga.miuix.kmp.basic.HorizontalDivider
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.Text
-import top.yukonga.miuix.kmp.icon.extended.Image
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.extended.File
+import top.yukonga.miuix.kmp.icon.extended.Photos
+import top.yukonga.miuix.kmp.icon.extended.Send
+import top.yukonga.miuix.kmp.icon.glass.Delete
+import top.yukonga.miuix.kmp.icon.glass.Smile
 import top.yukonga.miuix.kmp.squircle.squircleSurface
 import top.yukonga.miuix.kmp.theme.MiuixTheme
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteDeleteBackLine
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteEmojiLine
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCutePhotoAlbumLine
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteSendLine
 
 @Composable
 fun ChatBottom(
@@ -120,7 +119,7 @@ internal fun ChatComposerContent(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             ChatComposerIcon(
-                icon = MingCuteEmojiLine,
+                icon = MiuixIcons.Glass.Smile,
                 description = if (showEmojiPanel) "收起表情" else "选择表情",
                 selected = showEmojiPanel,
                 onClick = {
@@ -153,14 +152,14 @@ internal fun ChatComposerContent(
             )
             if (!shouldShowSendBtn) {
                 Row {
-                    ChatComposerIcon(MingCutePhotoAlbumLine, "选择图片", onClick = onPickImage)
+                    ChatComposerIcon(MiuixIcons.Photos, "选择图片", onClick = onPickImage)
                     IconButton(
                         onClick = onPickOtherImage,
                         modifier = Modifier.size(44.dp),
                         backgroundColor = Color.Transparent,
                     ) {
                         Icon(
-                            painter = painterResource(R.drawable.outline_note_alt_24),
+                            imageVector = MiuixIcons.File,
                             contentDescription = "从文件选择图片",
                             modifier = Modifier.size(22.dp),
                             tint = MiuixTheme.colorScheme.onSurfaceVariantSummary,
@@ -169,7 +168,7 @@ internal fun ChatComposerContent(
                 }
             } else {
                 ChatComposerIcon(
-                    icon = MingCuteSendLine,
+                    icon = MiuixIcons.Send,
                     description = "发送",
                     primary = true,
                     onClick = { onSendMessage(textInput) },
@@ -234,7 +233,7 @@ internal fun ChatComposerContent(
                                         )
                                     } else if (it == 27) {
                                         Icon(
-                                            imageVector = MingCuteDeleteBackLine,
+                                            imageVector = MiuixIcons.Glass.Delete,
                                             contentDescription = "删除表情",
                                             modifier = Modifier.size(28.dp),
                                         )

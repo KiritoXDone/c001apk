@@ -68,16 +68,17 @@ import top.yukonga.miuix.kmp.basic.RefreshState
 import top.yukonga.miuix.kmp.basic.rememberPullToRefreshState
 import top.yukonga.miuix.kmp.basic.TopAppBarTitleAlignment
 import top.yukonga.miuix.kmp.basic.Text
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.basic.Search
+import top.yukonga.miuix.kmp.icon.extended.Back
+import top.yukonga.miuix.kmp.icon.extended.Blocklist
+import top.yukonga.miuix.kmp.icon.extended.Copy
+import top.yukonga.miuix.kmp.icon.extended.ExpandMore
+import top.yukonga.miuix.kmp.icon.extended.Info
+import top.yukonga.miuix.kmp.icon.extended.Report
+import top.yukonga.miuix.kmp.icon.extended.Share
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.basic.PopupPositionProvider
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteArrowLeftLine
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteCopyLine
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteDownLine
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteInformationLine
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteReportLine
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteSearchLine
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteShare2Line
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteUserForbidLine
 
 /** Created by bggRGjQaUbCoE on 2024/6/4 */
 @Composable
@@ -162,7 +163,7 @@ fun UserScreen(
                         modifier = Modifier.testTag("user_back"),
                         backgroundColor = buttonBackground,
                     ) {
-                        Icon(MingCuteArrowLeftLine, "返回", Modifier.size(24.dp), tint = foreground)
+                        Icon(MiuixIcons.Back, "返回", Modifier.size(24.dp), tint = foreground)
                     }
                 },
                 title = if (topBarProgress >= 0.8f) profile?.username ?: "用户主页" else "",
@@ -176,7 +177,7 @@ fun UserScreen(
                                 modifier = Modifier.testTag("user_search"),
                                 backgroundColor = buttonBackground,
                             ) {
-                                Icon(MingCuteSearchLine, "搜索此用户的动态", Modifier.size(24.dp), tint = foreground)
+                                Icon(MiuixIcons.Basic.Search, "搜索此用户的动态", Modifier.size(24.dp), tint = foreground)
                             }
                             Box {
                                 IconButton(
@@ -185,7 +186,7 @@ fun UserScreen(
                                     modifier = Modifier.testTag("user_more"),
                                     backgroundColor = buttonBackground,
                                 ) {
-                                    Icon(MingCuteDownLine, "更多操作", Modifier.size(24.dp), tint = foreground)
+                                    Icon(MiuixIcons.ExpandMore, "更多操作", Modifier.size(24.dp), tint = foreground)
                                 }
                                 DropdownMenu(
                                     expanded = dropdownMenuExpanded,
@@ -199,7 +200,7 @@ fun UserScreen(
                                             text = { Text(menu) },
                                             leadingIcon = {
                                                 Icon(
-                                                    listOf(MingCuteCopyLine, MingCuteShare2Line, MingCuteInformationLine)[index],
+                                                    listOf(MiuixIcons.Copy, MiuixIcons.Share, MiuixIcons.Info)[index],
                                                     null,
                                                     Modifier.size(26.dp),
                                                 )
@@ -229,7 +230,7 @@ fun UserScreen(
                                         )
                                     }
                                     DropdownMenuItem(
-                                        leadingIcon = { Icon(MingCuteUserForbidLine, null, Modifier.size(26.dp)) },
+                                        leadingIcon = { Icon(MiuixIcons.Blocklist, null, Modifier.size(26.dp)) },
                                         text = {
                                             Text(
                                                 if (viewModel.isBlocked) {
@@ -246,7 +247,7 @@ fun UserScreen(
                                     )
                                     if (isLogin) {
                                         DropdownMenuItem(
-                                            leadingIcon = { Icon(MingCuteReportLine, null, Modifier.size(26.dp)) },
+                                            leadingIcon = { Icon(MiuixIcons.Report, null, Modifier.size(26.dp)) },
                                             text = {
                                                 Text(stringResource(id = R.string.menu_report))
                                             },

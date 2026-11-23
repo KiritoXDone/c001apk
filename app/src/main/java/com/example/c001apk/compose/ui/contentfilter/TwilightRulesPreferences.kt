@@ -7,7 +7,8 @@ import com.example.c001apk.compose.ui.component.MiuixAlertDialog
 import com.example.c001apk.compose.ui.component.MiuixDialogButton
 import com.example.c001apk.compose.ui.component.settings.*
 import top.yukonga.miuix.kmp.basic.Text
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteUserForbidLine
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.extended.Blocklist
 
 internal fun LazyListScope.twilightRulesPreferences(
     preferences: ContentFilterPreferences,
@@ -30,7 +31,7 @@ internal fun LazyListScope.twilightRulesPreferences(
             if (rules != null) {
                 BasicListItem(headlineText = "规则明细",
                     supportingText = "版本 ${rules.revision} · ${rules.rules.size} 条 · 可逐条停用", onClick = onDetails)
-                SwitchListItem(preferences.twilightStrict, MingCuteUserForbidLine, "启用严格规则",
+                SwitchListItem(preferences.twilightStrict, MiuixIcons.Blocklist, "启用严格规则",
                     "仅影响秋风的严格级别关键词规则", enabled = !busy) { strict ->
                     onUpdate { it.copy(twilightStrict = strict) }
                 }

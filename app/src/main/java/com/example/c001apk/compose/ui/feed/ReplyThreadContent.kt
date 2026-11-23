@@ -16,8 +16,9 @@ import com.example.c001apk.compose.logic.state.LoadingState
 import com.example.c001apk.compose.ui.component.FooterCard
 import com.example.c001apk.compose.ui.component.cards.*
 import top.yukonga.miuix.kmp.basic.*
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.basic.Close
 import top.yukonga.miuix.kmp.theme.MiuixTheme
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteCloseLine
 
 /** Original comment and replies remain lazy, with one continuous surface for the reply group. */
 @Composable
@@ -46,7 +47,7 @@ fun ReplyThreadContent(
                 fontWeight = FontWeight.SemiBold,
             )
             IconButton(onClick = onDismiss, modifier = Modifier.align(Alignment.CenterEnd)) {
-                Icon(MingCuteCloseLine, "关闭全部回复", Modifier.size(20.dp))
+                Icon(MiuixIcons.Basic.Close, "关闭全部回复", Modifier.size(20.dp))
             }
         }
         BoxWithConstraints(Modifier.weight(1f).fillMaxWidth()) {

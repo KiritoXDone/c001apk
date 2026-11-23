@@ -26,8 +26,9 @@ import com.example.c001apk.compose.util.makeToast
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import top.yukonga.miuix.kmp.basic.*
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteClockwiseLine
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteMore2Line
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.extended.More
+import top.yukonga.miuix.kmp.icon.extended.Update
 
 @HiltViewModel class AppUpdateViewModel @Inject constructor(val updates: AppUpdates) : ViewModel()
 
@@ -72,7 +73,7 @@ fun AppUpdateHost(navigator: AppNavigator, model: AppUpdateViewModel = hiltViewM
                     Box(Modifier.align(Alignment.CenterEnd)) {
                         IconButton(onClick = { isMenuExpanded = true }) {
                             Icon(
-                                imageVector = MingCuteMore2Line,
+                                imageVector = MiuixIcons.More,
                                 contentDescription = stringResource(R.string.update_more),
                                 modifier = Modifier.size(24.dp),
                             )
@@ -152,7 +153,7 @@ fun AppUpdateSettings(model: AppUpdateViewModel = hiltViewModel()) {
     val state by model.updates.state.collectAsStateWithLifecycle()
     SwitchListItem(
         value = prefs.automatic,
-        leadingImageVector = MingCuteClockwiseLine,
+        leadingImageVector = MiuixIcons.Update,
         headlineText = stringResource(R.string.update_auto_check),
         supportingText = stringResource(R.string.update_auto_check_summary),
         onValueChanged = model.updates::setAutomatic,
@@ -161,7 +162,7 @@ fun AppUpdateSettings(model: AppUpdateViewModel = hiltViewModel()) {
         headlineText =
             if (state.checking) stringResource(R.string.update_checking)
             else stringResource(R.string.update_check),
-        leadingImageVector = MingCuteClockwiseLine,
+        leadingImageVector = MiuixIcons.Update,
         enabled = !state.checking,
         onClick = { model.updates.check() },
     )

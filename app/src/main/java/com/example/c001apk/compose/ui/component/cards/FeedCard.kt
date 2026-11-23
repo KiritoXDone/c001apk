@@ -61,12 +61,14 @@ import com.example.c001apk.compose.util.ShareType
 import com.example.c001apk.compose.util.Utils.richToString
 import com.example.c001apk.compose.util.copyText
 import com.example.c001apk.compose.util.getShareText
-import com.example.c001apk.compose.ui.component.icons.FlutterProfileIcons
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteCellphone2Line
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteLinkLine
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteThumbUpLine
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.Text
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.extended.Link
+import top.yukonga.miuix.kmp.icon.glass.FavoriteFill
+import top.yukonga.miuix.kmp.icon.glass.FavoriteOutline
+import top.yukonga.miuix.kmp.icon.glass.MyDevice
+import top.yukonga.miuix.kmp.icon.glass.Reply
 import top.yukonga.miuix.kmp.squircle.squircleClip
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
@@ -238,14 +240,14 @@ fun FeedBottomInfo(
         )
 
         IconText(
-            imageVector = FlutterProfileIcons.Comment,
+            imageVector = MiuixIcons.Glass.Reply,
             title = replyNum,
             onClick = onViewFeed,
         )
 
         IconText(
             modifier = Modifier.padding(start = 10.dp),
-            imageVector = MingCuteThumbUpLine,
+            imageVector = if (like == 1) MiuixIcons.Glass.FavoriteFill else MiuixIcons.Glass.FavoriteOutline,
             title = likeNum,
             onClick = onLike,
             isLike = like == 1,
@@ -458,7 +460,7 @@ fun FeedMessage(
                     contentAlignment = Alignment.Center,
                 ) {
                     Image(
-                        imageVector = MingCuteLinkLine,
+                        imageVector = MiuixIcons.Link,
                         contentDescription = null,
                         colorFilter = ColorFilter.tint(MiuixTheme.colorScheme.onPrimary),
                     )
@@ -654,7 +656,7 @@ fun FeedHeader(
                         end.linkTo(parent.end)
                         width = Dimension.fillToConstraints
                     },
-            imageVector = MingCuteCellphone2Line,
+            imageVector = MiuixIcons.Glass.MyDevice,
             title = data.deviceTitle?.richToString().orEmpty(),
             textSize = 13f,
         )

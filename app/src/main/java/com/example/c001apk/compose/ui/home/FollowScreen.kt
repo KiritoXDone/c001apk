@@ -20,9 +20,10 @@ import com.example.c001apk.compose.ui.follow.LocalFollowHeader
 import com.example.c001apk.compose.ui.home.feed.HomeFeedScreen
 import com.example.c001apk.compose.util.ReportType
 import top.yukonga.miuix.kmp.basic.*
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.basic.Search
+import top.yukonga.miuix.kmp.icon.glass.ChevronForward
 import top.yukonga.miuix.kmp.theme.MiuixTheme
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteRightLine
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteSearchLine
 
 @Composable
 fun FollowScreen(
@@ -58,7 +59,7 @@ fun FollowScreen(
                                 horizontalArrangement = Arrangement.spacedBy(6.dp),
                             ) {
                                 Text(label)
-                                if (prefs.isLogin) Icon(MingCuteRightLine, null,
+                                if (prefs.isLogin) Icon(MiuixIcons.Glass.ChevronForward, null,
                                     Modifier.size(12.dp).rotate(90f))
                             }
                             MiuixMenu(expanded = menu, onDismissRequest = { menu = false }, contentScale = 1f) {
@@ -86,7 +87,7 @@ fun FollowScreen(
                         }
                     }
                 },
-                actions = { MiuixToolbarIconButton(onClick = onSearch) { Icon(MingCuteSearchLine, "搜索") } },
+                actions = { MiuixToolbarIconButton(onClick = onSearch) { Icon(MiuixIcons.Basic.Search, "搜索") } },
             )
         },
     ) { padding ->

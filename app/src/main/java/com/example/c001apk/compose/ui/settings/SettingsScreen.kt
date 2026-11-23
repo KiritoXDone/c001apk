@@ -69,28 +69,6 @@ import com.example.c001apk.compose.ui.component.settings.BasicListItem
 import com.example.c001apk.compose.ui.component.settings.PreferenceGroup
 import com.example.c001apk.compose.ui.component.settings.PreferenceSpacing
 import com.example.c001apk.compose.ui.component.settings.SelectionItem
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteAddSquareLine
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteArrowLeftLine
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteCardSimLine
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteCellphone2Line
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteClockwiseLine
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteCloseLine
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteDelete2Line
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteEye2Line
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteFilterLine
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteFolderLine
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteGlobeLine
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteHeartLine
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteHistoryLine
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteInformationLine
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCutePaletteLine
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCutePhotoAlbumLine
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteSearchLine
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteTagLine
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteTranslateLine
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteUser3Line
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteUserFollowLine
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteUserForbidLine
 import com.example.c001apk.compose.ui.component.settings.SelectionListItem
 import com.example.c001apk.compose.ui.component.settings.SwitchListItem
 import com.example.c001apk.compose.ui.component.TopBarScrollEffect
@@ -102,16 +80,39 @@ import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.SearchBar
 import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.basic.Text
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.basic.Close
+import top.yukonga.miuix.kmp.icon.basic.Search
+import top.yukonga.miuix.kmp.icon.extended.Back
+import top.yukonga.miuix.kmp.icon.extended.Blocklist
+import top.yukonga.miuix.kmp.icon.extended.Carrier
+import top.yukonga.miuix.kmp.icon.extended.Create
+import top.yukonga.miuix.kmp.icon.extended.Delete
+import top.yukonga.miuix.kmp.icon.extended.Filter
+import top.yukonga.miuix.kmp.icon.extended.Info
+import top.yukonga.miuix.kmp.icon.extended.Photos
+import top.yukonga.miuix.kmp.icon.extended.Recent
+import top.yukonga.miuix.kmp.icon.extended.Show
+import top.yukonga.miuix.kmp.icon.extended.Theme
+import top.yukonga.miuix.kmp.icon.extended.Translate
+import top.yukonga.miuix.kmp.icon.extended.Update
+import top.yukonga.miuix.kmp.icon.extended.WorldClock
+import top.yukonga.miuix.kmp.icon.glass.Contacts
+import top.yukonga.miuix.kmp.icon.glass.ContactsCircle
+import top.yukonga.miuix.kmp.icon.glass.FavoriteOutline
+import top.yukonga.miuix.kmp.icon.glass.FolderOutline
+import top.yukonga.miuix.kmp.icon.glass.MyDevice
+import top.yukonga.miuix.kmp.icon.glass.Tags
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.basic.TextField
 import top.yukonga.miuix.kmp.utils.scrollEndHaptic
 
 private enum class SettingsSection(@param:StringRes val titleRes: Int, val icon: ImageVector) {
-    Appearance(R.string.settings_section_appearance, MingCutePaletteLine),
-    Content(R.string.settings_section_content, MingCuteHeartLine),
-    Privacy(R.string.settings_section_privacy, MingCuteEye2Line),
-    Storage(R.string.settings_section_storage, MingCuteFolderLine),
-    Device(R.string.settings_section_device, MingCuteCellphone2Line),
+    Appearance(R.string.settings_section_appearance, MiuixIcons.Theme),
+    Content(R.string.settings_section_content, MiuixIcons.Glass.FavoriteOutline),
+    Privacy(R.string.settings_section_privacy, MiuixIcons.Show),
+    Storage(R.string.settings_section_storage, MiuixIcons.Glass.FolderOutline),
+    Device(R.string.settings_section_device, MiuixIcons.Glass.MyDevice),
 }
 
 /** Created by bggRGjQaUbCoE on 2024/5/30 */
@@ -235,7 +236,7 @@ fun SettingsScreen(
                         expanded = true,
                         outsideEndAction = {
                             MiuixToolbarIconButton(onClick = closeSearch) {
-                                Icon(MingCuteCloseLine, contentDescription = stringResource(R.string.settings_search_close))
+                                Icon(MiuixIcons.Basic.Close, contentDescription = stringResource(R.string.settings_search_close))
                             }
                         },
                     ) {}
@@ -254,13 +255,13 @@ fun SettingsScreen(
                         scrollBehavior = topBarScrollBehavior,
                         navigationIcon = {
                             MiuixToolbarIconButton(onClick = onBackClick) {
-                                Icon(MingCuteArrowLeftLine, contentDescription = stringResource(R.string.action_back))
+                                Icon(MiuixIcons.Back, contentDescription = stringResource(R.string.action_back))
                             }
                         },
                         actions = {
                             if (activeSection == null) {
                                 MiuixToolbarIconButton(onClick = { searchExpanded = true }) {
-                                    Icon(MingCuteSearchLine, contentDescription = stringResource(R.string.settings_search_open))
+                                    Icon(MiuixIcons.Basic.Search, contentDescription = stringResource(R.string.settings_search_open))
                                 }
                             }
                         },
@@ -309,7 +310,7 @@ fun SettingsScreen(
                                             },
                                         )
                                         SelectionListItem(
-                                            leadingImageVector = MingCuteTranslateLine,
+                                            leadingImageVector = MiuixIcons.Translate,
                                             title = languageLabel,
                                             value = language,
                                             selections = languageItems,
@@ -340,7 +341,7 @@ fun SettingsScreen(
                             item(key = "accounts") {
                                 BasicListItem(
                                     headlineText = accountsLabel,
-                                    leadingImageVector = MingCuteUser3Line,
+                                    leadingImageVector = MiuixIcons.Glass.ContactsCircle,
                                     onClick = {
                                         closeSearch()
                                         onAccountsClick()
@@ -352,7 +353,7 @@ fun SettingsScreen(
                             item(key = "about") {
                                 BasicListItem(
                                     headlineText = aboutLabel,
-                                    leadingImageVector = MingCuteInformationLine,
+                                    leadingImageVector = MiuixIcons.Info,
                                     onClick = {
                                         closeSearch()
                                         onAboutClick()
@@ -422,7 +423,7 @@ fun SettingsScreen(
                                     PreferenceGroup(title = stringResource(R.string.settings_group_publish)) {
                                         SwitchListItem(
                                             prefs.hideHomePublishButton,
-                                            MingCuteAddSquareLine,
+                                            MiuixIcons.Create,
                                             stringResource(R.string.settings_hide_publish_button),
                                             stringResource(R.string.settings_hide_publish_button_summary),
                                         ) { viewModel.setHideHomePublishButton(it) }
@@ -431,7 +432,7 @@ fun SettingsScreen(
                                 item(key = "Content_1") {
                                     PreferenceGroup(title = stringResource(R.string.settings_group_follow)) {
                                         BasicListItem(
-                                            leadingImageVector = MingCuteUserFollowLine,
+                                            leadingImageVector = MiuixIcons.Glass.Contacts,
                                             headlineText = stringResource(R.string.settings_local_follow),
                                             supportingText = stringResource(R.string.settings_local_follow_summary),
                                             onClick = onLocalFollowsClick,
@@ -443,18 +444,18 @@ fun SettingsScreen(
                                         BasicListItem(
                                                 headlineText = stringResource(R.string.settings_content_filter),
                                                 supportingText = stringResource(R.string.settings_content_filter_summary),
-                                                leadingImageVector = MingCuteFilterLine,
+                                                leadingImageVector = MiuixIcons.Filter,
                                                 onClick = onContentFilters,
                                             )
 
                                         BasicListItem(
-                                            leadingImageVector = MingCuteUserForbidLine,
+                                            leadingImageVector = MiuixIcons.Blocklist,
                                             headlineText = stringResource(R.string.settings_user_blocklist),
                                         ) {
                                             onViewBlackList(BlackListType.USER.name)
                                         }
                                         BasicListItem(
-                                            leadingImageVector = MingCuteTagLine,
+                                            leadingImageVector = MiuixIcons.Glass.Tags,
                                             headlineText = stringResource(R.string.settings_topic_blocklist),
                                         ) {
                                             onViewBlackList(BlackListType.TOPIC.name)
@@ -466,7 +467,7 @@ fun SettingsScreen(
                                 item(key = "Privacy_0") {
                                     PreferenceGroup(title = stringResource(R.string.settings_group_image)) {
                                         SelectionListItem(
-                                            leadingImageVector = MingCutePhotoAlbumLine,
+                                            leadingImageVector = MiuixIcons.Photos,
                                             title = stringResource(R.string.settings_image_quality),
                                             value = prefs.imageQuality,
                                             selections =
@@ -481,14 +482,14 @@ fun SettingsScreen(
                                     PreferenceGroup(title = stringResource(R.string.settings_group_browse)) {
                                         SwitchListItem(
                                             value = prefs.openInBrowser,
-                                            leadingImageVector = MingCuteGlobeLine,
+                                            leadingImageVector = MiuixIcons.WorldClock,
                                             headlineText = stringResource(R.string.settings_open_in_browser),
                                         ) {
                                             viewModel.setOpenInBrowser(it)
                                         }
                                         SwitchListItem(
                                             value = prefs.recordHistory,
-                                            leadingImageVector = MingCuteHistoryLine,
+                                            leadingImageVector = MiuixIcons.Recent,
                                             headlineText = stringResource(R.string.settings_record_history),
                                         ) {
                                             viewModel.setRecordHistory(it)
@@ -500,7 +501,7 @@ fun SettingsScreen(
                                 item(key = "Storage_0") {
                                     PreferenceGroup(title = stringResource(R.string.settings_group_cache)) {
                                         BasicListItem(
-                                            leadingImageVector = MingCuteDelete2Line,
+                                            leadingImageVector = MiuixIcons.Delete,
                                             headlineText = stringResource(R.string.settings_clean_cache),
                                             supportingText = cacheSize,
                                         ) {
@@ -509,7 +510,7 @@ fun SettingsScreen(
                                         }
                                         SwitchListItem(
                                             value = prefs.autoClearImageCache,
-                                            leadingImageVector = MingCuteDelete2Line,
+                                            leadingImageVector = MiuixIcons.Delete,
                                             headlineText = stringResource(R.string.settings_clear_cache_on_exit),
                                             supportingText = stringResource(R.string.settings_clear_cache_on_exit_summary),
                                         ) {
@@ -517,7 +518,7 @@ fun SettingsScreen(
                                         }
                                         SwitchListItem(
                                             value = prefs.checkUpdate,
-                                            leadingImageVector = MingCuteClockwiseLine,
+                                            leadingImageVector = MiuixIcons.Update,
                                             headlineText = stringResource(R.string.settings_check_app_updates),
                                         ) {
                                             viewModel.setCheckUpdate(it)
@@ -529,7 +530,7 @@ fun SettingsScreen(
                                 item(key = "Device_0") {
                                     PreferenceGroup(title = stringResource(R.string.settings_section_device)) {
                                         BasicListItem(
-                                            leadingImageVector = MingCuteCardSimLine,
+                                            leadingImageVector = MiuixIcons.Carrier,
                                             headlineText = stringResource(R.string.settings_szlm_id),
                                             supportingText =
                                                 if (prefs.szlmId.isBlank()) stringResource(R.string.settings_szlm_id_empty)
@@ -538,7 +539,7 @@ fun SettingsScreen(
                                             showSZLMIDDialog = true
                                         }
                                         BasicListItem(
-                                            leadingImageVector = MingCuteCellphone2Line,
+                                            leadingImageVector = MiuixIcons.Glass.MyDevice,
                                             headlineText = stringResource(R.string.settings_device_params),
                                         ) {
                                             onParamsClick()

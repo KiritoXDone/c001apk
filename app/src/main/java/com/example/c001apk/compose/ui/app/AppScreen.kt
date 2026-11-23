@@ -65,11 +65,12 @@ import me.onebone.toolbar.rememberCollapsingToolbarScaffoldState
 import top.yukonga.miuix.kmp.basic.HorizontalDivider
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.Text
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.basic.Search
+import top.yukonga.miuix.kmp.icon.extended.Edit
+import top.yukonga.miuix.kmp.icon.extended.ExpandMore
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.springAnimateToPage
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteDownLine
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteEdit2Line
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteSearchLine
 
 /** Created by bggRGjQaUbCoE on 2024/6/10 */
 @OptIn(ExperimentalToolbarApi::class)
@@ -151,7 +152,7 @@ fun AppScreen(
                                         onSearch(viewModel.title, "apk", viewModel.id)
                                     },
                                 ) {
-                                    Icon(MingCuteSearchLine, contentDescription = "搜索此应用的动态", modifier = Modifier.size(24.dp))
+                                    Icon(MiuixIcons.Basic.Search, contentDescription = "搜索此应用的动态", modifier = Modifier.size(24.dp))
                                 }
                                 if (isLogin) {
                                     MiuixToolbarIconButton(
@@ -172,7 +173,7 @@ fun AppScreen(
                                             ContextCompat.startActivity(context, intent, animationBundle)
                                         },
                                     ) {
-                                        Icon(MingCuteEdit2Line, contentDescription = "发布动态", modifier = Modifier.size(24.dp))
+                                        Icon(MiuixIcons.Edit, contentDescription = "发布动态", modifier = Modifier.size(24.dp))
                                     }
                                 }
                                 Box {
@@ -183,7 +184,7 @@ fun AppScreen(
                                         },
                                         holdDownState = menuHeld,
                                     ) {
-                                        Icon(MingCuteDownLine, contentDescription = "更多操作", modifier = Modifier.size(24.dp))
+                                        Icon(MiuixIcons.ExpandMore, contentDescription = "更多操作", modifier = Modifier.size(24.dp))
                                     }
                                     DropdownMenu(
                                         expanded = dropdownMenuExpanded,

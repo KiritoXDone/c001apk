@@ -13,10 +13,11 @@ import top.yukonga.miuix.kmp.basic.*
 import top.yukonga.miuix.kmp.glass.GlassDialog
 import top.yukonga.miuix.kmp.glass.GlassDialogButton
 import top.yukonga.miuix.kmp.glass.GlassDialogButtonRole
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.extended.Add
 import top.yukonga.miuix.kmp.preference.CheckboxPreference
 import top.yukonga.miuix.kmp.preference.SwitchPreference
 import top.yukonga.miuix.kmp.theme.MiuixTheme
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteAddLine
 
 @Composable
 fun FeedCollectionDialog(collections: FeedCollections) {
@@ -48,7 +49,7 @@ fun FeedCollectionDialog(collections: FeedCollections) {
                     minWidth = 35.dp,
                 ) {
                     Icon(
-                        MingCuteAddLine,
+                        MiuixIcons.Add,
                         contentDescription = "新建收藏夹",
                         modifier = Modifier.size(20.dp),
                     )

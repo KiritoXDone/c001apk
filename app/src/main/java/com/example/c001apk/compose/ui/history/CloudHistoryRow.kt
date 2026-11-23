@@ -27,9 +27,10 @@ import com.example.c001apk.compose.util.Utils.richToString
 import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.Text
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.extended.Recent
 import top.yukonga.miuix.kmp.squircle.squircleClip
 import top.yukonga.miuix.kmp.theme.MiuixTheme
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteHistoryLine
 
 @Composable
 @OptIn(ExperimentalFoundationApi::class)
@@ -57,7 +58,7 @@ internal fun CloudHistoryRow(
                     .then(if (onAvatarClick != null) Modifier.clickable(onClick = onAvatarClick) else Modifier),
                 contentAlignment = Alignment.Center,
             ) {
-                if (entry.logo.isNullOrBlank()) Icon(MingCuteHistoryLine, null, Modifier.size(24.dp),
+                if (entry.logo.isNullOrBlank()) Icon(MiuixIcons.Recent, null, Modifier.size(24.dp),
                     tint = MiuixTheme.colorScheme.onSurfaceVariantSummary)
                 else CoilLoader(url = entry.logo, modifier = Modifier.fillMaxSize())
             }

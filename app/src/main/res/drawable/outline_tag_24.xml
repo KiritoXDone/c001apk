@@ -1,10 +1,8 @@
-<vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="24dp"
-    android:height="24dp"
-    android:viewportWidth="24"
-    android:viewportHeight="24"
-    android:tint="?attr/colorControlNormal">
-  <path
-      android:fillColor="@android:color/white"
-      android:pathData="M20,10V8h-4V4h-2v4h-4V4H8v4H4v2h4v4H4v2h4v4h2v-4h4v4h2v-4h4v-2h-4v-4H20zM14,14h-4v-4h4V14z"/>
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="24dp" android:height="24dp" android:viewportWidth="24" android:viewportHeight="24" android:tint="?attr/colorControlNormal">
+    <group android:scaleX="0.01800000045000001" android:scaleY="0.01800000045000001" android:translateX="0" android:translateY="0">
+        <group android:scaleX="1" android:scaleY="-1" android:translateX="-21.9583" android:translateY="1018.2917">
+            <path android:fillColor="#FF000000" android:pathData="M528,838 L507,833 L401,810 Q358,801,338.5,795 Q319,789,304,780 Q277,763,260,736 Q251,721,245,701.5 Q239,682,230,639 L207,533 L202,512 Q194,475,191,455 Q188,435,189,417 Q194,379,210,346 Q219,329,234.5,311.5 Q250,294,287,257 L612,-68 Q649,-106,668,-121.5 Q687,-137,705,-143 Q722,-148,739.5,-148 Q757,-148,774,-143 Q791,-137,809.5,-121.5 Q828,-106,866,-67 L1107,174 Q1146,212,1161.5,230.5 Q1177,249,1183,266 Q1194,301,1183,335 Q1177,353,1161.5,372 Q1146,391,1108,428 L783,753 Q746,790,728.5,805.5 Q711,821,694,830 Q661,846,623,851 Q605,852,585,849 Q565,846,528,838 Z M654,753 Q662,749,678,734.5 Q694,720,722,692 L1092,322 Q1103,312,1103,301.5 Q1103,291,1092,280 L760,-52 Q750,-63,739.5,-63 Q729,-63,718,-52 L348,318 Q320,346,305.5,362 Q291,378,287,386 Q278,402,276,424 Q275,434,278.5,455 Q282,476,291,515 L314,621 Q322,655,326,670.5 Q330,686,333,690 Q339,701,350,707 Q354,710,369.5,714 Q385,718,419,726 L525,749 Q564,758,585,761.5 Q606,765,616,764 Q638,762,654,753 Z M449,396 Q476,369,512,360 Q548,351,583.5,360.5 Q619,370,646,397 Q673,424,682.5,459.5 Q692,495,682.5,531 Q673,567,646,594 Q619,621,583,630.5 Q547,640,511,630.5 Q475,621,449,594 Q422,567,412.5,531 Q403,495,412.5,459 Q422,423,449,396 Z M586,457 Q570,441,547.5,441 Q525,441,509,457 Q493,473,493,495.5 Q493,518,509,534 Q525,550,547.5,550 Q570,550,586,534 Q602,518,602,495.5 Q602,473,586,457 Z" />
+        </group>
+    </group>
 </vector>

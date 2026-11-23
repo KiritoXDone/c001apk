@@ -63,7 +63,6 @@ import com.example.c001apk.compose.ui.component.rememberBarBackdrop
 import com.example.c001apk.compose.ui.component.TopBarScrollEffect
 import com.example.c001apk.compose.ui.component.TopBarScrollPage
 import com.example.c001apk.compose.ui.component.topBarTap
-import com.example.c001apk.compose.ui.component.icons.FlutterProfileIcons
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -76,6 +75,9 @@ import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.glass.GlassIconButton
 import top.yukonga.miuix.kmp.glass.GlassTopAppBarDefaults
 import top.yukonga.miuix.kmp.glass.glassShadow
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.glass.ContactsBook
+import top.yukonga.miuix.kmp.icon.glass.SettingsOutline
 import top.yukonga.miuix.kmp.material.GlassShape
 import top.yukonga.miuix.kmp.material.GlassShadows
 import top.yukonga.miuix.kmp.theme.MiuixTheme
@@ -226,7 +228,7 @@ class TopBarScrollTest {
                                     val density = LocalDensity.current
                                     SideEffect { actionDensity = density }
                                     MiuixToolbarIconButton(onClick = {}) {
-                                        Icon(FlutterProfileIcons.Settings, contentDescription = "设置")
+                                        Icon(MiuixIcons.Glass.SettingsOutline, contentDescription = "设置")
                                     }
                                 },
                             )
@@ -265,10 +267,10 @@ class TopBarScrollTest {
                             val density = LocalDensity.current
                             SideEffect { actionDensity = density }
                             MiuixToolbarIconButton(onClick = { calls += "账号" }) {
-                                Icon(FlutterProfileIcons.Account, contentDescription = "账号")
+                                Icon(MiuixIcons.Glass.ContactsBook, contentDescription = "账号")
                             }
                             MiuixToolbarIconButton(onClick = { calls += "设置" }) {
-                                Icon(FlutterProfileIcons.Settings, contentDescription = "设置")
+                                Icon(MiuixIcons.Glass.SettingsOutline, contentDescription = "设置")
                             }
                         },
                     )

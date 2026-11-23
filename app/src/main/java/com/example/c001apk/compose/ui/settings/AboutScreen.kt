@@ -43,13 +43,6 @@ import com.example.c001apk.compose.constant.Constants.URL_PROJECT
 import com.example.c001apk.compose.constant.Constants.URL_SOURCE_CODE
 import com.example.c001apk.compose.constant.Constants.URL_SOURCE_CODE_FORK
 import com.example.c001apk.compose.ui.component.FlowLightBackground
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteArrowLeftLine
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteCodeLine
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteFolderLine
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteGithubLine
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteGlobeLine
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteInformationLine
-import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteTagLine
 import com.example.c001apk.compose.ui.component.settings.BasicListItem
 import com.example.c001apk.compose.ui.component.settings.PreferenceGroup
 import com.example.c001apk.compose.ui.component.settings.PreferenceSpacing
@@ -62,6 +55,14 @@ import top.yukonga.miuix.kmp.blur.BlurBlendMode
 import top.yukonga.miuix.kmp.blur.BlurColors
 import top.yukonga.miuix.kmp.blur.BlurDefaults
 import top.yukonga.miuix.kmp.blur.LayerBackdrop
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.extended.Back
+import top.yukonga.miuix.kmp.icon.extended.Info
+import top.yukonga.miuix.kmp.icon.extended.WorldClock
+import top.yukonga.miuix.kmp.icon.glass.FolderOutline
+import top.yukonga.miuix.kmp.icon.glass.HtmlViewer
+import top.yukonga.miuix.kmp.icon.glass.OpenWithOtherApp
+import top.yukonga.miuix.kmp.icon.glass.Tags
 import top.yukonga.miuix.kmp.material.isRuntimeShaderSupported
 import top.yukonga.miuix.kmp.blur.layerBackdrop
 import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop
@@ -152,13 +153,13 @@ fun AboutScreen(
                     onClick = { context.openInBrowser(URL_PROJECT) },
                     modifier = Modifier.size(40.dp),
                 ) {
-                    Icon(MingCuteGithubLine, stringResource(R.string.settings_about_project_home), Modifier.size(24.dp))
+                    Icon(MiuixIcons.Glass.OpenWithOtherApp, stringResource(R.string.settings_about_project_home), Modifier.size(24.dp))
                 }
                 IconButton(
                     onClick = onLicenseClick,
                     modifier = Modifier.size(40.dp),
                 ) {
-                    Icon(MingCuteCodeLine, stringResource(R.string.settings_about_license), Modifier.size(24.dp))
+                    Icon(MiuixIcons.Glass.HtmlViewer, stringResource(R.string.settings_about_license), Modifier.size(24.dp))
                 }
             }
             Spacer(Modifier.height(70.dp))
@@ -168,25 +169,25 @@ fun AboutScreen(
                 }
                 PreferenceGroup(containerColor = cardColor, cardModifier = cardModifier) {
                     BasicListItem(
-                        leadingImageVector = MingCuteGlobeLine,
+                        leadingImageVector = MiuixIcons.WorldClock,
                         headlineText = stringResource(R.string.settings_about_project_home),
                         supportingText = "KiritoXDone/c001apk",
                         onClick = { context.openInBrowser(URL_PROJECT) },
                     )
                     BasicListItem(
-                        leadingImageVector = MingCuteFolderLine,
+                        leadingImageVector = MiuixIcons.Glass.FolderOutline,
                         headlineText = stringResource(R.string.settings_about_source),
                         supportingText = URL_SOURCE_CODE,
                         onClick = { context.openInBrowser(URL_SOURCE_CODE) },
                     )
                     BasicListItem(
-                        leadingImageVector = MingCuteTagLine,
+                        leadingImageVector = MiuixIcons.Glass.Tags,
                         headlineText = stringResource(R.string.settings_about_baseline),
                         supportingText = URL_SOURCE_CODE_FORK,
                         onClick = { context.openInBrowser(URL_SOURCE_CODE_FORK) },
                     )
                     BasicListItem(
-                        leadingImageVector = MingCuteInformationLine,
+                        leadingImageVector = MiuixIcons.Info,
                         headlineText = stringResource(R.string.settings_about_license),
                         onClick = onLicenseClick,
                     )
@@ -205,7 +206,7 @@ fun AboutScreen(
                     .size(40.dp),
         ) {
             Icon(
-                MingCuteArrowLeftLine,
+                MiuixIcons.Back,
                 contentDescription = stringResource(R.string.action_back),
                 modifier = Modifier.size(24.dp),
             )
