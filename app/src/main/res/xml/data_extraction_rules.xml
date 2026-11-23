@@ -5,15 +5,15 @@
 -->
 <data-extraction-rules>
     <cloud-backup>
+        <exclude domain="sharedpref" path="reply_drafts.xml" />
+        <exclude domain="file" path="reply_draft_images/" />
         <!-- TODO: Use <include> and <exclude> to control what is backed up.
         <include .../>
         <exclude .../>
         -->
     </cloud-backup>
-    <!--
     <device-transfer>
-        <include .../>
-        <exclude .../>
+        <exclude domain="sharedpref" path="reply_drafts.xml" />
+        <exclude domain="file" path="reply_draft_images/" />
     </device-transfer>
-    -->
 </data-extraction-rules>

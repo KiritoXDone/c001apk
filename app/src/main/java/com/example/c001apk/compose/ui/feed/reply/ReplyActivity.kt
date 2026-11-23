@@ -20,7 +20,6 @@ import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
-import android.view.View.OnTouchListener
 import android.view.View.VISIBLE
 import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
@@ -55,7 +54,9 @@ import com.example.c001apk.compose.R
 import com.example.c001apk.compose.logic.settings.AppLanguage
 import com.example.c001apk.compose.databinding.ActivityReplyBinding
 import com.example.c001apk.compose.databinding.ItemCaptchaBinding
-import com.example.c001apk.compose.logic.model.OSSUploadPrepareModel
+import com.example.c001apk.compose.logic.datastore.ReplyDraftImage
+import com.example.c001apk.compose.logic.datastore.ReplyDraftStore
+import com.example.c001apk.compose.logic.datastore.ReplyEditorDraft
 import com.example.c001apk.compose.logic.model.VOTE_COMMENT_TYPE
 import com.example.c001apk.compose.ui.component.createMiuixLoadingDialog
 import com.example.c001apk.compose.ui.component.MiuixViewDialogBuilder
@@ -63,23 +64,22 @@ import com.example.c001apk.compose.ui.feed.reply.emoji.EmojiPagerAdapter
 import com.example.c001apk.compose.ui.feed.reply.emoji.updateEmojiCategoryStyle
 import com.example.c001apk.compose.ui.theme.DefaultFontScale
 import com.example.c001apk.compose.ui.theme.miuixViewColors
+import com.example.c001apk.compose.util.CookieUtil
 import com.example.c001apk.compose.util.EmojiTextWatcher
 import com.example.c001apk.compose.util.EmojiUtils
 import com.example.c001apk.compose.util.EmojiUtils.pickerCategories
 import com.example.c001apk.compose.util.FastDeleteAtUserKeyListener
-import com.example.c001apk.compose.util.OSSUtil.getImageDimensionsAndMD5
-import com.example.c001apk.compose.util.OSSUtil.toHex
 import com.example.c001apk.compose.util.OssUploadUtil.ossUpload
 import com.example.c001apk.compose.util.dp
 import com.example.c001apk.compose.util.makeToast
 import com.example.c001apk.compose.util.performConfiguredHapticFeedback
 import com.example.c001apk.compose.view.SmoothInputLayout
 import dagger.hilt.android.AndroidEntryPoint
-import java.util.UUID
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.math.max
 import kotlin.math.roundToInt
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -104,7 +104,6 @@ import kotlinx.coroutines.launch
 class ReplyActivity :
     AppCompatActivity(),
     View.OnClickListener,
-    OnTouchListener,
     SmoothInputLayout.OnVisibilityChangeListener {
 
     override fun attachBaseContext(newBase: Context) {
@@ -122,7 +121,28 @@ class ReplyActivity :
 
     private val targetType: String? by lazy { intent.getStringExtra("targetType") }
     private val targetId: String? by lazy { intent.getStringExtra("targetId") }
-    private val title: String? by lazy { intent.getStringExtra("title") }
+    private val prefilledTopic by lazy {
+        intent.getStringExtra("title")?.let { "#$it#" }.orEmpty()
+    }
+    private val draftStore by lazy { ReplyDraftStore(this) }
+    private val draftKey by lazy {
+        val editorType = type ?: return@lazy null
+        val target = when (editorType) {
+            "createFeed" -> listOf(editorType, targetType.orEmpty(), targetId.orEmpty())
+            VOTE_COMMENT_TYPE -> voteCommentTarget?.let {
+                listOf(editorType, it.voteId, it.anonymous.toString())
+            }
+            else -> rid?.takeIf { it.isNotBlank() }?.let { listOf(editorType, it) }
+        }
+        val account = CookieUtil.accountSession
+        if (account.isLogin && account.uid.isNotBlank() && target != null) {
+            draftStore.key(account.uid, target)
+        } else {
+            null
+        }
+    }
+    private var draftReady = false
+    private val saveDraftRunnable = Runnable { saveDraft() }
 
     private val imm by lazy {
         getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
@@ -133,10 +153,8 @@ class ReplyActivity :
     private val list = listOf(recentList) + pickerCategories.map { it.pages }
     private lateinit var pickContent: ActivityResultLauncher<String>
     private lateinit var pickDocument: ActivityResultLauncher<Array<String>>
-    private var uriList: MutableList<Uri> = ArrayList()
-    private var imageList = ArrayList<OSSUploadPrepareModel>()
-    private var typeList = ArrayList<String>()
-    private var md5List = ArrayList<ByteArray?>()
+    private val attachments = mutableListOf<ReplyDraftImage>()
+    private var importingImages = false
     private var dialog: ComponentDialog? = null
     private lateinit var atTopicResultLauncher: ActivityResultLauncher<Intent>
     private var isFromAt = false
@@ -314,6 +332,8 @@ class ReplyActivity :
         initView()
         initEditText()
         initPage()
+        restoreDraft()
+        draftReady = true
         initEmojiPanel()
         initObserve()
         initPhotoPick()
@@ -361,6 +381,10 @@ class ReplyActivity :
     }
 
     override fun onPause() {
+        if (draftReady) {
+            binding.editText.removeCallbacks(saveDraftRunnable)
+            saveDraft()
+        }
         pendingShowKeyboard = false
         imeRetryHandler.removeCallbacks(imeRetryRunnable)
         super.onPause()
@@ -385,72 +409,51 @@ class ReplyActivity :
     }
 
     private fun initPhotoPick() {
-        fun handlePickedUris(uris: List<Uri>) {
-            if (uris.isNotEmpty()) {
-                runCatching {
-                    uris.forEach { uri ->
-                        if (uriList.size == 9) {
-                            Toast.makeText(this, "最多选择9张图片", Toast.LENGTH_SHORT).show()
-                            return@runCatching
-                        }
-
-                        val result = getImageDimensionsAndMD5(contentResolver, uri)
-                        val md5Byte = result.second
-                        val md5 = md5Byte?.toHex() ?: ""
-                        val width = result.first?.first ?: 0
-                        val height = result.first?.second ?: 0
-                        val type = result.first?.third ?: ""
-
-                        typeList.add(type)
-                        md5List.add(md5Byte)
-                        imageList.add(
-                            OSSUploadPrepareModel(
-                                name =
-                                    "${
-                                    UUID.randomUUID().toString().replace("-", "")
-                                }.${if (type.startsWith("image/")) type.substring(6) else type}",
-                                resolution = "${width}x${height}",
-                                md5 = md5,
-                            ),
-                        )
-                        uriList.add(uri)
-
-                        binding.imageLayout.addView(createAttachmentThumbnail(uri))
-                    }
-                }
-                    .onFailure {
-                        MiuixViewDialogBuilder(this)
-                            .setTitle("获取图片信息失败")
-                            .setMessage(it.message)
-                            .setPositiveButton(android.R.string.ok, null)
-                            .setNegativeButton("Log") { _, _ ->
-                                MiuixViewDialogBuilder(this)
-                                    .setTitle("Log")
-                                    .setMessage(it.stackTraceToString())
-                                    .setPositiveButton(android.R.string.ok, null)
-                                    .show()
-                            }
-                            .show()
-                    }
-            }
-            binding.imageLayout.isVisible = uriList.isNotEmpty()
-            binding.imageScrollLayout.isVisible = uriList.isNotEmpty()
-        }
-
         pickContent =
             registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-                uri?.let {
-                    handlePickedUris(listOf(it))
-                }
+                uri?.let { importAttachments(listOf(it)) }
             }
 
         pickDocument =
             registerForActivityResult(ActivityResultContracts.OpenMultipleDocuments()) { uris ->
-                handlePickedUris(uris)
+                importAttachments(uris)
             }
     }
 
-    private fun createAttachmentThumbnail(uri: Uri): FrameLayout {
+    private fun importAttachments(uris: List<Uri>) {
+        if (uris.isEmpty() || importingImages) return
+        val remaining = 9 - attachments.size
+        if (uris.size > remaining) makeToast("最多选择9张图片")
+        if (remaining <= 0) return
+
+        importingImages = true
+        updateEditorState()
+        showDialog()
+        lifecycleScope.launch {
+            try {
+                for (uri in uris.take(remaining)) {
+                    addAttachment(draftStore.importImage(uri))
+                    saveDraft()
+                }
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (_: Exception) {
+                makeToast("获取图片信息失败")
+            } finally {
+                importingImages = false
+                updateEditorState()
+                closeDialog()
+            }
+        }
+    }
+
+    private fun addAttachment(image: ReplyDraftImage) {
+        attachments.add(image)
+        binding.imageLayout.addView(createAttachmentThumbnail(image))
+        updateAttachmentVisibility()
+    }
+
+    private fun createAttachmentThumbnail(image: ReplyDraftImage): FrameLayout {
         val thumbnail = FrameLayout(this).apply {
             layoutParams = LinearLayout.LayoutParams(
                 ReplyEditorDefaults.ThumbnailSize.dp,
@@ -469,7 +472,7 @@ class ReplyActivity :
                 cornerRadius = ReplyEditorDefaults.ThumbnailRadius.dp.toFloat()
             }
             clipToOutline = true
-            load(uri) { crossfade(true) }
+            load(draftStore.imageUri(image)) { crossfade(true) }
         })
         thumbnail.addView(ReplyAttachmentDeleteView(this).apply {
             layoutParams = FrameLayout.LayoutParams(
@@ -478,17 +481,40 @@ class ReplyActivity :
                 Gravity.TOP or Gravity.END,
             ).apply { setMargins(4.dp, 4.dp, 4.dp, 4.dp) }
             onRemove = {
-                val index = binding.imageLayout.indexOfChild(thumbnail)
-                binding.imageLayout.removeViewAt(index)
-                uriList.removeAt(index)
-                typeList.removeAt(index)
-                md5List.removeAt(index)
-                imageList.removeAt(index)
-                binding.imageLayout.isVisible = uriList.isNotEmpty()
-                binding.imageScrollLayout.isVisible = uriList.isNotEmpty()
+                binding.imageLayout.removeView(thumbnail)
+                attachments.remove(image)
+                if (draftKey == null) draftStore.deleteImages(listOf(image))
+                updateAttachmentVisibility()
+                saveDraft()
             }
         })
         return thumbnail
+    }
+
+    private fun updateAttachmentVisibility() {
+        binding.imageLayout.isVisible = attachments.isNotEmpty()
+        binding.imageScrollLayout.isVisible = attachments.isNotEmpty()
+    }
+
+    private fun restoreDraft() {
+        val draft = draftKey?.let(draftStore::load) ?: return
+        binding.editText.setText(draft.text)
+        binding.editText.setSelection(binding.editText.length())
+        binding.checkBox.isChecked = draft.checked
+        draft.images.forEach(::addAttachment)
+    }
+
+    private fun saveDraft() {
+        val key = draftKey ?: return
+        if (viewModel.postFinished.value) return
+        val text = binding.editText.text.toString()
+        val hasText = text.isNotBlank() && text.trim() != prefilledTopic
+        val draft = if (hasText || attachments.isNotEmpty()) {
+            ReplyEditorDraft(text, binding.checkBox.isChecked, attachments.toList())
+        } else {
+            null
+        }
+        draftStore.save(key, draft)
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -500,8 +526,13 @@ class ReplyActivity :
         binding.tagBtn.setOnClickListener(this)
         binding.checkBox.setOnClickListener(this)
         binding.publish.setOnClickListener(this)
-        binding.editText.setOnTouchListener(this)
-        binding.out.setOnTouchListener(this)
+        binding.editText.setOnTouchListener { _, event ->
+            if (event.action == MotionEvent.ACTION_DOWN && isEmojiPanelVisible) {
+                showInput()
+            }
+            false
+        }
+        binding.out.setOnClickListener { finish() }
         (binding.main as? SmoothInputLayout)?.setOnVisibilityChangeListener(this)
         (binding.main as? SmoothInputLayout)?.setOnKeyboardChangeListener(null)
         val radius = listOf(16.dp.toFloat(), 16.dp.toFloat(), 0f, 0f)
@@ -547,14 +578,15 @@ class ReplyActivity :
                                     "/" +
                                     it.uploadFileName
                             }
-                        val remainingUploads = AtomicInteger(uriList.size)
+                        val images = attachments.toList()
+                        val remainingUploads = AtomicInteger(images.size)
                         val uploadFailed = AtomicBoolean(false)
                         ossUpload(
                             this@ReplyActivity,
                             responseData,
-                            uriList,
-                            typeList,
-                            md5List,
+                            images.map(draftStore::imageUri),
+                            images.map { it.mimeType },
+                            images.map(ReplyDraftImage::checksumBytes),
                             iOnSuccess = {
                                 if (BuildConfig.DEBUG) {
                                     Log.i("OSSUpload", "uploadSuccess")
@@ -622,6 +654,7 @@ class ReplyActivity :
             repeatOnLifecycle(Lifecycle.State.CREATED) {
                 viewModel.postFinished.collect {
                     if (it) {
+                        draftKey?.let { key -> draftStore.save(key, null) }
                         closeDialog()
                         val intent = voteCommentTarget?.resultIntent() ?: Intent().apply {
                             if (type == "createFeed") {
@@ -717,8 +750,8 @@ class ReplyActivity :
         binding.publish.actionLabel = if (type == "createFeed") "发布动态" else "发布回复"
         if (type != "createFeed" && !username.isNullOrEmpty())
             binding.editText.hint = "回复: " + username
-        title?.let {
-            binding.editText.editableText.append("#${title}# ")
+        if (prefilledTopic.isNotEmpty()) {
+            binding.editText.editableText.append(prefilledTopic).append(' ')
         }
         updateEditorState()
     }
@@ -841,6 +874,10 @@ class ReplyActivity :
                     primaryColor,
                 ) {
                     updateEditorState()
+                    if (draftReady) {
+                        removeCallbacks(saveDraftRunnable)
+                        postDelayed(saveDraftRunnable, 400L)
+                    }
                 },
             )
             setOnKeyListener(FastDeleteAtUserKeyListener)
@@ -855,7 +892,7 @@ class ReplyActivity :
     private fun updateEditorState() {
         val text = binding.editText.text.toString()
         binding.characterCount.text = "${text.length} / 500"
-        val canPublish = text.trim().isNotBlank()
+        val canPublish = text.isNotBlank() && !importingImages
         binding.publish.canPublish = canPublish
         binding.publish.isEnabled = canPublish
         binding.publish.isClickable = canPublish
@@ -878,6 +915,8 @@ class ReplyActivity :
     override fun onDestroy() {
         super.onDestroy()
         closeDialog()
+        if (draftReady) binding.editText.removeCallbacks(saveDraftRunnable)
+        if (attachments.isNotEmpty() && draftKey == null) draftStore.deleteImages(attachments)
         countDownTimer.cancel()
         imeRetryHandler.removeCallbacks(imeRetryRunnable)
     }
@@ -1020,8 +1059,10 @@ class ReplyActivity :
                 showEmoji()
             }
 
-            R.id.checkBox ->
+            R.id.checkBox -> {
                 ViewCompat.performHapticFeedback(view, HapticFeedbackConstantsCompat.CONFIRM)
+                saveDraft()
+            }
 
             R.id.publish -> {
                 performConfiguredHapticFeedback(
@@ -1038,10 +1079,12 @@ class ReplyActivity :
     }
 
     private fun publishDraft() {
+        if (importingImages) return
         if (voteCommentTarget?.isCurrentAccount() == false) {
             makeToast("账号已切换，请重新打开投票")
             return
         }
+        saveDraft()
         val draft = viewModel.replyAndFeedData
         draft["message"] = binding.editText.text.toString()
         draft.remove("pic")
@@ -1058,8 +1101,13 @@ class ReplyActivity :
             else -> draft["replyAndForward"] = if (binding.checkBox.isChecked) "1" else "0"
         }
         showDialog()
-        if (uriList.isNotEmpty()) viewModel.onPostOSSUploadPrepare(imageList)
-        else viewModel.postCurrentDraft()
+        if (attachments.isNotEmpty()) {
+            viewModel.onPostOSSUploadPrepare(
+                attachments.map(ReplyDraftImage::toUploadModel),
+            )
+        } else {
+            viewModel.postCurrentDraft()
+        }
     }
 
     private fun showDialog() {
@@ -1074,6 +1122,7 @@ class ReplyActivity :
     }
 
     private fun launchPick() {
+        if (importingImages) return
         (binding.main as? SmoothInputLayout)?.closeKeyboard(false)
         try {
             pickContent.launch("image/*")
@@ -1084,6 +1133,7 @@ class ReplyActivity :
     }
 
     private fun launchDocumentPick() {
+        if (importingImages) return
         (binding.main as? SmoothInputLayout)?.closeKeyboard(false)
         try {
             pickDocument.launch(arrayOf("image/*"))
@@ -1091,22 +1141,6 @@ class ReplyActivity :
             makeToast("Activity Not Found")
             e.printStackTrace()
         }
-    }
-
-    @SuppressLint("ClickableViewAccessibility")
-    override fun onTouch(view: View, motionEvent: MotionEvent): Boolean {
-        when (view.id) {
-            R.id.out -> {
-                finish()
-            }
-
-            R.id.editText -> {
-                if (motionEvent.action == MotionEvent.ACTION_DOWN && isEmojiPanelVisible) {
-                    showInput()
-                }
-            }
-        }
-        return false
     }
 
     private fun updateReplyPanelTranslation(translation: Float) {
