@@ -1,7 +1,9 @@
 package com.example.c001apk.compose.ui.main
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import com.example.c001apk.compose.logic.settings.AppLanguage
 import android.view.View
 import android.view.ViewTreeObserver
 import androidx.activity.ComponentActivity
@@ -64,6 +66,10 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme
 /** Created by bggRGjQaUbCoE on 2024/5/29 */
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(AppLanguage.wrap(newBase))
+    }
 
     @Inject lateinit var userPreferencesRepository: UserPreferencesRepository
     private lateinit var navigator: AppNavigator

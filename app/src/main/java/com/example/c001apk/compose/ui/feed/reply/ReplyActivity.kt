@@ -52,6 +52,7 @@ import androidx.viewpager2.widget.ViewPager2
 import coil.load
 import com.example.c001apk.compose.BuildConfig
 import com.example.c001apk.compose.R
+import com.example.c001apk.compose.logic.settings.AppLanguage
 import com.example.c001apk.compose.databinding.ActivityReplyBinding
 import com.example.c001apk.compose.databinding.ItemCaptchaBinding
 import com.example.c001apk.compose.logic.model.OSSUploadPrepareModel
@@ -105,6 +106,10 @@ class ReplyActivity :
     View.OnClickListener,
     OnTouchListener,
     SmoothInputLayout.OnVisibilityChangeListener {
+
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(AppLanguage.wrap(newBase))
+    }
 
     private lateinit var binding: ActivityReplyBinding
     private val viewModel by viewModels<ReplyViewModel>()

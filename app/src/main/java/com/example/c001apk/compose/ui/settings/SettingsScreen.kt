@@ -54,6 +54,8 @@ import androidx.navigationevent.compose.rememberNavigationEventState
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.c001apk.compose.R
 import com.example.c001apk.compose.logic.model.HapticStrength
+import com.example.c001apk.compose.logic.settings.AppLanguage
+import com.example.c001apk.compose.logic.settings.AppLanguage.findActivity
 import com.example.c001apk.compose.logic.providable.LocalUserPreferences
 import com.example.c001apk.compose.ui.blacklist.BlackListType
 import com.example.c001apk.compose.ui.component.MiuixToolbarIconButton
@@ -85,6 +87,7 @@ import com.example.c001apk.compose.ui.component.icons.mingcute.MingCutePaletteLi
 import com.example.c001apk.compose.ui.component.icons.mingcute.MingCutePhotoAlbumLine
 import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteSearchLine
 import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteTagLine
+import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteTranslateLine
 import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteUser3Line
 import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteUserFollowLine
 import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteUserForbidLine
@@ -175,6 +178,14 @@ fun SettingsScreen(
         showHapticStrengthDialog = true
     }
     val sectionTitles = SettingsSection.entries.associateWith { stringResource(it.titleRes) }
+    val languageLabel = stringResource(R.string.settings_language)
+    var language by remember { mutableStateOf(AppLanguage.current(context)) }
+    val languageItems =
+        listOf(
+            SelectionItem(stringResource(R.string.settings_theme_follow_system), AppLanguage.SYSTEM),
+            SelectionItem(stringResource(R.string.language_chinese), AppLanguage.CHINESE),
+            SelectionItem(stringResource(R.string.language_english), AppLanguage.ENGLISH),
+        )
     val accountsLabel = stringResource(R.string.settings_accounts)
     val aboutLabel = stringResource(R.string.settings_about)
 
@@ -271,24 +282,58 @@ fun SettingsScreen(
                         modifier =
                             if (wide) Modifier.width(260.dp).fillMaxHeight()
                             else Modifier.fillMaxSize().nestedScroll(topBarScrollBehavior.nestedScrollConnection),
-                        contentPadding = paddingValues,
+                        contentPadding =
+                            PaddingValues(
+                                top = paddingValues.calculateTopPadding() + 10.dp,
+                                bottom = paddingValues.calculateBottomPadding(),
+                                start = paddingValues.calculateLeftPadding(layoutDirection),
+                                end = paddingValues.calculateRightPadding(layoutDirection),
+                            ),
                     ) {
                         val visibleSections =
                             SettingsSection.entries.filter { matchesSearch(sectionTitles.getValue(it)) }
                         visibleSections.forEach { section ->
                             item(key = section.name) {
-                                BasicListItem(
-                                    headlineText = sectionTitles.getValue(section),
-                                    leadingImageVector = section.icon,
-                                    holdDownState = wide && activeSection == section,
-                                    onClick = {
-                                        if (wide) wideSection = section
-                                        else {
-                                            closeSearch()
-                                            onSectionClick(section.name)
-                                        }
-                                    },
-                                )
+                                if (section == SettingsSection.Appearance) {
+                                    PreferenceGroup {
+                                        BasicListItem(
+                                            headlineText = sectionTitles.getValue(section),
+                                            leadingImageVector = section.icon,
+                                            holdDownState = wide && activeSection == section,
+                                            onClick = {
+                                                if (wide) wideSection = section
+                                                else {
+                                                    closeSearch()
+                                                    onSectionClick(section.name)
+                                                }
+                                            },
+                                        )
+                                        SelectionListItem(
+                                            leadingImageVector = MingCuteTranslateLine,
+                                            title = languageLabel,
+                                            value = language,
+                                            selections = languageItems,
+                                            onSelected = { tag ->
+                                                language = tag
+                                                AppLanguage.set(context, tag)
+                                                context.findActivity()?.recreate()
+                                            },
+                                        )
+                                    }
+                                } else {
+                                    BasicListItem(
+                                        headlineText = sectionTitles.getValue(section),
+                                        leadingImageVector = section.icon,
+                                        holdDownState = wide && activeSection == section,
+                                        onClick = {
+                                            if (wide) wideSection = section
+                                            else {
+                                                closeSearch()
+                                                onSectionClick(section.name)
+                                            }
+                                        },
+                                    )
+                                }
                             }
                         }
                         if (matchesSearch(accountsLabel)) {

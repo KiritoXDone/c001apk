@@ -227,4 +227,7 @@
     <string name="update_cannot_open">无法打开发布页，请检查浏览器设置</string>
     <string name="settings_bar_order_save_failed">排序保存失败，请重试</string>
     <string name="settings_szlm_save_failed">数盟 ID 格式不正确或保存失败，请检查后重试</string>
+    <string name="settings_language">语言</string>
+    <string name="language_chinese">简体中文</string>
+    <string name="language_english">English</string>
 </resources>

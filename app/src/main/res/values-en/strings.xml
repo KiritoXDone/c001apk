@@ -227,4 +227,7 @@
     <string name="update_cannot_open">Cannot open the release page. Check the browser settings.</string>
     <string name="settings_bar_order_save_failed">Cannot save the order, try again</string>
     <string name="settings_szlm_save_failed">The digital union ID is invalid or could not be saved</string>
+    <string name="settings_language">Language</string>
+    <string name="language_chinese">简体中文</string>
+    <string name="language_english">English</string>
 </resources>
