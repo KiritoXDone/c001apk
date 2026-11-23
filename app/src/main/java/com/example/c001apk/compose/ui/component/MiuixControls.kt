@@ -1,7 +1,5 @@
 package com.example.c001apk.compose.ui.component
 
-import androidx.compose.animation.EnterTransition
-import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.snap
 import androidx.compose.foundation.combinedClickable
@@ -13,7 +11,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.displayCutout
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.only
@@ -25,20 +22,15 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.CornerRadius
-import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import com.example.c001apk.compose.R
@@ -49,17 +41,16 @@ import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
+import top.yukonga.miuix.kmp.basic.ListPopupColumn
 import top.yukonga.miuix.kmp.basic.PopupPositionProvider
 import top.yukonga.miuix.kmp.glass.GlassBottomSheet
-import top.yukonga.miuix.kmp.glass.GlassDropdownPopup
 import top.yukonga.miuix.kmp.glass.GlassMotion
 import top.yukonga.miuix.kmp.glass.GlassPopupDefaults
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.More
 import top.yukonga.miuix.kmp.theme.LocalContentColor
-import top.yukonga.miuix.kmp.theme.LocalDismissState
 import top.yukonga.miuix.kmp.theme.MiuixTheme
-import top.yukonga.miuix.kmp.utils.MiuixPopupUtils.Companion.PopupLayout
+import top.yukonga.miuix.kmp.window.WindowListPopup
 
 @Composable
 fun pullToRefreshTexts(): List<String> = listOf(
@@ -79,63 +70,17 @@ fun MiuixMenu(
     contentScale: Float = 0.9f,
     content: @Composable () -> Unit,
 ) {
-    var anchorBounds by remember { mutableStateOf(Rect.Zero) }
-    Spacer(
-        Modifier.onGloballyPositioned { coordinates ->
-            val anchor = coordinates.parentLayoutCoordinates ?: coordinates
-            val position = anchor.positionInWindow()
-            anchorBounds = Rect(
-                left = position.x,
-                top = position.y,
-                right = position.x + anchor.size.width,
-                bottom = position.y + anchor.size.height,
-            )
-        },
-    )
-    val mounted = remember { mutableStateOf(false) }
-    val currentExpanded by rememberUpdatedState(expanded)
-    val currentFinished by rememberUpdatedState(onDismissFinished)
-    LaunchedEffect(expanded) {
-        if (expanded) mounted.value = true
-    }
-    if (!mounted.value) return
-
     val density = LocalDensity.current
-    PopupLayout(
-        visible = mounted,
-        enableWindowDim = false,
-        enableBackHandler = false,
-        enterTransition = EnterTransition.None,
-        exitTransition = ExitTransition.None,
-    ) {
-        CompositionLocalProvider(
-            LocalDensity provides Density(density.density * contentScale, density.fontScale),
-            LocalDismissState provides onDismissRequest,
+    CompositionLocalProvider(LocalDensity provides Density(density.density * contentScale, density.fontScale)) {
+        WindowListPopup(
+            show = expanded,
+            popupModifier = modifier,
+            alignment = alignment,
+            enableWindowDim = false,
+            onDismissRequest = onDismissRequest,
+            onDismissFinished = onDismissFinished,
         ) {
-            Box(Modifier.fillMaxSize()) {
-                GlassDropdownPopup(
-                    show = expanded,
-                    onDismissRequest = onDismissRequest,
-                    anchorBounds = anchorBounds,
-                    backdrop = null,
-                    modifier = modifier,
-                    alignment = alignment,
-                    visuals = GlassPopupDefaults.visuals(
-                        stroke = null,
-                        shadow = null,
-                        material = null,
-                        containerColor = GlassPopupDefaults.containerColor().copy(alpha = 1f),
-                    ),
-                    onDismissFinished = {
-                        if (!currentExpanded) {
-                            mounted.value = false
-                            currentFinished?.invoke()
-                        }
-                    },
-                ) {
-                    content()
-                }
-            }
+            ListPopupColumn { content() }
         }
     }
 }

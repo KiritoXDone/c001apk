@@ -364,29 +364,30 @@ fun ChatScreen(
             onDismissRequest = { showDialog = false },
             title = { Text(stringResource(R.string.chat_message_actions)) },
             text = {
+                val close = checkNotNull(com.example.c001apk.compose.ui.component.LocalDialogClose.current)
                 Column {
                     top.yukonga.miuix.kmp.basic.BasicComponent(
                         title = stringResource(R.string.menu_delete),
-                        onClick = {
+                        onClick = { close {
                             showDialog = false
                             viewModel.onDeleteMsg()
-                        },
+                        } },
                     )
                     if (viewModel.pic.isNotEmpty()) {
                         top.yukonga.miuix.kmp.basic.BasicComponent(
                             title = stringResource(R.string.image_reload),
-                            onClick = {
+                            onClick = { close {
                                 showDialog = false
                                 viewModel.retryImage(viewModel.deleteId)
-                            },
+                            } },
                         )
                     } else {
                         top.yukonga.miuix.kmp.basic.BasicComponent(
                             title = stringResource(R.string.action_copy),
-                            onClick = {
+                            onClick = { close {
                                 showDialog = false
                                 context.copyText(viewModel.message)
-                            },
+                            } },
                         )
                     }
                 }

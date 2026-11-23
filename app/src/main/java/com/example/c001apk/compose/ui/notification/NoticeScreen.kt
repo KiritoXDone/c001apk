@@ -155,20 +155,21 @@ fun NoticeScreen(
             onDismissRequest = { showMessageDialog = false },
             title = { Text(stringResource(R.string.chat_actions)) },
             text = {
+                val close = checkNotNull(com.example.c001apk.compose.ui.component.LocalDialogClose.current)
                 Column {
                     top.yukonga.miuix.kmp.basic.BasicComponent(
                         title = stringResource(if (viewModel.isTop == 1) R.string.action_unpin else R.string.action_pin),
-                        onClick = {
+                        onClick = { close {
                             showMessageDialog = false
                             viewModel.onHandleMessage(FFFContentViewModel.ActionType.TOP)
-                        },
+                        } },
                     )
                     top.yukonga.miuix.kmp.basic.BasicComponent(
                         title = stringResource(R.string.chat_delete),
-                        onClick = {
+                        onClick = { close {
                             showMessageDialog = false
                             viewModel.onHandleMessage(FFFContentViewModel.ActionType.DELETE)
-                        },
+                        } },
                     )
                 }
             },

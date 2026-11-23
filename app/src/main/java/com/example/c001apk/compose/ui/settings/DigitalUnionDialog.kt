@@ -1,17 +1,40 @@
 package com.example.c001apk.compose.ui.settings
 
-import androidx.compose.foundation.layout.*
-import androidx.compose.runtime.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import com.example.c001apk.compose.R
+import com.example.c001apk.compose.ui.component.LocalDialogClose
 import com.example.c001apk.compose.ui.component.MiuixAlertDialog
 import com.example.c001apk.compose.ui.component.MiuixDialogButton
-import top.yukonga.miuix.kmp.basic.*
+import com.example.c001apk.compose.ui.component.MiuixMenu
+import com.example.c001apk.compose.ui.component.MiuixMenuItem
+import top.yukonga.miuix.kmp.basic.Icon
+import top.yukonga.miuix.kmp.basic.IconButton
+import top.yukonga.miuix.kmp.basic.InfiniteProgressIndicator
+import top.yukonga.miuix.kmp.basic.Text
+import top.yukonga.miuix.kmp.basic.TextField
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.extended.More
 import top.yukonga.miuix.kmp.theme.MiuixTheme
-import androidx.compose.ui.res.stringResource
-import com.example.c001apk.compose.R
+import top.yukonga.miuix.kmp.basic.PopupPositionProvider
 
 @Composable
 fun DigitalUnionDialog(
@@ -21,71 +44,85 @@ fun DigitalUnionDialog(
     onGenerate: () -> Unit,
     onImport: () -> Unit,
     onDismiss: () -> Unit,
-    onSave: (String) -> Unit,
+    onSave: (String, (Boolean) -> Unit) -> Unit,
 ) {
     var value by rememberSaveable { mutableStateOf(id) }
     var edited by rememberSaveable { mutableStateOf(false) }
-    LaunchedEffect(id) {
-        if (!edited) value = id
+    var menu by remember { mutableStateOf(false) }
+    var menuAction by remember { mutableStateOf<(() -> Unit)?>(null) }
+    var saving by remember { mutableStateOf(false) }
+    val canSave = value.isNotBlank() && !generating && !saving
+    fun submit(close: (() -> Unit) -> Unit) {
+        if (!canSave) return
+        saving = true
+        onSave(value.trim()) { success ->
+            saving = false
+            if (success) close(onDismiss)
+        }
     }
+    LaunchedEffect(id) { if (!edited) value = id }
     LaunchedEffect(generating, error) {
         if (!edited && !generating && error == null) value = id
     }
     MiuixAlertDialog(
         onDismissRequest = onDismiss,
+        dismissEnabled = !saving,
         title = { Text(stringResource(R.string.settings_szlm_title)) },
+        titleActions = {
+            val close = checkNotNull(LocalDialogClose.current)
+            Box {
+                IconButton(onClick = { menu = true }, holdDownState = menu, enabled = !generating && !saving, modifier = Modifier.size(40.dp)) {
+                    Icon(MiuixIcons.More, stringResource(R.string.update_more), Modifier.size(24.dp))
+                }
+                MiuixMenu(
+                    expanded = menu,
+                    onDismissRequest = { menu = false },
+                    alignment = PopupPositionProvider.Align.End,
+                    onDismissFinished = {
+                        val action = menuAction
+                        menuAction = null
+                        action?.invoke()
+                    },
+                ) {
+                    MiuixMenuItem(
+                        text = { Text(stringResource(if (id.isBlank()) R.string.settings_szlm_auto else R.string.settings_szlm_refetch)) },
+                        onClick = { menuAction = { edited = false; onGenerate() }; menu = false },
+                    )
+                    MiuixMenuItem(
+                        text = { Text(stringResource(R.string.settings_szlm_import)) },
+                        onClick = { menuAction = { close(onImport) }; menu = false },
+                    )
+                }
+            }
+        },
         text = {
-            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                Text(
-                    stringResource(R.string.settings_szlm_desc),
-                    color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
-                )
+            val close = checkNotNull(LocalDialogClose.current)
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Text(stringResource(R.string.settings_szlm_desc), color = MiuixTheme.colorScheme.onSurfaceVariantSummary)
                 TextField(
                     value = value,
                     onValueChange = { value = it; edited = true },
                     modifier = Modifier.fillMaxWidth(),
                     label = stringResource(R.string.settings_szlm_title),
                     useLabelAsPlaceholder = true,
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                    keyboardActions = KeyboardActions(onDone = { submit(close) }),
                 )
-                Row(
-                    modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    Button(
-                        onClick = { edited = false; onGenerate() },
-                        enabled = !generating,
-                        modifier = Modifier.weight(1f).fillMaxHeight(),
-                        insideMargin = PaddingValues(horizontal = 8.dp, vertical = 12.dp),
-                    ) {
-                        if (generating) {
-                            InfiniteProgressIndicator(Modifier.size(20.dp))
-                            Spacer(Modifier.width(8.dp))
-                        }
-                        Text(
-                            if (generating) stringResource(R.string.settings_szlm_fetching)
-                            else if (id.isBlank()) stringResource(R.string.settings_szlm_auto)
-                            else stringResource(R.string.settings_szlm_refetch),
-                            textAlign = TextAlign.Center,
-                        )
-                    }
-                    Button(
-                        onClick = onImport,
-                        enabled = !generating,
-                        modifier = Modifier.weight(1f).fillMaxHeight(),
-                        insideMargin = PaddingValues(horizontal = 8.dp, vertical = 12.dp),
-                    ) { Text(stringResource(R.string.settings_szlm_import), textAlign = TextAlign.Center) }
+                if (generating) Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    InfiniteProgressIndicator(Modifier.size(20.dp))
+                    Text(stringResource(R.string.settings_szlm_fetching))
                 }
-                error?.let { Text(it, color = MiuixTheme.colorScheme.onSurfaceVariantSummary) }
+                error?.let { Text(it, color = MiuixTheme.colorScheme.error) }
             }
         },
-        dismissButton = { MiuixDialogButton(onClick = onDismiss) { Text(stringResource(R.string.action_close)) } },
+        dismissButton = {
+            MiuixDialogButton(onClick = onDismiss, enabled = !saving) { Text(stringResource(R.string.action_cancel)) }
+        },
         confirmButton = {
-            MiuixDialogButton(
-                onClick = {
-                    onSave(value.trim())
-                },
-            ) {
-                Text(stringResource(R.string.action_save))
+            val close = checkNotNull(LocalDialogClose.current)
+            MiuixDialogButton(onClick = { submit(close) }, enabled = canSave, dismissOnClick = false) {
+                Text(stringResource(if (saving) R.string.status_saving else R.string.action_save))
             }
         },
     )

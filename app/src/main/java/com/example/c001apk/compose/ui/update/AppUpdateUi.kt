@@ -5,11 +5,9 @@ import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
@@ -63,42 +61,29 @@ fun AppUpdateHost(navigator: AppNavigator, model: AppUpdateViewModel = hiltViewM
         val skippedMessage = stringResource(R.string.update_skipped, release.version)
         MiuixAlertDialog(
             onDismissRequest = { model.updates.dismiss() },
-            title = {
-                Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                    Text(
-                        text = stringResource(R.string.update_new_version, release.version),
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 48.dp),
-                        textAlign = TextAlign.Center,
-                    )
-                    Box(Modifier.align(Alignment.CenterEnd)) {
-                        IconButton(onClick = { isMenuExpanded = true }) {
-                            Icon(
-                                imageVector = MiuixIcons.More,
-                                contentDescription = stringResource(R.string.update_more),
-                                modifier = Modifier.size(24.dp),
-                            )
-                        }
-                        MiuixMenu(
-                            expanded = isMenuExpanded,
-                            onDismissRequest = { isMenuExpanded = false },
-                            alignment = PopupPositionProvider.Align.End,
-                        ) {
-                            MiuixMenuItem(
-                                text = { Text(stringResource(R.string.update_view_page)) },
-                                onClick = {
-                                    isMenuExpanded = false
-                                    context.openUpdate(release.page)
-                                },
-                            )
-                            MiuixMenuItem(
-                                text = { Text(stringResource(R.string.update_skip_version)) },
-                                onClick = {
-                                    isMenuExpanded = false
-                                    model.updates.dismiss(skip = true)
-                                    context.makeToast(skippedMessage)
-                                },
-                            )
-                        }
+            title = { Text(stringResource(R.string.update_new_version, release.version)) },
+            titleActions = {
+                val close = checkNotNull(LocalDialogClose.current)
+                Box {
+                    IconButton(onClick = { isMenuExpanded = true }, modifier = Modifier.size(40.dp)) {
+                        Icon(MiuixIcons.More, stringResource(R.string.update_more), Modifier.size(24.dp))
+                    }
+                    MiuixMenu(
+                        expanded = isMenuExpanded,
+                        onDismissRequest = { isMenuExpanded = false },
+                        alignment = PopupPositionProvider.Align.End,
+                    ) {
+                        MiuixMenuItem(
+                            text = { Text(stringResource(R.string.update_view_page)) },
+                            onClick = { isMenuExpanded = false; context.openUpdate(release.page) },
+                        )
+                        MiuixMenuItem(
+                            text = { Text(stringResource(R.string.update_skip_version)) },
+                            onClick = {
+                                isMenuExpanded = false
+                                close { model.updates.dismiss(skip = true); context.makeToast(skippedMessage) }
+                            },
+                        )
                     }
                 }
             },
@@ -141,7 +126,7 @@ fun AppUpdateHost(navigator: AppNavigator, model: AppUpdateViewModel = hiltViewM
                 title = { Text(stringResource(R.string.update_check_title)) },
                 text = { Text(message) },
                 confirmButton = {
-                    MiuixDialogButton(onClick = { model.updates.dismiss() }) { Text(stringResource(R.string.update_got_it)) }
+                    MiuixDialogButton(onClick = { model.updates.dismiss() }) { Text(stringResource(R.string.action_cancel)) }
                 },
             )
         }

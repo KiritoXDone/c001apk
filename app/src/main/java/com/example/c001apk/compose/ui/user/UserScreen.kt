@@ -415,7 +415,7 @@ fun UserScreen(
                     TextButton(
                         onClick = { showUserInfoDialog = false },
                     ) {
-                        Text(text = stringResource(id = android.R.string.ok))
+                        Text(text = stringResource(R.string.action_cancel))
                     }
                 },
                 title = {

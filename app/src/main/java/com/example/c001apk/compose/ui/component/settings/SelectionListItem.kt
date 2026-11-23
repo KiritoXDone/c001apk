@@ -1,5 +1,8 @@
 package com.example.c001apk.compose.ui.component.settings
 
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -14,6 +17,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import top.yukonga.miuix.kmp.squircle.squircleClip
+import com.example.c001apk.compose.R
 import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.Card
@@ -39,6 +44,7 @@ fun <T> SelectionListItem(
     enabled: Boolean = true,
 ) {
     var showDialog by remember { mutableStateOf(false) }
+    var pendingSelection by remember { mutableStateOf<SelectionItem<T>?>(null) }
     val label = selections.firstOrNull { it.value == value }?.label
     PreferenceCard {
         BasicComponent(
@@ -64,25 +70,30 @@ fun <T> SelectionListItem(
         show = showDialog,
         title = title,
         onDismissRequest = { showDialog = false },
-        onDismissFinished = { showDialog = false },
+        onDismissFinished = {
+            val selection = pendingSelection
+            pendingSelection = null
+            selection?.let { onSelected(it.value) }
+        },
     ) {
-        Column(Modifier.fillMaxWidth()) {
-            Card {
+        Column(Modifier.fillMaxWidth().heightIn(max = 500.dp)) {
+            Card(Modifier.weight(1f, fill = false).verticalScroll(rememberScrollState())) {
                 selections.forEach { item ->
                     RadioButtonPreference(
                         title = item.label,
                         selected = item.value == value,
                         onClick = {
-                            onSelected(item.value)
+                            pendingSelection = item
                             showDialog = false
                         },
+                        modifier = Modifier.squircleClip(16.dp),
                         radioButtonLocation = RadioButtonLocation.End,
                     )
                 }
             }
             Spacer(Modifier.height(12.dp))
             TextButton(
-                text = stringResource(android.R.string.cancel),
+                text = stringResource(R.string.action_cancel),
                 onClick = { showDialog = false },
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.textButtonColors(),

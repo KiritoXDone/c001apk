@@ -699,7 +699,8 @@ fun FeedScreen(
     FeedCollectionDialog(viewModel.collections)
     if (confirmDelete && ownFeed) {
         MiuixAlertDialog(
-            onDismissRequest = { if (!viewModel.deletingFeed) confirmDelete = false },
+            onDismissRequest = { confirmDelete = false },
+            dismissEnabled = !viewModel.deletingFeed,
             title = { Text(stringResource(R.string.feed_delete_title)) },
             text = { Text(stringResource(R.string.feed_delete_summary)) },
             dismissButton = {
@@ -713,6 +714,7 @@ fun FeedScreen(
             confirmButton = {
                 MiuixDialogButton(
                     onClick = viewModel::deleteOwnFeed,
+                    dismissOnClick = false,
                     enabled = !viewModel.deletingFeed,
                     destructive = true,
                 ) {

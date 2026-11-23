@@ -3,29 +3,13 @@ package com.example.c001apk.compose.util
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
-import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
 import android.net.Uri
 import android.os.Environment
 import android.util.Log
 import android.view.View
-import android.view.ViewGroup
 import android.widget.ImageView
-import androidx.activity.ComponentDialog
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.widthIn
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.platform.ViewCompositionStrategy
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.core.view.isVisible
@@ -35,7 +19,6 @@ import com.example.c001apk.compose.R
 import com.example.c001apk.compose.constant.Constants.EMPTY_STRING
 import com.example.c001apk.compose.constant.Constants.SUFFIX_THUMBNAIL
 import com.example.c001apk.compose.ui.component.MiuixViewDialogBuilder
-import com.example.c001apk.compose.ui.theme.C001apkComposeTheme
 import com.example.c001apk.compose.view.CircleIndexIndicator
 import com.example.c001apk.compose.view.NineGridImageView
 import com.example.c001apk.media.HdrMojitoActivityCoverLoader
@@ -58,9 +41,6 @@ import net.mikaelzero.mojito.impl.DefaultTargetFragmentCover
 import net.mikaelzero.mojito.impl.SimpleMojitoViewCallback
 import net.mikaelzero.mojito.interfaces.ImageViewLoadFactory
 import net.mikaelzero.mojito.loader.ContentLoader
-import top.yukonga.miuix.kmp.basic.Card as Surface
-import top.yukonga.miuix.kmp.basic.Text
-import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 object ImageShowUtil {
 
@@ -296,10 +276,6 @@ object ImageShowUtil {
         mediaFactory: MojitoMediaImageFactory?,
     ) {
         val actions = saveDialogActions(mediaFactory)
-        if (context is FragmentActivity) {
-            showSaveImgDialogCompose(context, url, urlList, userAgent, mediaFactory, actions)
-            return
-        }
         MiuixViewDialogBuilder(context).apply {
             setItems(actions.map { context.getString(it.titleRes) }.toTypedArray()) { _, position: Int ->
                 handleSaveDialogAction(
@@ -312,85 +288,6 @@ object ImageShowUtil {
                 )
             }
             show()
-        }
-    }
-
-    private fun showSaveImgDialogCompose(
-        activity: FragmentActivity,
-        url: String,
-        urlList: List<String>?,
-        userAgent: String?,
-        mediaFactory: MojitoMediaImageFactory?,
-        actions: List<SaveImageAction>,
-    ) {
-        val dialog = ComponentDialog(activity)
-        dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-        val composeView =
-            ComposeView(activity).apply {
-                setViewCompositionStrategy(
-                    ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed,
-                )
-                setContent {
-                    C001apkComposeTheme(
-                        darkTheme = CookieUtil.isDarkMode,
-                        themeType = CookieUtil.themeType,
-                        seedColor = CookieUtil.seedColor,
-                        materialYou = CookieUtil.materialYou,
-                        pureBlack = CookieUtil.pureBlack,
-                        paletteStyle = CookieUtil.paletteStyle,
-                        fontScale = CookieUtil.fontScale,
-                        contentScale = CookieUtil.contentScale,
-                    ) {
-                        SaveImageDialogContent(
-                            items = actions.map { activity.getString(it.titleRes) },
-                            onClick = { index ->
-                                handleSaveDialogAction(
-                                    activity,
-                                    url,
-                                    urlList,
-                                    userAgent,
-                                    mediaFactory,
-                                    actions[index],
-                                )
-                                dialog.dismiss()
-                            },
-                        )
-                    }
-                }
-            }
-        dialog.setContentView(composeView)
-        dialog.show()
-        dialog.window?.setLayout(
-            ViewGroup.LayoutParams.WRAP_CONTENT,
-            ViewGroup.LayoutParams.WRAP_CONTENT,
-        )
-    }
-
-    @Composable
-    private fun SaveImageDialogContent(
-        items: List<String>,
-        onClick: (Int) -> Unit,
-    ) {
-        Surface(
-            modifier = Modifier.widthIn(max = 320.dp).padding(horizontal = 24.dp),
-            cornerRadius = 24.dp,
-        ) {
-            Column(
-                modifier = Modifier.padding(PaddingValues(vertical = 10.dp)),
-            ) {
-                items.forEachIndexed { index, item ->
-                    Text(
-                        text = item,
-                        style = MiuixTheme.textStyles.body1,
-                        modifier =
-                            Modifier.fillMaxWidth()
-                                .clickable { onClick(index) }
-                                .padding(horizontal = 20.dp, vertical = 12.dp),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                }
-            }
         }
     }
 

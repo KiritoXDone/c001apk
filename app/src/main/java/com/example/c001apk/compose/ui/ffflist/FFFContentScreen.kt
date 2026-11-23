@@ -1,10 +1,14 @@
 package com.example.c001apk.compose.ui.ffflist
 
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Column
+import androidx.compose.ui.res.stringResource
+import com.example.c001apk.compose.R
+import com.example.c001apk.compose.ui.component.LocalDialogClose
+import com.example.c001apk.compose.ui.component.MiuixAlertDialog
+import com.example.c001apk.compose.ui.component.MiuixDialogButton
+import top.yukonga.miuix.kmp.basic.BasicComponent
+import top.yukonga.miuix.kmp.basic.Card
+import top.yukonga.miuix.kmp.squircle.squircleClip
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -13,16 +17,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.c001apk.compose.constant.Constants.EMPTY_STRING
 import com.example.c001apk.compose.ui.component.CommonScreen
 import com.example.c001apk.compose.util.ReportType
 import com.example.c001apk.compose.util.makeToast
-import top.yukonga.miuix.kmp.basic.Card as ElevatedCard
-import top.yukonga.miuix.kmp.basic.CardDefaults
 import top.yukonga.miuix.kmp.basic.Text
-import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 /** Created by bggRGjQaUbCoE on 2024/6/12 */
 @Composable
@@ -96,61 +96,31 @@ fun FFFContentScreen(
         context.makeToast(it)
     }
 
-    when {
-        showRecentDialog -> {
-            Dialog(onDismissRequest = { showRecentDialog = false }) {
-                ElevatedCard(
-                    modifier = Modifier.fillMaxWidth(),
-                    cornerRadius = 28.dp,
-                    colors =
-                        CardDefaults.defaultColors()
-                            .copy(color = MiuixTheme.colorScheme.surfaceContainerHigh),
-                ) {
-                    Column(
-                        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
-                    ) {
-                        Text(
-                            text = if (viewModel.isTop == 1) "移除置顶" else "置顶",
-                            modifier =
-                                Modifier.fillMaxWidth()
-                                    .clickable {
-                                        showRecentDialog = false
-                                        viewModel.onHandleRecentHistory(
-                                            FFFContentViewModel.ActionType.TOP,
-                                        )
-                                    }
-                                    .padding(horizontal = 24.dp, vertical = 14.dp),
-                            style = MiuixTheme.textStyles.headline2,
-                        )
-                        Text(
-                            text = "删除",
-                            modifier =
-                                Modifier.fillMaxWidth()
-                                    .clickable {
-                                        showRecentDialog = false
-                                        viewModel.onHandleRecentHistory(
-                                            FFFContentViewModel.ActionType.DELETE,
-                                        )
-                                    }
-                                    .padding(horizontal = 24.dp, vertical = 14.dp),
-                            style = MiuixTheme.textStyles.headline2,
-                        )
-                        Text(
-                            text = "清空全部",
-                            modifier =
-                                Modifier.fillMaxWidth()
-                                    .clickable {
-                                        showRecentDialog = false
-                                        viewModel.onHandleRecentHistory(
-                                            FFFContentViewModel.ActionType.DELETE_ALL,
-                                        )
-                                    }
-                                    .padding(horizontal = 24.dp, vertical = 14.dp),
-                            style = MiuixTheme.textStyles.headline2,
+    if (showRecentDialog) {
+        MiuixAlertDialog(
+            onDismissRequest = { showRecentDialog = false },
+            title = { Text(stringResource(R.string.profile_recent)) },
+            text = {
+                val close = checkNotNull(LocalDialogClose.current)
+                Card {
+                    listOf(
+                        (if (viewModel.isTop == 1) R.string.action_unpin else R.string.action_pin) to FFFContentViewModel.ActionType.TOP,
+                        R.string.menu_delete to FFFContentViewModel.ActionType.DELETE,
+                        R.string.action_clear_all to FFFContentViewModel.ActionType.DELETE_ALL,
+                    ).forEach { (label, action) ->
+                        BasicComponent(
+                            title = stringResource(label),
+                            modifier = Modifier.squircleClip(16.dp),
+                            onClick = { close { showRecentDialog = false; viewModel.onHandleRecentHistory(action) } },
                         )
                     }
                 }
-            }
-        }
+            },
+            confirmButton = {
+                MiuixDialogButton(onClick = { showRecentDialog = false }, primary = false) {
+                    Text(stringResource(R.string.action_cancel))
+                }
+            },
+        )
     }
 }

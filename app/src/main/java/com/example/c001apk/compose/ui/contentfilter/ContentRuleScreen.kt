@@ -71,6 +71,15 @@ fun ContentRuleScreen(id: String?, onBack: () -> Unit) {
     }
     if (deleting) MiuixAlertDialog(onDismissRequest = { deleting = false }, title = { Text(stringResource(R.string.filter_delete_title)) },
         text = { Text(stringResource(R.string.filter_delete_summary)) },
-        confirmButton = { MiuixDialogButton(onClick = { model.removeRule(ruleId, onBack) }, destructive = true) { Text(stringResource(R.string.menu_delete)) } },
-        dismissButton = { MiuixDialogButton(onClick = { deleting = false }) { Text(stringResource(R.string.action_cancel)) } })
+        confirmButton = {
+            val close = checkNotNull(LocalDialogClose.current)
+            MiuixDialogButton(
+                onClick = { model.removeRule(ruleId) { close { deleting = false; onBack() } } },
+                enabled = !model.saving,
+                destructive = true,
+                dismissOnClick = false,
+            ) { Text(stringResource(R.string.menu_delete)) }
+        },
+        dismissEnabled = !model.saving,
+        dismissButton = { MiuixDialogButton(onClick = { deleting = false }, enabled = !model.saving) { Text(stringResource(R.string.action_cancel)) } })
 }

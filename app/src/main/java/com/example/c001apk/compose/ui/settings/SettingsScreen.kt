@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.layout.windowInsetsPadding
@@ -39,6 +40,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -58,6 +60,7 @@ import com.example.c001apk.compose.logic.settings.AppLanguage
 import com.example.c001apk.compose.logic.settings.AppLanguage.findActivity
 import com.example.c001apk.compose.logic.providable.LocalUserPreferences
 import com.example.c001apk.compose.ui.blacklist.BlackListType
+import com.example.c001apk.compose.ui.component.LocalDialogClose
 import com.example.c001apk.compose.ui.component.MiuixToolbarIconButton
 import com.example.c001apk.compose.ui.component.MiuixAlertDialog as AlertDialog
 import com.example.c001apk.compose.ui.component.MiuixDialogButton as TextButton
@@ -75,11 +78,13 @@ import com.example.c001apk.compose.ui.component.TopBarScrollEffect
 import com.example.c001apk.compose.util.CacheDataManager.clearAllCache
 import com.example.c001apk.compose.util.CacheDataManager.getTotalCacheSize
 import java.util.Formatter
+import top.yukonga.miuix.kmp.squircle.squircleClip
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.SearchBar
 import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.basic.Text
+import top.yukonga.miuix.kmp.icon.extended.Refresh
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.basic.Close
 import top.yukonga.miuix.kmp.icon.basic.Search
@@ -583,7 +588,7 @@ fun SettingsScreen(
                         onDeviceImport()
                     },
                     onDismiss = { showSZLMIDDialog = false },
-                    onSave = { viewModel.setSZLMId(it) { showSZLMIDDialog = false } },
+                    onSave = viewModel::setSZLMId,
                 )
             }
 
@@ -699,27 +704,26 @@ fun ListItemDialog(
     val optionClicks = list.mapIndexed { index, _ ->
         rememberHapticClick(strength = hapticStrengthForIndex?.invoke(index)) { setData(index) }
     }
-    val onSelect by androidx.compose.runtime.rememberUpdatedState(optionClicks)
-    val entry =
-        remember(list, selected) {
-            top.yukonga.miuix.kmp.basic.DropdownEntry(
-                list.mapIndexed { index, label ->
-                    top.yukonga.miuix.kmp.basic.DropdownItem(
-                        text = label,
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(title) },
+        text = {
+            val close = checkNotNull(LocalDialogClose.current)
+            top.yukonga.miuix.kmp.basic.Card {
+                list.forEachIndexed { index, label ->
+                    top.yukonga.miuix.kmp.preference.RadioButtonPreference(
+                        title = label,
                         selected = selected == index,
-                        onClick = { onSelect[index]() },
+                        onClick = { close { optionClicks[index](); onDismiss() } },
+                        radioButtonLocation = top.yukonga.miuix.kmp.preference.RadioButtonLocation.End,
+                        modifier = Modifier.squircleClip(16.dp),
                     )
-                },
-            )
-        }
-    top.yukonga.miuix.kmp.popup.WindowDropdownDialog(
-        entry = entry,
-        title = title,
-        dialogButtonString = stringResource(android.R.string.cancel),
-        show = true,
-        onDismiss = onDismiss,
-        onDismissFinished = onDismiss,
-        dropdownColors = top.yukonga.miuix.kmp.basic.DropdownDefaults.dialogDropdownColors(),
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss, primary = false) { Text(stringResource(R.string.action_cancel)) }
+        },
     )
 }
 
@@ -740,13 +744,9 @@ fun EditTextDialog(
             ),
         )
     }
-    val focusRequest = remember { FocusRequester() }
-    LaunchedEffect(Unit) {
-        try {
-            focusRequest.requestFocus()
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
+    val canSave = text.text.isNotBlank() && (maxLength == null || text.text.length == maxLength)
+    fun submit(close: (() -> Unit) -> Unit) {
+        if (canSave) close { onDismiss(); setData(text.text) }
     }
     AlertDialog(
         onDismissRequest = { onDismiss() },
@@ -760,13 +760,9 @@ fun EditTextDialog(
             }
         },
         confirmButton = {
-            TextButton(
-                onClick = {
-                    onDismiss()
-                    setData(text.text)
-                },
-            ) {
-                Text(text = stringResource(id = android.R.string.ok))
+            val close = checkNotNull(LocalDialogClose.current)
+            TextButton(onClick = { submit(close) }, enabled = canSave, dismissOnClick = false) {
+                Text(stringResource(R.string.action_save))
             }
         },
         title = {
@@ -777,8 +773,15 @@ fun EditTextDialog(
             )
         },
         text = {
+            val close = checkNotNull(LocalDialogClose.current)
+            val focusRequest = remember { FocusRequester() }
+            var laidOut by remember { mutableStateOf(false) }
+            val windowFocused = androidx.compose.ui.platform.LocalWindowInfo.current.isWindowFocused
+            LaunchedEffect(laidOut, windowFocused) {
+                if (laidOut && windowFocused) focusRequest.requestFocus()
+            }
             TextField(
-                modifier = Modifier.fillMaxWidth().focusRequester(focusRequest),
+                modifier = Modifier.fillMaxWidth().focusRequester(focusRequest).onGloballyPositioned { laidOut = true },
                 value = text,
                 onValueChange = {
                     if (maxLength != null) {
@@ -789,6 +792,9 @@ fun EditTextDialog(
                 },
                 label = hint.orEmpty(),
                 useLabelAsPlaceholder = true,
+                singleLine = true,
+                keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(imeAction = androidx.compose.ui.text.input.ImeAction.Done),
+                keyboardActions = androidx.compose.foundation.text.KeyboardActions(onDone = { submit(close) }),
             )
         },
     )
@@ -808,13 +814,14 @@ fun SliderDialog(
             onDismiss()
         },
         dismissButton = {
-            TextButton(
-                onClick = {
-                    onDismiss()
-                    setData(1.0f)
-                },
-            ) {
-                Text(text = stringResource(id = R.string.menu_reset))
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.action_cancel))
+            }
+        },
+        titleActions = {
+            val resetClick = rememberHapticClick { progress = 1.0f }
+            top.yukonga.miuix.kmp.basic.IconButton(onClick = resetClick, modifier = Modifier.size(40.dp)) {
+                Icon(MiuixIcons.Refresh, stringResource(R.string.menu_reset), Modifier.size(24.dp))
             }
         },
         confirmButton = {

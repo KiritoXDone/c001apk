@@ -155,7 +155,7 @@ internal fun FeedExportDialogs(
             onDismissRequest = { model.error = null },
             title = { Text(stringResource(R.string.export_failed)) },
             text = { Text(message) },
-            confirmButton = { MiuixDialogButton(onClick = { model.error = null }) { Text(stringResource(R.string.action_confirm)) } },
+            confirmButton = { MiuixDialogButton(onClick = { model.error = null }, primary = false) { Text(stringResource(R.string.action_cancel)) } },
         )
     }
 }
@@ -178,16 +178,17 @@ internal fun FeedExportFormatDialog(onDismiss: () -> Unit, onSelect: (FeedExport
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.export_content)) },
         text = {
+            val close = checkNotNull(LocalDialogClose.current)
             Column {
                 BasicComponent(
                     title = "Markdown",
                     summary = stringResource(R.string.export_markdown_summary),
-                    onClick = { onSelect(FeedExportService.Format.Markdown) },
+                    onClick = { close { onSelect(FeedExportService.Format.Markdown) } },
                 )
                 BasicComponent(
                     title = stringResource(R.string.export_html),
                     summary = stringResource(R.string.export_html_summary),
-                    onClick = { onSelect(FeedExportService.Format.Html) },
+                    onClick = { close { onSelect(FeedExportService.Format.Html) } },
                 )
             }
         },

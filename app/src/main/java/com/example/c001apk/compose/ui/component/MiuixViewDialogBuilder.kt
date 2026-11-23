@@ -5,21 +5,33 @@ import android.content.DialogInterface
 import android.graphics.Color as AndroidColor
 import android.graphics.drawable.ColorDrawable
 import android.view.View
+import android.view.WindowManager
 import androidx.activity.ComponentDialog
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.size
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import com.example.c001apk.compose.R
 import com.example.c001apk.compose.ui.theme.C001apkViewTheme
-import top.yukonga.miuix.kmp.basic.*
-import top.yukonga.miuix.kmp.glass.GlassDialogButton
-import top.yukonga.miuix.kmp.glass.GlassDialogButtonRole
-import top.yukonga.miuix.kmp.theme.MiuixTheme
+import top.yukonga.miuix.kmp.basic.BasicComponent
+import top.yukonga.miuix.kmp.basic.Card
+import top.yukonga.miuix.kmp.basic.Icon
+import top.yukonga.miuix.kmp.basic.IconButton
+import top.yukonga.miuix.kmp.basic.PopupPositionProvider
+import top.yukonga.miuix.kmp.basic.Text
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.extended.More
+import top.yukonga.miuix.kmp.squircle.squircleClip
 
-/** Native miuix dialog content for View-based media and rich-text editor entry points. */
+// ComponentDialog 提供 View 生命周期，布局和转场交给原生 WindowDialog。
 class MiuixViewDialogBuilder(private val context: Context) {
     private var title: CharSequence? = null
     private var message: CharSequence? = null
@@ -56,97 +68,97 @@ class MiuixViewDialogBuilder(private val context: Context) {
         neutral = text to listener
     }
 
-    fun setItems(values: Array<out CharSequence>, listener: DialogInterface.OnClickListener) =
-        apply {
-            items = values to listener
-        }
+    fun setItems(values: Array<out CharSequence>, listener: DialogInterface.OnClickListener) = apply {
+        items = values to listener
+    }
 
     fun create(): ComponentDialog {
         val dialog = ComponentDialog(context)
         dialog.setCancelable(cancelable)
-        dialog.window?.setBackgroundDrawable(ColorDrawable(AndroidColor.TRANSPARENT))
+        dialog.window?.apply {
+            setBackgroundDrawable(ColorDrawable(AndroidColor.TRANSPARENT))
+            clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
+        }
+        dialog.setOnShowListener {
+            dialog.window?.setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT)
+        }
+        fun cancel() {
+            negative?.second?.onClick(dialog, DialogInterface.BUTTON_NEGATIVE)
+            dialog.dismiss()
+        }
+        val action = positive?.takeIf { it.second != null }
         dialog.setContentView(
             ComposeView(context).apply {
                 setContent {
                     C001apkViewTheme {
-                        Card(cornerRadius = 28.dp, insideMargin = PaddingValues(24.dp)) {
-                            Column(
-                                Modifier.heightIn(max = 500.dp),
-                                verticalArrangement = Arrangement.spacedBy(16.dp),
-                            ) {
-                                title?.let {
-                                    Text(it.toString(), style = MiuixTheme.textStyles.title3)
-                                }
-                                Column(
-                                    Modifier.weight(1f, fill = false)
-                                        .verticalScroll(rememberScrollState()),
-                                ) {
-                                    message?.let { Text(it.toString()) }
-                                    view?.let { embedded -> AndroidView(factory = { embedded }) }
-                                    items?.let { (labels, listener) ->
-                                        labels.forEachIndexed { index, label ->
-                                            BasicComponent(
-                                                title = label.toString(),
-                                                onClick = {
+                        MiuixAlertDialog(
+                            onDismissRequest = ::cancel,
+                            dismissEnabled = cancelable,
+                            title = title?.let { label -> { Text(label.toString()) } },
+                            titleActions = neutral?.let { (label, listener) ->
+                                {
+                                    var expanded by remember { mutableStateOf(false) }
+                                    var selected by remember { mutableStateOf(false) }
+                                    val close = checkNotNull(LocalDialogClose.current)
+                                    Box {
+                                        IconButton(
+                                            onClick = { expanded = true },
+                                            holdDownState = expanded,
+                                            modifier = Modifier.size(40.dp),
+                                        ) {
+                                            Icon(MiuixIcons.More, context.getString(R.string.update_more), Modifier.size(24.dp))
+                                        }
+                                        MiuixMenu(
+                                            expanded = expanded,
+                                            onDismissRequest = { expanded = false },
+                                            alignment = PopupPositionProvider.Align.End,
+                                            onDismissFinished = {
+                                                if (selected) close {
                                                     dialog.dismiss()
-                                                    listener.onClick(dialog, index)
-                                                },
+                                                    listener?.onClick(dialog, DialogInterface.BUTTON_NEUTRAL)
+                                                }
+                                            },
+                                        ) {
+                                            MiuixMenuItem(
+                                                text = { Text(label.toString()) },
+                                                onClick = { selected = true; expanded = false },
                                             )
                                         }
                                     }
                                 }
-                                if (neutral != null || negative != null || positive != null) {
-                                    Row(
-                                        Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                    ) {
-                                        neutral?.let { (label, listener) ->
-                                            GlassDialogButton(
-                                                modifier = Modifier.weight(1f),
-                                                onClick = {
-                                                    dialog.dismiss()
-                                                    listener?.onClick(
-                                                        dialog,
-                                                        DialogInterface.BUTTON_NEUTRAL,
-                                                    )
-                                                },
-                                            ) {
-                                                Text(label.toString(), style = MiuixTheme.textStyles.button)
-                                            }
-                                        }
-                                        negative?.let { (label, listener) ->
-                                            GlassDialogButton(
-                                                modifier = Modifier.weight(1f),
-                                                onClick = {
-                                                    dialog.dismiss()
-                                                    listener?.onClick(
-                                                        dialog,
-                                                        DialogInterface.BUTTON_NEGATIVE,
-                                                    )
-                                                },
-                                            ) {
-                                                Text(label.toString(), style = MiuixTheme.textStyles.button)
-                                            }
-                                        }
-                                        positive?.let { (label, listener) ->
-                                            GlassDialogButton(
-                                                modifier = Modifier.weight(1f),
-                                                role = GlassDialogButtonRole.Primary,
-                                                onClick = {
-                                                    dialog.dismiss()
-                                                    listener?.onClick(
-                                                        dialog,
-                                                        DialogInterface.BUTTON_POSITIVE,
-                                                    )
-                                                },
-                                            ) {
-                                                Text(label.toString(), style = MiuixTheme.textStyles.button)
+                            },
+                            text = {
+                                val close = checkNotNull(LocalDialogClose.current)
+                                Column(Modifier.fillMaxWidth()) {
+                                    message?.let { Text(it.toString()) }
+                                    view?.let { embedded -> AndroidView(factory = { embedded }) }
+                                    items?.let { (labels, listener) ->
+                                        Card {
+                                            labels.forEachIndexed { index, label ->
+                                                BasicComponent(
+                                                    title = label.toString(),
+                                                    modifier = Modifier.squircleClip(16.dp),
+                                                    onClick = { close { dialog.dismiss(); listener.onClick(dialog, index) } },
+                                                )
                                             }
                                         }
                                     }
                                 }
-                            }
-                        }
+                            },
+                            dismissButton = action?.let {
+                                { MiuixDialogButton(onClick = ::cancel) { Text(context.getString(R.string.action_cancel)) } }
+                            },
+                            confirmButton = {
+                                if (action == null) {
+                                    MiuixDialogButton(onClick = ::cancel, primary = false) { Text(context.getString(R.string.action_cancel)) }
+                                } else {
+                                    MiuixDialogButton(onClick = {
+                                        dialog.dismiss()
+                                        action.second?.onClick(dialog, DialogInterface.BUTTON_POSITIVE)
+                                    }) { Text(action.first.toString()) }
+                                }
+                            },
+                        )
                     }
                 }
             },

@@ -10,60 +10,67 @@ import androidx.compose.ui.res.stringResource
 import com.example.c001apk.compose.R
 import androidx.compose.ui.unit.dp
 import com.example.c001apk.compose.ui.component.MiuixAlertDialog
+import com.example.c001apk.compose.ui.component.MiuixDialogTitle
 import com.example.c001apk.compose.ui.component.MiuixDialogButton
 import top.yukonga.miuix.kmp.basic.*
-import top.yukonga.miuix.kmp.glass.GlassDialog
-import top.yukonga.miuix.kmp.glass.GlassDialogButton
-import top.yukonga.miuix.kmp.glass.GlassDialogButtonRole
+import com.example.c001apk.compose.ui.component.LocalDialogClose
+import top.yukonga.miuix.kmp.window.WindowDialog
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Add
+import top.yukonga.miuix.kmp.preference.CheckboxLocation
+import top.yukonga.miuix.kmp.squircle.squircleClip
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.ImeAction
 import top.yukonga.miuix.kmp.preference.CheckboxPreference
 import top.yukonga.miuix.kmp.preference.SwitchPreference
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @Composable
 fun FeedCollectionDialog(collections: FeedCollections) {
-    if (!collections.visible) return
+    var closing by remember { mutableStateOf(false) }
     var create by remember { mutableStateOf(false) }
     var title by remember { mutableStateOf("") }
     var isOpen by remember { mutableStateOf(false) }
-    GlassDialog(
-        show = true,
-        onDismissRequest = collections::dismiss,
-        backdrop = null,
-        stroke = null,
-        containerColor = MiuixTheme.colorScheme.surface.copy(alpha = 1f),
+    WindowDialog(
+        show = collections.visible && !closing,
+        onDismissRequest = { if (!collections.saving && !collections.creating) closing = true },
+        onDismissFinished = {
+            if (closing) collections.dismiss()
+            closing = false
+        },
     ) {
         Column(Modifier.fillMaxWidth().heightIn(max = 420.dp)) {
-            Row(
-                Modifier.fillMaxWidth().padding(bottom = 8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(stringResource(R.string.collection_save_to), style = MiuixTheme.textStyles.title3, modifier = Modifier.weight(1f))
-                IconButton(
-                    onClick = {
-                        title = ""
-                        isOpen = false
-                        create = true
-                    },
-                    enabled = !collections.busy && collections.error == null,
-                    minHeight = 35.dp,
-                    minWidth = 35.dp,
-                ) {
-                    Icon(
-                        MiuixIcons.Add,
-                        contentDescription = stringResource(R.string.collection_create),
-                        modifier = Modifier.size(20.dp),
-                    )
-                }
-            }
-            LazyColumn(Modifier.weight(1f, fill = false).fillMaxWidth()) {
+            MiuixDialogTitle(
+                title = { Text(stringResource(R.string.collection_save_to)) },
+                actions = {
+                    IconButton(
+                        onClick = {
+                            title = ""
+                            isOpen = false
+                            create = true
+                        },
+                        enabled = !collections.busy && collections.error == null,
+                        modifier = Modifier.size(40.dp),
+                    ) {
+                        Icon(
+                            MiuixIcons.Add,
+                            contentDescription = stringResource(R.string.collection_create),
+                            modifier = Modifier.size(24.dp),
+                        )
+                    }
+                },
+            )
+            Spacer(Modifier.height(12.dp))
+            Card(Modifier.weight(1f, fill = false).fillMaxWidth()) {
+            LazyColumn(Modifier.fillMaxWidth()) {
                 items(collections.items, key = { it.id.orEmpty() }) { collection ->
                     CheckboxPreference(
                         title = collection.title.orEmpty().ifBlank { stringResource(R.string.collection_default) },
                         checked = collection.id in collections.selected,
                         enabled = !collections.busy,
-                        insideMargin = PaddingValues(horizontal = 4.dp, vertical = 10.dp),
+                        checkboxLocation = CheckboxLocation.End,
+                        modifier = Modifier.squircleClip(16.dp),
                         onCheckedChange = { checked ->
                             collection.id?.let { collections.toggle(it, checked) }
                         },
@@ -99,40 +106,47 @@ fun FeedCollectionDialog(collections: FeedCollections) {
                     }
                 }
             }
+            }
             Spacer(Modifier.height(12.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                GlassDialogButton(
-                    onClick = collections::dismiss,
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                TextButton(
+                    text = stringResource(R.string.action_cancel),
+                    onClick = { closing = true },
                     enabled = !collections.saving && !collections.creating,
                     modifier = Modifier.weight(1f),
-                ) {
-                    Text(stringResource(R.string.action_cancel), style = MiuixTheme.textStyles.button)
-                }
-                GlassDialogButton(
+                )
+                TextButton(
+                    text = stringResource(if (collections.saving) R.string.status_saving else R.string.action_save),
                     onClick = collections::save,
-                    enabled =
-                        !collections.busy &&
-                            collections.error == null &&
-                            collections.items.isNotEmpty(),
+                    enabled = !collections.busy && collections.error == null && collections.items.isNotEmpty(),
                     modifier = Modifier.weight(1f),
-                    role = GlassDialogButtonRole.Primary,
-                ) {
-                    Text(stringResource(if (collections.saving) R.string.status_saving else R.string.action_save), style = MiuixTheme.textStyles.button)
-                }
+                    colors = ButtonDefaults.textButtonColorsPrimary(),
+                )
             }
+        }
+    }
+    LaunchedEffect(collections.visible) { if (!collections.visible) create = false }
+    fun submit(close: (() -> Unit) -> Unit) {
+        if (!collections.busy && title.isNotBlank()) {
+            collections.create(title, isOpen) { close { create = false } }
         }
     }
     if (create) {
         MiuixAlertDialog(
-            onDismissRequest = { if (!collections.creating) create = false },
+            onDismissRequest = { create = false },
+            dismissEnabled = !collections.creating,
             title = { Text(stringResource(R.string.collection_create)) },
             text = {
+                val close = checkNotNull(LocalDialogClose.current)
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     TextField(
                         value = title,
                         onValueChange = { title = it },
                         label = stringResource(R.string.collection_name),
                         useLabelAsPlaceholder = true,
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                        keyboardActions = KeyboardActions(onDone = { submit(close) }),
                         modifier = Modifier.fillMaxWidth(),
                     )
                     SwitchPreference(
@@ -152,8 +166,10 @@ fun FeedCollectionDialog(collections: FeedCollections) {
                 }
             },
             confirmButton = {
+                val close = checkNotNull(LocalDialogClose.current)
                 MiuixDialogButton(
-                    onClick = { collections.create(title, isOpen) { create = false } },
+                    onClick = { submit(close) },
+                    dismissOnClick = false,
                     enabled = !collections.busy && title.isNotBlank(),
                 ) {
                     Text(stringResource(if (collections.creating) R.string.status_creating else R.string.action_create))

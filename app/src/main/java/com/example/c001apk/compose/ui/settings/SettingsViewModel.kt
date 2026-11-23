@@ -139,17 +139,18 @@ constructor(
         }
     }
 
-    fun setSZLMId(value: String, onSaved: () -> Unit = {}) {
+    fun setSZLMId(value: String, onFinished: (Boolean) -> Unit) {
         viewModelScope.launch {
             try {
                 require(com.example.c001apk.compose.logic.smid.OfficialDeviceIdentity.valid(value))
                 userPreferencesRepository.setSZLMId(value)
                 idError = null
-                onSaved()
+                onFinished(true)
             } catch (e: kotlinx.coroutines.CancellationException) {
                 throw e
             } catch (_: Exception) {
                 idError = AppLanguage.getString(R.string.settings_szlm_save_failed)
+                onFinished(false)
             }
         }
     }
