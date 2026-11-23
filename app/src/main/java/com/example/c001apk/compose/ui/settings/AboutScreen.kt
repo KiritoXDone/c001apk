@@ -36,6 +36,7 @@ import com.example.c001apk.compose.ui.component.MiuixScaffold as Scaffold
 import com.example.c001apk.compose.ui.component.MiuixToolbarIconButton
 import com.example.c001apk.compose.ui.component.settings.BasicListItem
 import com.example.c001apk.compose.ui.component.settings.PreferenceGroup
+import com.example.c001apk.compose.ui.component.settings.PreferenceSpacing
 import com.example.c001apk.compose.util.openInBrowser
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.Text
@@ -60,65 +61,67 @@ fun AboutScreen(
         containerColor = Color.Transparent,
     ) { paddingValues ->
         FlowLightBackground(Modifier.fillMaxSize()) {
-            Column(
-                Modifier.fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-                    .padding(paddingValues)
-                    .padding(horizontal = 16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Spacer(Modifier.height(144.dp))
-                Image(
-                    painter = painterResource(R.drawable.ic_launcher_foreground),
-                    contentDescription = null,
-                    modifier = Modifier.size(100.dp),
-                    colorFilter = ColorFilter.tint(colors.primary),
-                )
-                Spacer(Modifier.height(12.dp))
-                Text(
-                    text = stringResource(id = R.string.app_name),
-                    fontSize = 35.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = colors.primary,
-                    textAlign = TextAlign.Center,
-                )
-                Spacer(Modifier.height(5.dp))
-                Text(
-                    text = "v${BuildConfig.VERSION_NAME}",
-                    fontSize = 14.sp,
-                    color = colors.onSurfaceVariantSummary,
-                )
-                Spacer(Modifier.height(70.dp))
-                PreferenceGroup {
-                    com.example.c001apk.compose.ui.update.AppUpdateSettings()
+            PreferenceSpacing(horizontal = 16.dp, spacing = 12.dp) {
+                Column(
+                    Modifier.fillMaxSize()
+                        .verticalScroll(rememberScrollState())
+                        .padding(paddingValues)
+                        .padding(horizontal = 16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    Spacer(Modifier.height(144.dp))
+                    Image(
+                        painter = painterResource(R.drawable.ic_launcher_foreground),
+                        contentDescription = null,
+                        modifier = Modifier.size(100.dp),
+                        colorFilter = ColorFilter.tint(colors.primary),
+                    )
+                    Spacer(Modifier.height(12.dp))
+                    Text(
+                        text = stringResource(id = R.string.app_name),
+                        fontSize = 35.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = colors.primary,
+                        textAlign = TextAlign.Center,
+                    )
+                    Spacer(Modifier.height(5.dp))
+                    Text(
+                        text = "v${BuildConfig.VERSION_NAME}",
+                        fontSize = 14.sp,
+                        color = colors.onSurfaceVariantSummary,
+                    )
+                    Spacer(Modifier.height(70.dp))
+                    PreferenceGroup {
+                        com.example.c001apk.compose.ui.update.AppUpdateSettings()
+                    }
+                    Spacer(Modifier.height(12.dp))
+                    PreferenceGroup {
+                        BasicListItem(
+                            leadingImageVector = MingCuteGlobeLine,
+                            headlineText = stringResource(R.string.settings_about_project_home),
+                            supportingText = "KiritoXDone/c001apk",
+                            onClick = { context.openInBrowser(URL_PROJECT) },
+                        )
+                        BasicListItem(
+                            leadingImageVector = MingCuteFolderLine,
+                            headlineText = stringResource(R.string.settings_about_source),
+                            supportingText = URL_SOURCE_CODE,
+                            onClick = { context.openInBrowser(URL_SOURCE_CODE) },
+                        )
+                        BasicListItem(
+                            leadingImageVector = MingCuteTagLine,
+                            headlineText = stringResource(R.string.settings_about_baseline),
+                            supportingText = URL_SOURCE_CODE_FORK,
+                            onClick = { context.openInBrowser(URL_SOURCE_CODE_FORK) },
+                        )
+                        BasicListItem(
+                            leadingImageVector = MingCuteInformationLine,
+                            headlineText = stringResource(R.string.settings_about_license),
+                            onClick = onLicenseClick,
+                        )
+                    }
+                    Spacer(Modifier.height(24.dp))
                 }
-                Spacer(Modifier.height(12.dp))
-                PreferenceGroup {
-                    BasicListItem(
-                        leadingImageVector = MingCuteGlobeLine,
-                        headlineText = stringResource(R.string.settings_about_project_home),
-                        supportingText = "KiritoXDone/c001apk",
-                        onClick = { context.openInBrowser(URL_PROJECT) },
-                    )
-                    BasicListItem(
-                        leadingImageVector = MingCuteFolderLine,
-                        headlineText = stringResource(R.string.settings_about_source),
-                        supportingText = URL_SOURCE_CODE,
-                        onClick = { context.openInBrowser(URL_SOURCE_CODE) },
-                    )
-                    BasicListItem(
-                        leadingImageVector = MingCuteTagLine,
-                        headlineText = stringResource(R.string.settings_about_baseline),
-                        supportingText = URL_SOURCE_CODE_FORK,
-                        onClick = { context.openInBrowser(URL_SOURCE_CODE_FORK) },
-                    )
-                    BasicListItem(
-                        leadingImageVector = MingCuteInformationLine,
-                        headlineText = stringResource(R.string.settings_about_license),
-                        onClick = onLicenseClick,
-                    )
-                }
-                Spacer(Modifier.height(24.dp))
             }
             MiuixToolbarIconButton(
                 onClick = onBackClick,

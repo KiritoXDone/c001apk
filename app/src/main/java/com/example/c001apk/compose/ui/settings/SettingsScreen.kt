@@ -65,6 +65,7 @@ import com.example.c001apk.compose.ui.component.MiuixSearchField
 import com.example.c001apk.compose.ui.component.rememberHapticClick
 import com.example.c001apk.compose.ui.component.settings.BasicListItem
 import com.example.c001apk.compose.ui.component.settings.PreferenceGroup
+import com.example.c001apk.compose.ui.component.settings.PreferenceSpacing
 import com.example.c001apk.compose.ui.component.settings.SelectionItem
 import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteAddSquareLine
 import com.example.c001apk.compose.ui.component.icons.mingcute.MingCuteArrowLeftLine
@@ -257,241 +258,246 @@ fun SettingsScreen(
             }
         },
     ) { paddingValues ->
-        Row(Modifier.fillMaxSize()) {
-            if (wide || activeSection == null) {
-                val topBarListState = rememberLazyListState()
-                TopBarScrollEffect { topBarListState.animateScrollToItem(0) }
-                LazyColumn(
-                    state = topBarListState,
-                    modifier =
-                        if (wide) Modifier.width(260.dp).fillMaxHeight()
-                        else Modifier.fillMaxSize().nestedScroll(topBarScrollBehavior.nestedScrollConnection),
-                    contentPadding = paddingValues,
-                ) {
-                    val visibleSections =
-                        SettingsSection.entries.filter { matchesSearch(sectionTitles.getValue(it)) }
-                    visibleSections.forEach { section ->
-                        item(key = section.name) {
-                            BasicListItem(
-                                headlineText = sectionTitles.getValue(section),
-                                leadingImageVector = section.icon,
-                                holdDownState = wide && activeSection == section,
-                                onClick = {
-                                    if (wide) wideSection = section
-                                    else {
-                                        closeSearch()
-                                        onSectionClick(section.name)
-                                    }
-                                },
-                            )
-                        }
-                    }
-                    if (matchesSearch(accountsLabel)) {
-                        item(key = "accounts") {
-                            BasicListItem(
-                                headlineText = accountsLabel,
-                                leadingImageVector = MingCuteUser3Line,
-                                onClick = {
-                                    closeSearch()
-                                    onAccountsClick()
-                                },
-                            )
-                        }
-                    }
-                    if (matchesSearch(aboutLabel)) {
-                        item(key = "about") {
-                            BasicListItem(
-                                headlineText = aboutLabel,
-                                leadingImageVector = MingCuteInformationLine,
-                                onClick = {
-                                    closeSearch()
-                                    onAboutClick()
-                                },
-                            )
-                        }
-                    }
-                    if (searchQuery.isNotBlank() && visibleSections.isEmpty() &&
-                        !matchesSearch(accountsLabel) && !matchesSearch(aboutLabel)
+    PreferenceSpacing(
+        horizontal = if (activeSection != null && !wide) 16.dp else 12.dp,
+        spacing = if (activeSection != null && !wide) 12.dp else 8.dp,
+    ) {
+            Row(Modifier.fillMaxSize()) {
+                if (wide || activeSection == null) {
+                    val topBarListState = rememberLazyListState()
+                    TopBarScrollEffect { topBarListState.animateScrollToItem(0) }
+                    LazyColumn(
+                        state = topBarListState,
+                        modifier =
+                            if (wide) Modifier.width(260.dp).fillMaxHeight()
+                            else Modifier.fillMaxSize().nestedScroll(topBarScrollBehavior.nestedScrollConnection),
+                        contentPadding = paddingValues,
                     ) {
-                        item(key = "no-results") {
-                            Text(
-                                text = stringResource(R.string.settings_search_empty),
-                                modifier = Modifier.fillMaxWidth().padding(28.dp),
-                                color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
-                            )
-                        }
-                    }
-                }
-            }
-            if (activeSection != null) {
-                val topBarListState = rememberLazyListState()
-                TopBarScrollEffect { topBarListState.animateScrollToItem(0) }
-                LazyColumn(
-                    state = topBarListState,
-                    modifier =
-                        Modifier.weight(1f)
-                            .fillMaxHeight()
-                            .scrollEndHaptic()
-                            .nestedScroll(topBarScrollBehavior.nestedScrollConnection),
-                    contentPadding =
-                        PaddingValues(
-                            top = paddingValues.calculateTopPadding(),
-                            bottom = 24.dp + paddingValues.calculateBottomPadding(),
-                            start = paddingValues.calculateLeftPadding(layoutDirection),
-                            end = paddingValues.calculateRightPadding(layoutDirection),
-                        ),
-                ) {
-                    when (activeSection) {
-                        SettingsSection.Appearance -> appearancePreferences(
-                            prefs = prefs,
-                            viewModel = viewModel,
-                            onCustomTheme = { showThemeTypeDialog = true },
-                            onNavigationOrder = onNavigationOrderClick,
-                            onFontSize = { showFontScaleDialog = true },
-                            onContentScale = { showContentScaleDialog = true },
-                            onHapticStrength = showHapticStrengthDialogClick,
-                        )
-                        SettingsSection.Content -> {
-                            item(key = "Content_0") {
-                                HomeContentPreferences(
-                                    showCarousel = prefs.showHomeCarousel,
-                                    showChannels = prefs.showHomeChannels,
-                                    showTopics = prefs.showSquare,
-                                    showEmoji = prefs.showEmoji,
-                                    onHomeTabsClick = onHomeTabsClick,
-                                    onShowCarousel = viewModel::setShowHomeCarousel,
-                                    onShowChannels = viewModel::setShowHomeChannels,
-                                    onShowTopics = viewModel::setShowSquare,
-                                    onShowEmoji = viewModel::setShowEmoji,
+                        val visibleSections =
+                            SettingsSection.entries.filter { matchesSearch(sectionTitles.getValue(it)) }
+                        visibleSections.forEach { section ->
+                            item(key = section.name) {
+                                BasicListItem(
+                                    headlineText = sectionTitles.getValue(section),
+                                    leadingImageVector = section.icon,
+                                    holdDownState = wide && activeSection == section,
+                                    onClick = {
+                                        if (wide) wideSection = section
+                                        else {
+                                            closeSearch()
+                                            onSectionClick(section.name)
+                                        }
+                                    },
                                 )
                             }
-                            item(key = "default_search") {
-                                SearchPreferences(prefs.defaultSearchOrder, viewModel::setDefaultSearchOrder)
+                        }
+                        if (matchesSearch(accountsLabel)) {
+                            item(key = "accounts") {
+                                BasicListItem(
+                                    headlineText = accountsLabel,
+                                    leadingImageVector = MingCuteUser3Line,
+                                    onClick = {
+                                        closeSearch()
+                                        onAccountsClick()
+                                    },
+                                )
                             }
-                            item(key = "publish") {
-                                PreferenceGroup(title = stringResource(R.string.settings_group_publish)) {
-                                    SwitchListItem(
-                                        prefs.hideHomePublishButton,
-                                        MingCuteAddSquareLine,
-                                        stringResource(R.string.settings_hide_publish_button),
-                                        stringResource(R.string.settings_hide_publish_button_summary),
-                                    ) { viewModel.setHideHomePublishButton(it) }
-                                }
+                        }
+                        if (matchesSearch(aboutLabel)) {
+                            item(key = "about") {
+                                BasicListItem(
+                                    headlineText = aboutLabel,
+                                    leadingImageVector = MingCuteInformationLine,
+                                    onClick = {
+                                        closeSearch()
+                                        onAboutClick()
+                                    },
+                                )
                             }
-                            item(key = "Content_1") {
-                                PreferenceGroup(title = stringResource(R.string.settings_group_follow)) {
-                                    BasicListItem(
-                                        leadingImageVector = MingCuteUserFollowLine,
-                                        headlineText = stringResource(R.string.settings_local_follow),
-                                        supportingText = stringResource(R.string.settings_local_follow_summary),
-                                        onClick = onLocalFollowsClick,
+                        }
+                        if (searchQuery.isNotBlank() && visibleSections.isEmpty() &&
+                            !matchesSearch(accountsLabel) && !matchesSearch(aboutLabel)
+                        ) {
+                            item(key = "no-results") {
+                                Text(
+                                    text = stringResource(R.string.settings_search_empty),
+                                    modifier = Modifier.fillMaxWidth().padding(28.dp),
+                                    color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
+                                )
+                            }
+                        }
+                    }
+                }
+                if (activeSection != null) {
+                    val topBarListState = rememberLazyListState()
+                    TopBarScrollEffect { topBarListState.animateScrollToItem(0) }
+                    LazyColumn(
+                        state = topBarListState,
+                        modifier =
+                            Modifier.weight(1f)
+                                .fillMaxHeight()
+                                .scrollEndHaptic()
+                                .nestedScroll(topBarScrollBehavior.nestedScrollConnection),
+                        contentPadding =
+                            PaddingValues(
+                                top = paddingValues.calculateTopPadding() + 10.dp,
+                                bottom = 24.dp + paddingValues.calculateBottomPadding(),
+                                start = paddingValues.calculateLeftPadding(layoutDirection),
+                                end = paddingValues.calculateRightPadding(layoutDirection),
+                            ),
+                    ) {
+                        when (activeSection) {
+                            SettingsSection.Appearance -> appearancePreferences(
+                                prefs = prefs,
+                                viewModel = viewModel,
+                                onCustomTheme = { showThemeTypeDialog = true },
+                                onNavigationOrder = onNavigationOrderClick,
+                                onFontSize = { showFontScaleDialog = true },
+                                onContentScale = { showContentScaleDialog = true },
+                                onHapticStrength = showHapticStrengthDialogClick,
+                            )
+                            SettingsSection.Content -> {
+                                item(key = "Content_0") {
+                                    HomeContentPreferences(
+                                        showCarousel = prefs.showHomeCarousel,
+                                        showChannels = prefs.showHomeChannels,
+                                        showTopics = prefs.showSquare,
+                                        showEmoji = prefs.showEmoji,
+                                        onHomeTabsClick = onHomeTabsClick,
+                                        onShowCarousel = viewModel::setShowHomeCarousel,
+                                        onShowChannels = viewModel::setShowHomeChannels,
+                                        onShowTopics = viewModel::setShowSquare,
+                                        onShowEmoji = viewModel::setShowEmoji,
                                     )
                                 }
-                            }
-                            item(key = "Content_2") {
-                                PreferenceGroup(title = stringResource(R.string.settings_group_block)) {
-                                    BasicListItem(
-                                            headlineText = stringResource(R.string.settings_content_filter),
-                                            supportingText = stringResource(R.string.settings_content_filter_summary),
-                                            leadingImageVector = MingCuteFilterLine,
-                                            onClick = onContentFilters,
+                                item(key = "default_search") {
+                                    SearchPreferences(prefs.defaultSearchOrder, viewModel::setDefaultSearchOrder)
+                                }
+                                item(key = "publish") {
+                                    PreferenceGroup(title = stringResource(R.string.settings_group_publish)) {
+                                        SwitchListItem(
+                                            prefs.hideHomePublishButton,
+                                            MingCuteAddSquareLine,
+                                            stringResource(R.string.settings_hide_publish_button),
+                                            stringResource(R.string.settings_hide_publish_button_summary),
+                                        ) { viewModel.setHideHomePublishButton(it) }
+                                    }
+                                }
+                                item(key = "Content_1") {
+                                    PreferenceGroup(title = stringResource(R.string.settings_group_follow)) {
+                                        BasicListItem(
+                                            leadingImageVector = MingCuteUserFollowLine,
+                                            headlineText = stringResource(R.string.settings_local_follow),
+                                            supportingText = stringResource(R.string.settings_local_follow_summary),
+                                            onClick = onLocalFollowsClick,
                                         )
+                                    }
+                                }
+                                item(key = "Content_2") {
+                                    PreferenceGroup(title = stringResource(R.string.settings_group_block)) {
+                                        BasicListItem(
+                                                headlineText = stringResource(R.string.settings_content_filter),
+                                                supportingText = stringResource(R.string.settings_content_filter_summary),
+                                                leadingImageVector = MingCuteFilterLine,
+                                                onClick = onContentFilters,
+                                            )
 
-                                    BasicListItem(
-                                        leadingImageVector = MingCuteUserForbidLine,
-                                        headlineText = stringResource(R.string.settings_user_blocklist),
-                                    ) {
-                                        onViewBlackList(BlackListType.USER.name)
-                                    }
-                                    BasicListItem(
-                                        leadingImageVector = MingCuteTagLine,
-                                        headlineText = stringResource(R.string.settings_topic_blocklist),
-                                    ) {
-                                        onViewBlackList(BlackListType.TOPIC.name)
-                                    }
-                                }
-                            }
-                        }
-                        SettingsSection.Privacy -> {
-                            item(key = "Privacy_0") {
-                                PreferenceGroup(title = stringResource(R.string.settings_group_image)) {
-                                    SelectionListItem(
-                                        leadingImageVector = MingCutePhotoAlbumLine,
-                                        title = stringResource(R.string.settings_image_quality),
-                                        value = prefs.imageQuality,
-                                        selections =
-                                            imageQualityList.mapIndexed { index, label ->
-                                                SelectionItem(label, index)
-                                            },
-                                        onSelected = viewModel::setImageQuality,
-                                    )
-                                }
-                            }
-                            item(key = "Privacy_1") {
-                                PreferenceGroup(title = stringResource(R.string.settings_group_browse)) {
-                                    SwitchListItem(
-                                        value = prefs.openInBrowser,
-                                        leadingImageVector = MingCuteGlobeLine,
-                                        headlineText = stringResource(R.string.settings_open_in_browser),
-                                    ) {
-                                        viewModel.setOpenInBrowser(it)
-                                    }
-                                    SwitchListItem(
-                                        value = prefs.recordHistory,
-                                        leadingImageVector = MingCuteHistoryLine,
-                                        headlineText = stringResource(R.string.settings_record_history),
-                                    ) {
-                                        viewModel.setRecordHistory(it)
+                                        BasicListItem(
+                                            leadingImageVector = MingCuteUserForbidLine,
+                                            headlineText = stringResource(R.string.settings_user_blocklist),
+                                        ) {
+                                            onViewBlackList(BlackListType.USER.name)
+                                        }
+                                        BasicListItem(
+                                            leadingImageVector = MingCuteTagLine,
+                                            headlineText = stringResource(R.string.settings_topic_blocklist),
+                                        ) {
+                                            onViewBlackList(BlackListType.TOPIC.name)
+                                        }
                                     }
                                 }
                             }
-                        }
-                        SettingsSection.Storage -> {
-                            item(key = "Storage_0") {
-                                PreferenceGroup(title = stringResource(R.string.settings_group_cache)) {
-                                    BasicListItem(
-                                        leadingImageVector = MingCuteDelete2Line,
-                                        headlineText = stringResource(R.string.settings_clean_cache),
-                                        supportingText = cacheSize,
-                                    ) {
-                                        cacheSize = getTotalCacheSize(context)
-                                        showCleanCacheDialog = true
+                            SettingsSection.Privacy -> {
+                                item(key = "Privacy_0") {
+                                    PreferenceGroup(title = stringResource(R.string.settings_group_image)) {
+                                        SelectionListItem(
+                                            leadingImageVector = MingCutePhotoAlbumLine,
+                                            title = stringResource(R.string.settings_image_quality),
+                                            value = prefs.imageQuality,
+                                            selections =
+                                                imageQualityList.mapIndexed { index, label ->
+                                                    SelectionItem(label, index)
+                                                },
+                                            onSelected = viewModel::setImageQuality,
+                                        )
                                     }
-                                    SwitchListItem(
-                                        value = prefs.autoClearImageCache,
-                                        leadingImageVector = MingCuteDelete2Line,
-                                        headlineText = stringResource(R.string.settings_clear_cache_on_exit),
-                                        supportingText = stringResource(R.string.settings_clear_cache_on_exit_summary),
-                                    ) {
-                                        viewModel.setAutoClearImageCache(it)
-                                    }
-                                    SwitchListItem(
-                                        value = prefs.checkUpdate,
-                                        leadingImageVector = MingCuteClockwiseLine,
-                                        headlineText = stringResource(R.string.settings_check_app_updates),
-                                    ) {
-                                        viewModel.setCheckUpdate(it)
+                                }
+                                item(key = "Privacy_1") {
+                                    PreferenceGroup(title = stringResource(R.string.settings_group_browse)) {
+                                        SwitchListItem(
+                                            value = prefs.openInBrowser,
+                                            leadingImageVector = MingCuteGlobeLine,
+                                            headlineText = stringResource(R.string.settings_open_in_browser),
+                                        ) {
+                                            viewModel.setOpenInBrowser(it)
+                                        }
+                                        SwitchListItem(
+                                            value = prefs.recordHistory,
+                                            leadingImageVector = MingCuteHistoryLine,
+                                            headlineText = stringResource(R.string.settings_record_history),
+                                        ) {
+                                            viewModel.setRecordHistory(it)
+                                        }
                                     }
                                 }
                             }
-                        }
-                        SettingsSection.Device -> {
-                            item(key = "Device_0") {
-                                PreferenceGroup(title = stringResource(R.string.settings_section_device)) {
-                                    BasicListItem(
-                                        leadingImageVector = MingCuteCardSimLine,
-                                        headlineText = stringResource(R.string.settings_szlm_id),
-                                        supportingText =
-                                            if (prefs.szlmId.isBlank()) stringResource(R.string.settings_szlm_id_empty)
-                                            else stringResource(R.string.settings_szlm_id_saved),
-                                    ) {
-                                        showSZLMIDDialog = true
+                            SettingsSection.Storage -> {
+                                item(key = "Storage_0") {
+                                    PreferenceGroup(title = stringResource(R.string.settings_group_cache)) {
+                                        BasicListItem(
+                                            leadingImageVector = MingCuteDelete2Line,
+                                            headlineText = stringResource(R.string.settings_clean_cache),
+                                            supportingText = cacheSize,
+                                        ) {
+                                            cacheSize = getTotalCacheSize(context)
+                                            showCleanCacheDialog = true
+                                        }
+                                        SwitchListItem(
+                                            value = prefs.autoClearImageCache,
+                                            leadingImageVector = MingCuteDelete2Line,
+                                            headlineText = stringResource(R.string.settings_clear_cache_on_exit),
+                                            supportingText = stringResource(R.string.settings_clear_cache_on_exit_summary),
+                                        ) {
+                                            viewModel.setAutoClearImageCache(it)
+                                        }
+                                        SwitchListItem(
+                                            value = prefs.checkUpdate,
+                                            leadingImageVector = MingCuteClockwiseLine,
+                                            headlineText = stringResource(R.string.settings_check_app_updates),
+                                        ) {
+                                            viewModel.setCheckUpdate(it)
+                                        }
                                     }
-                                    BasicListItem(
-                                        leadingImageVector = MingCuteCellphone2Line,
-                                        headlineText = stringResource(R.string.settings_device_params),
-                                    ) {
-                                        onParamsClick()
+                                }
+                            }
+                            SettingsSection.Device -> {
+                                item(key = "Device_0") {
+                                    PreferenceGroup(title = stringResource(R.string.settings_section_device)) {
+                                        BasicListItem(
+                                            leadingImageVector = MingCuteCardSimLine,
+                                            headlineText = stringResource(R.string.settings_szlm_id),
+                                            supportingText =
+                                                if (prefs.szlmId.isBlank()) stringResource(R.string.settings_szlm_id_empty)
+                                                else stringResource(R.string.settings_szlm_id_saved),
+                                        ) {
+                                            showSZLMIDDialog = true
+                                        }
+                                        BasicListItem(
+                                            leadingImageVector = MingCuteCellphone2Line,
+                                            headlineText = stringResource(R.string.settings_device_params),
+                                        ) {
+                                            onParamsClick()
+                                        }
                                     }
                                 }
                             }
@@ -499,7 +505,7 @@ fun SettingsScreen(
                     }
                 }
             }
-        }
+    }
 
         when {
             showThemeTypeDialog -> {
