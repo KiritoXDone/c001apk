@@ -22,6 +22,7 @@ account-switch navigation and unread badges use stable page IDs rather than disp
 does not change the Home launch/back destination. The main pager and its saved state use page identity.
 Home and Following use native filled icons; Profile uses the original Miuix `ContactsCircle` in both states. The navigation component highlights the active destination.
 Home tab positions remain in Room and are preserved when the editor or Home ViewModel is recreated.
+When the enabled home tabs change, the tab strip and pager layout are recreated together with the pager state. Selection is restored by tab identity, not by the old page index.
 
 ## Detail pane
 

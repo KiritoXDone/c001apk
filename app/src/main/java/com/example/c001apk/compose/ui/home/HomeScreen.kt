@@ -252,122 +252,123 @@ fun HomeScreen(
         }
     var selectedTabType by rememberSaveable { mutableStateOf(TabType.FEED) }
     val pageKey = remember(tabList) { tabList.map(TabType::name) }
-    val pagerState = key(pageKey) {
+    key(pageKey) {
         val initialType = selectedTabType.takeIf(tabList::contains)
             ?: TabType.FEED.takeIf(tabList::contains)
             ?: tabList.first()
-        rememberPagerState(
+        val pagerState = rememberPagerState(
             initialPage = tabList.indexOf(initialType),
             pageCount = { tabList.size },
         )
-    }
-    val context = LocalContext.current
-    val prefs = LocalUserPreferences.current
-    var updateAction by remember { mutableStateOf<(() -> Unit)?>(null) }
-    val selectedTabIndex = pagerState.currentPage.coerceIn(tabList.indices)
-    val currentTabType = tabList[selectedTabIndex]
-    val canPublish = isLogin && !prefs.hideHomePublishButton && currentTabType == TabType.FEED
 
-    LaunchedEffect(pagerState, tabList) {
-        snapshotFlow { pagerState.settledPage }
-            .collect { page ->
-                tabList.getOrNull(page)?.let { selectedTabType = it }
-            }
-    }
+        val context = LocalContext.current
+        val prefs = LocalUserPreferences.current
+        var updateAction by remember { mutableStateOf<(() -> Unit)?>(null) }
+        val selectedTabIndex = pagerState.currentPage.coerceIn(tabList.indices)
+        val currentTabType = tabList[selectedTabIndex]
+        val canPublish = isLogin && !prefs.hideHomePublishButton && currentTabType == TabType.FEED
 
-    Scaffold(
-        modifier = Modifier.fillMaxSize(),
-        topBar = {
-            androidx.compose.foundation.layout.Column {
-                HomeTopBar(
-                    onSearch = onSearch,
-                    actions = {
-                        if (canPublish) {
-                            MiuixToolbarIconButton(
-                                onClick = rememberHapticClick {
-                                    val intent = Intent(context, ReplyActivity::class.java)
-                                    intent.putExtra("type", "createFeed")
-                                    val animationBundle =
-                                        ActivityOptionsCompat.makeCustomAnimation(
-                                            context,
-                                            R.anim.anim_bottom_sheet_slide_up,
-                                            R.anim.anim_bottom_sheet_slide_down,
-                                        ).toBundle()
-                                    ContextCompat.startActivity(context, intent, animationBundle)
-                                },
-                            ) {
-                                Icon(MiuixIcons.Edit, contentDescription = "发布动态", modifier = Modifier.size(24.dp))
-                            }
-                        }
-                        if (currentTabType == TabType.APP) {
-                            updateAction?.let { onUpdate ->
-                                MiuixToolbarIconButton(onClick = onUpdate) {
-                                    Icon(MiuixIcons.Update, contentDescription = "检查应用更新", modifier = Modifier.size(24.dp))
+        LaunchedEffect(pagerState, tabList) {
+            snapshotFlow { pagerState.settledPage }
+                .collect { page ->
+                    tabList.getOrNull(page)?.let { selectedTabType = it }
+                }
+        }
+
+        Scaffold(
+            modifier = Modifier.fillMaxSize(),
+            topBar = {
+                androidx.compose.foundation.layout.Column {
+                    HomeTopBar(
+                        onSearch = onSearch,
+                        actions = {
+                            if (canPublish) {
+                                MiuixToolbarIconButton(
+                                    onClick = rememberHapticClick {
+                                        val intent = Intent(context, ReplyActivity::class.java)
+                                        intent.putExtra("type", "createFeed")
+                                        val animationBundle =
+                                            ActivityOptionsCompat.makeCustomAnimation(
+                                                context,
+                                                R.anim.anim_bottom_sheet_slide_up,
+                                                R.anim.anim_bottom_sheet_slide_down,
+                                            ).toBundle()
+                                        ContextCompat.startActivity(context, intent, animationBundle)
+                                    },
+                                ) {
+                                    Icon(MiuixIcons.Edit, contentDescription = "发布动态", modifier = Modifier.size(24.dp))
                                 }
                             }
+                            if (currentTabType == TabType.APP) {
+                                updateAction?.let { onUpdate ->
+                                    MiuixToolbarIconButton(onClick = onUpdate) {
+                                        Icon(MiuixIcons.Update, contentDescription = "检查应用更新", modifier = Modifier.size(24.dp))
+                                    }
+                                }
+                            }
+                        },
+                    )
+                    MiuixPagerTabRow(
+                        modifier = Modifier.padding(start = 12.dp, end = 12.dp, bottom = 8.dp),
+                        withContour = true,
+                        tabs = tabList.map(::tabTitle),
+                        pagerState = pagerState,
+                        onReselect = onRefresh,
+                    )
+                }
+            },
+            contentWindowInsets =
+                ScaffoldDefaults.contentWindowInsets.exclude(WindowInsets.navigationBars),
+        ) { paddingValues ->
+            val pagePadding =
+                androidx.compose.foundation.layout.PaddingValues(
+                    top = paddingValues.calculateTopPadding(),
+                    bottom = bottomPadding + paddingValues.calculateBottomPadding(),
+                )
+            androidx.compose.foundation.layout.Box(Modifier.fillMaxSize()) {
+                HorizontalPager(
+                    state = pagerState,
+                    key = { index -> tabList[index].name },
+                ) { index ->
+                    TopBarScrollPage(pagerState.currentPage == index) {
+                        when (val type = tabList[index]) {
+                            TabType.FOLLOW,
+                            TabType.FEED,
+                            TabType.HOT,
+                            TabType.COOLPIC ->
+                                HomeFeedScreen(
+                                    paddingValues = pagePadding,
+                                    refreshState = refreshState && index == pagerState.currentPage,
+                                    resetRefreshState = resetRefreshState,
+                                    type = type,
+                                    onViewUser = onViewUser,
+                                    onViewFeed = onViewFeed,
+                                    onOpenLink = onOpenLink,
+                                    onCopyText = onCopyText,
+                                    onReport = onReport,
+                                )
+
+                            TabType.APP ->
+                                AppListScreen(
+                                    paddingValues = pagePadding,
+                                    refreshState = refreshState && index == pagerState.currentPage,
+                                    resetRefreshState = resetRefreshState,
+                                    onViewApp = onViewApp,
+                                    onCheckUpdate = onCheckUpdate,
+                                    onUpdateActionChange = { updateAction = it },
+                                )
+
+                            TabType.TOPIC,
+                            TabType.PRODUCT ->
+                                HomeTopicScreen(
+                                    paddingValues = pagePadding,
+                                    type = type,
+                                    onViewUser = onViewUser,
+                                    onViewFeed = onViewFeed,
+                                    onOpenLink = onOpenLink,
+                                    onCopyText = onCopyText,
+                                )
                         }
-                    },
-                )
-                MiuixPagerTabRow(
-                    modifier = Modifier.padding(start = 12.dp, end = 12.dp, bottom = 8.dp),
-                    withContour = true,
-                    tabs = tabList.map(::tabTitle),
-                    pagerState = pagerState,
-                    onReselect = onRefresh,
-                )
-            }
-        },
-        contentWindowInsets =
-            ScaffoldDefaults.contentWindowInsets.exclude(WindowInsets.navigationBars),
-    ) { paddingValues ->
-        val pagePadding =
-            androidx.compose.foundation.layout.PaddingValues(
-                top = paddingValues.calculateTopPadding(),
-                bottom = bottomPadding + paddingValues.calculateBottomPadding(),
-            )
-        androidx.compose.foundation.layout.Box(Modifier.fillMaxSize()) {
-            HorizontalPager(
-                state = pagerState,
-                key = { index -> tabList[index].name },
-            ) { index ->
-                TopBarScrollPage(pagerState.currentPage == index) {
-                    when (val type = tabList[index]) {
-                        TabType.FOLLOW,
-                        TabType.FEED,
-                        TabType.HOT,
-                        TabType.COOLPIC ->
-                            HomeFeedScreen(
-                                paddingValues = pagePadding,
-                                refreshState = refreshState && index == pagerState.currentPage,
-                                resetRefreshState = resetRefreshState,
-                                type = type,
-                                onViewUser = onViewUser,
-                                onViewFeed = onViewFeed,
-                                onOpenLink = onOpenLink,
-                                onCopyText = onCopyText,
-                                onReport = onReport,
-                            )
-
-                        TabType.APP ->
-                            AppListScreen(
-                                paddingValues = pagePadding,
-                                refreshState = refreshState && index == pagerState.currentPage,
-                                resetRefreshState = resetRefreshState,
-                                onViewApp = onViewApp,
-                                onCheckUpdate = onCheckUpdate,
-                                onUpdateActionChange = { updateAction = it },
-                            )
-
-                        TabType.TOPIC,
-                        TabType.PRODUCT ->
-                            HomeTopicScreen(
-                                paddingValues = pagePadding,
-                                type = type,
-                                onViewUser = onViewUser,
-                                onViewFeed = onViewFeed,
-                                onOpenLink = onOpenLink,
-                                onCopyText = onCopyText,
-                            )
                     }
                 }
             }
