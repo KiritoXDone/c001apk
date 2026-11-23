@@ -415,7 +415,11 @@ fun FeedScreen(
                                 else 0.dp,
                         ),
                     contentPadding = PaddingValues(top = paddingValues.calculateTopPadding()),
-                    isRefreshing = viewModel.isRefreshing,
+                    isRefreshing =
+                        viewModel.isRefreshing ||
+                            viewModel.feedState is LoadingState.Loading ||
+                            (viewModel.feedState is LoadingState.Success &&
+                                viewModel.loadingState is LoadingState.Loading),
                     onRefresh = {
                         viewModel.isPull = true
                         viewModel.refresh()
@@ -437,7 +441,7 @@ fun FeedScreen(
                         state = lazyListState,
                     ) {
                         when (viewModel.feedState) {
-                            LoadingState.Loading,
+                            LoadingState.Loading -> Unit
                             LoadingState.Empty,
                             is LoadingState.Error -> {
                                 item(key = "feedState") {
@@ -445,10 +449,7 @@ fun FeedScreen(
                                         LoadingCard(
                                             modifier = Modifier.align(Alignment.Center),
                                             state = viewModel.feedState,
-                                            onClick =
-                                                if (viewModel.feedState is LoadingState.Loading)
-                                                    null
-                                                else viewModel::refresh,
+                                            onClick = viewModel::refresh,
                                             isFeed = true,
                                         )
                                     }

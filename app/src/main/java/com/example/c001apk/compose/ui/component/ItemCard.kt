@@ -83,7 +83,7 @@ fun LazyListScope.ItemCard(
 ) {
 
     when (loadingState) {
-        LoadingState.Loading,
+        LoadingState.Loading -> Unit
         LoadingState.Empty,
         is LoadingState.Error -> {
             item(key = "loadingState") {
@@ -91,7 +91,7 @@ fun LazyListScope.ItemCard(
                     LoadingCard(
                         modifier = Modifier.align(Alignment.Center).padding(horizontal = 12.dp),
                         state = loadingState,
-                        onClick = if (loadingState is LoadingState.Loading) null else loadMore,
+                        onClick = loadMore,
                     )
                 }
             }
@@ -441,7 +441,7 @@ fun LazyStaggeredGridScope.GridItemCard(
 ) {
 
     when (loadingState) {
-        LoadingState.Loading,
+        LoadingState.Loading -> Unit
         LoadingState.Empty,
         is LoadingState.Error -> {
             item(key = "loadingState", span = StaggeredGridItemSpan.FullLine) {
@@ -449,7 +449,7 @@ fun LazyStaggeredGridScope.GridItemCard(
                     LoadingCard(
                         modifier = Modifier.align(Alignment.Center).padding(horizontal = 12.dp),
                         state = loadingState,
-                        onClick = if (loadingState is LoadingState.Loading) null else loadMore,
+                        onClick = loadMore,
                     )
                 }
             }

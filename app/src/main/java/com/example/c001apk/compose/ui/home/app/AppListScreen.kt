@@ -13,7 +13,6 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
@@ -26,7 +25,6 @@ import com.example.c001apk.compose.logic.model.UpdateCheckItem
 import com.example.c001apk.compose.logic.providable.LocalUserPreferences
 import com.example.c001apk.compose.ui.component.AdaptiveCardColumn
 import com.example.c001apk.compose.util.longVersionCodeCompat
-import top.yukonga.miuix.kmp.basic.CircularProgressIndicator
 
 /** Created by bggRGjQaUbCoE on 2024/6/9 */
 @Composable
@@ -66,56 +64,50 @@ fun AppListScreen(
         }
     }
 
-    androidx.compose.foundation.layout.Box(Modifier.fillMaxSize()) {
-        top.yukonga.miuix.kmp.basic.PullToRefresh(
-            isRefreshing = viewModel.isRefreshing,
-            onRefresh = viewModel::refresh,
-            contentPadding = paddingValues,
-            refreshTexts = listOf("下拉刷新", "释放刷新", "正在刷新", "刷新完成"),
+    top.yukonga.miuix.kmp.basic.PullToRefresh(
+        modifier = Modifier.fillMaxSize(),
+        isRefreshing = viewModel.isRefreshing || viewModel.isLoading,
+        onRefresh = viewModel::refresh,
+        contentPadding = paddingValues,
+        refreshTexts = listOf("下拉刷新", "释放刷新", "正在刷新", "刷新完成"),
+    ) {
+        AdaptiveCardColumn(
+            modifier = Modifier.fillMaxSize(),
+            state = lazyListState,
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            contentPadding =
+                androidx.compose.foundation.layout.PaddingValues(
+                    top = paddingValues.calculateTopPadding() + 8.dp,
+                    bottom = paddingValues.calculateBottomPadding() + 24.dp,
+                ),
         ) {
-            AdaptiveCardColumn(
-                modifier = Modifier.fillMaxSize(),
-                state = lazyListState,
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                contentPadding =
-                    androidx.compose.foundation.layout.PaddingValues(
-                        top = paddingValues.calculateTopPadding() + 8.dp,
-                        bottom = paddingValues.calculateBottomPadding() + 24.dp,
-                    ),
+            items(
+                items = viewModel.appList,
+                key = { it.packageInfo.packageName },
             ) {
-                items(
-                    items = viewModel.appList,
-                    key = { it.packageInfo.packageName },
+                top.yukonga.miuix.kmp.basic.Card(
+                    Modifier.padding(horizontal = 12.dp),
                 ) {
-                    top.yukonga.miuix.kmp.basic.Card(
-                        Modifier.padding(horizontal = 12.dp),
-                    ) {
-                        top.yukonga.miuix.kmp.basic.BasicComponent(
-                            title = it.label,
-                            summary =
-                                "${it.packageInfo.packageName}\n${it.packageInfo.versionName}(${it.packageInfo.longVersionCodeCompat})",
-                            onClick = { onViewApp(it.packageInfo.packageName) },
-                            insideMargin = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
-                            startAction = {
-                                AsyncImage(
-                                    model =
-                                        ImageRequest.Builder(context)
-                                            .data(it.packageInfo)
-                                            .crossfade(true)
-                                            .build(),
-                                    contentDescription = null,
-                                    modifier = Modifier.width(44.dp).height(44.dp),
-                                )
-                            },
-                        )
-                    }
+                    top.yukonga.miuix.kmp.basic.BasicComponent(
+                        title = it.label,
+                        summary =
+                            "${it.packageInfo.packageName}\n${it.packageInfo.versionName}(${it.packageInfo.longVersionCodeCompat})",
+                        onClick = { onViewApp(it.packageInfo.packageName) },
+                        insideMargin = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
+                        startAction = {
+                            AsyncImage(
+                                model =
+                                    ImageRequest.Builder(context)
+                                        .data(it.packageInfo)
+                                        .crossfade(true)
+                                        .build(),
+                                contentDescription = null,
+                                modifier = Modifier.width(44.dp).height(44.dp),
+                            )
+                        },
+                    )
                 }
             }
-        }
-        if (viewModel.isLoading) {
-            CircularProgressIndicator(
-                modifier = Modifier.align(Alignment.Center),
-            )
         }
     }
 }

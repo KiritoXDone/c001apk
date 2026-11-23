@@ -333,7 +333,7 @@ fun UserScreen(
                             refreshTexts = listOf("下拉刷新", "释放刷新", "正在刷新", "刷新完成"),
                             pullToRefreshState = feedRefreshState,
                             contentPadding = PaddingValues(top = paddingValues.calculateTopPadding()),
-                            isRefreshing = viewModel.isRefreshing,
+                            isRefreshing = viewModel.isRefreshing || viewModel.loadingState is LoadingState.Loading,
                             onRefresh = {
                                 viewModel.isPull = true
                                 viewModel.refresh()

@@ -80,7 +80,7 @@ fun CommonScreen(
                 start = paddingValues.calculateLeftPadding(layoutDirection),
                 end = paddingValues.calculateRightPadding(layoutDirection),
             ),
-        isRefreshing = viewModel.isRefreshing,
+        isRefreshing = viewModel.isRefreshing || displayState is LoadingState.Loading,
         onRefresh = viewModel::refresh,
         refreshTexts = listOf("下拉刷新", "释放刷新", "正在刷新", "刷新完成"),
         contentPadding =

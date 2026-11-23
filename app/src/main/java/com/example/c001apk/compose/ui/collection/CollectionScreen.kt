@@ -113,7 +113,11 @@ fun CollectionScreen(
                     top = paddingValues.calculateTopPadding(),
                     start = paddingValues.calculateLeftPadding(layoutDirection),
                 ),
-            isRefreshing = viewModel.isRefreshing,
+            isRefreshing =
+                viewModel.isRefreshing ||
+                    viewModel.collectionState is LoadingState.Loading ||
+                    (viewModel.collectionState is LoadingState.Success &&
+                        viewModel.loadingState is LoadingState.Loading),
             onRefresh = {
                 viewModel.isPull = true
                 viewModel.refresh()
@@ -128,7 +132,7 @@ fun CollectionScreen(
                 state = lazyListState,
             ) {
                 when (viewModel.collectionState) {
-                    LoadingState.Loading,
+                    LoadingState.Loading -> Unit
                     LoadingState.Empty,
                     is LoadingState.Error -> {
                         item(key = "collectionState") {
@@ -138,9 +142,7 @@ fun CollectionScreen(
                                         Modifier.align(Alignment.Center)
                                             .padding(horizontal = 10.dp),
                                     state = viewModel.collectionState,
-                                    onClick =
-                                        if (viewModel.collectionState is LoadingState.Loading) null
-                                        else viewModel::refresh,
+                                    onClick = viewModel::refresh,
                                 )
                             }
                         }
