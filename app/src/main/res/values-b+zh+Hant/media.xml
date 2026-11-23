@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="image_save">儲存圖片</string>
+    <string name="image_save_live">儲存實況圖片</string>
+    <string name="image_save_all">儲存全部圖片</string>
+    <string name="image_share">分享圖片</string>
+    <string name="image_copy_url">複製圖片地址</string>
+    <string name="image_long">長圖</string>
+    <string name="image_tap_retry">點選重試</string>
+    <string name="image_saved">圖片已儲存</string>
+    <string name="image_save_failed">無法儲存圖片</string>
+    <string name="image_live_saved">實況圖片已儲存</string>
+    <string name="image_live_save_failed">無法儲存實況圖片</string>
+    <string name="image_live_not_ready">實況圖片尚未載入完成</string>
+    <string name="image_file_exists">檔案已存在</string>
+    <string name="image_upload_failed">圖片上傳失敗，請檢查網路後重試</string>
+    <string name="image_storage_permission">請允許儲存許可權後重試</string>
+    <string name="image_permission_request_failed">無法請求儲存許可權，請在系統設定中允許後重試</string>
+    <string name="image_permission_denied">未授予儲存許可權，無法儲存圖片</string>
+    <string name="content_copied">已複製：%1$s</string>
+    <string name="link_open_failed">無法開啟連結</string>
+    <string name="link_unsupported">暫不支援此連結</string>
+    <string name="download_failed">下載失敗</string>
+    <string name="download_confirm">下載此檔案？</string>
+    <string name="link_open_external">外部開啟</string>
+    <string name="link_open">開啟</string>
+    <string name="link_external_confirm">當前網頁將開啟外部連結，是否繼續？</string>
+    <string name="cache_cleared">快取已清除</string>
+</resources>

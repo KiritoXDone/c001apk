@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="editor_content">投稿内容</string>
+    <string name="editor_hint">新しいことを共有しましょう…</string>
+    <string name="editor_emoji">絵文字</string>
+    <string name="editor_gallery">ギャラリー</string>
+    <string name="editor_files">ファイル</string>
+    <string name="editor_mention">メンション</string>
+    <string name="editor_anonymous_comment">匿名コメント</string>
+    <string name="editor_publish_comment">コメントを投稿</string>
+    <string name="editor_comment_hint">感想を書いてください</string>
+    <string name="editor_reply_forward">返信して再投稿</string>
+    <string name="editor_publish_reply">返信を投稿</string>
+    <string name="editor_reply_hint">%1$s に返信</string>
+    <string name="editor_reopen_vote">投票を開き直してコメントしてください</string>
+    <string name="editor_account_changed">アカウントが切り替わりました。投票を開き直してください。</string>
+    <string name="editor_image_limit">画像は 9 枚まで選択できます</string>
+    <string name="editor_image_info_failed">画像情報を読み取れません</string>
+    <string name="editor_published">投稿しました</string>
+    <string name="editor_publish_failed">投稿できません。再試行してください</string>
+    <string name="mention_recent">最近のメンション</string>
+    <string name="mention_following">フォローしたユーザー</string>
+    <string name="mention_save_failed">最近のメンションを保存できません</string>
+    <string name="mention_search_topic">トピックを検索</string>
+    <string name="mention_search_user">ユーザーを検索</string>
+    <string name="mention_hot_topics">人気のトピック</string>
+    <string name="emoji_default">既定</string>
+    <string name="emoji_niuniu">Niuniu</string>
+    <string name="emoji_coins">CoolCoins</string>
+    <string name="captcha_title">人間であることの確認</string>
+    <string name="captcha_continue">認証して続行</string>
+    <string name="captcha_update_webview">Android System WebView を更新してから再認証してください。</string>
+    <string name="captcha_loading">認証を読み込み中…</string>
+    <string name="captcha_timeout">読み込みがタイムアウトしました。「再読み込み」をタップしてください。</string>
+    <string name="captcha_load_failed">認証を読み込めません。接続を確認して再試行してください。</string>
+    <string name="captcha_failed">認証に失敗しました。再試行してください。</string>
+    <string name="captcha_hint">下の手順に従って認証を完了してください</string>
+    <string name="captcha_init_failed">認証を初期化できません。「再読み込み」をタップしてください。</string>
+</resources>

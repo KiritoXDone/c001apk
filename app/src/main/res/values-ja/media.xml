@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="image_save">画像を保存</string>
+    <string name="image_save_live">ライブフォトを保存</string>
+    <string name="image_save_all">画像をすべて保存</string>
+    <string name="image_share">画像を共有</string>
+    <string name="image_copy_url">画像の URL をコピー</string>
+    <string name="image_long">縦長画像</string>
+    <string name="image_tap_retry">タップして再試行</string>
+    <string name="image_saved">画像を保存しました</string>
+    <string name="image_save_failed">画像を保存できません</string>
+    <string name="image_live_saved">ライブフォトを保存しました</string>
+    <string name="image_live_save_failed">ライブフォトを保存できません</string>
+    <string name="image_live_not_ready">ライブフォトの読み込みが完了していません</string>
+    <string name="image_file_exists">ファイルは既に存在します</string>
+    <string name="image_upload_failed">画像のアップロードに失敗しました。接続を確認して再試行してください。</string>
+    <string name="image_storage_permission">ストレージへのアクセスを許可して再試行してください</string>
+    <string name="image_permission_request_failed">ストレージ権限を要求できません。システム設定で許可して再試行してください。</string>
+    <string name="image_permission_denied">ストレージへのアクセスが拒否されたため、画像を保存できません。</string>
+    <string name="content_copied">コピーしました：%1$s</string>
+    <string name="link_open_failed">リンクを開けません</string>
+    <string name="link_unsupported">このリンクには対応していません</string>
+    <string name="download_failed">ダウンロードに失敗しました</string>
+    <string name="download_confirm">このファイルをダウンロードしますか？</string>
+    <string name="link_open_external">外部で開く</string>
+    <string name="link_open">開く</string>
+    <string name="link_external_confirm">このページは外部リンクを開こうとしています。続行しますか？</string>
+    <string name="cache_cleared">キャッシュを削除しました</string>
+</resources>

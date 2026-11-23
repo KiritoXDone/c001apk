@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="media_replay">重新播放</string>
+    <string name="media_live_off">關閉實況</string>
+    <string name="media_live_on">開啟實況</string>
+    <string name="media_unmute">開啟實況聲音</string>
+    <string name="media_mute">關閉實況聲音</string>
+</resources>

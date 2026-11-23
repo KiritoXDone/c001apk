@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="editor_content">釋出內容</string>
+    <string name="editor_hint">分享新鮮事…</string>
+    <string name="editor_emoji">表情</string>
+    <string name="editor_gallery">相簿</string>
+    <string name="editor_files">檔案</string>
+    <string name="editor_mention">提到</string>
+    <string name="editor_anonymous_comment">匿名評論</string>
+    <string name="editor_publish_comment">發表評論</string>
+    <string name="editor_comment_hint">說說你的觀點</string>
+    <string name="editor_reply_forward">回覆並轉發</string>
+    <string name="editor_publish_reply">釋出回覆</string>
+    <string name="editor_reply_hint">回覆：%1$s</string>
+    <string name="editor_reopen_vote">請重新開啟投票後發表評論</string>
+    <string name="editor_account_changed">賬號已切換，請重新開啟投票</string>
+    <string name="editor_image_limit">最多選擇 9 張圖片</string>
+    <string name="editor_image_info_failed">無法獲取圖片資訊</string>
+    <string name="editor_published">內容已釋出</string>
+    <string name="editor_publish_failed">無法釋出，請重試</string>
+    <string name="mention_recent">最近 @</string>
+    <string name="mention_following">關注使用者</string>
+    <string name="mention_save_failed">無法儲存最近 @ 使用者</string>
+    <string name="mention_search_topic">搜尋話題</string>
+    <string name="mention_search_user">搜尋使用者</string>
+    <string name="mention_hot_topics">熱門話題</string>
+    <string name="emoji_default">預設</string>
+    <string name="emoji_niuniu">牛牛</string>
+    <string name="emoji_coins">酷幣</string>
+    <string name="captcha_title">人機驗證</string>
+    <string name="captcha_continue">驗證並繼續</string>
+    <string name="captcha_update_webview">請更新系統 WebView 後重試驗證。</string>
+    <string name="captcha_loading">驗證元件載入中…</string>
+    <string name="captcha_timeout">載入超時，請點選重新載入</string>
+    <string name="captcha_load_failed">載入失敗，請檢查網路後重試</string>
+    <string name="captcha_failed">驗證未透過，請重試</string>
+    <string name="captcha_hint">請按下方提示完成人機驗證</string>
+    <string name="captcha_init_failed">初始化失敗，請重新載入</string>
+</resources>

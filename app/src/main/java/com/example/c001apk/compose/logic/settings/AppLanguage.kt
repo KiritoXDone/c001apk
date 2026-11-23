@@ -9,17 +9,22 @@ import androidx.annotation.StringRes
 import com.example.c001apk.compose.c001Application
 import java.util.Locale
 
-/** 应用内语言：空标签跟随系统，其余按 BCP 47 标签覆盖。 */
+// 空标签跟随系统，其余按 BCP 47 标签覆盖。
 object AppLanguage {
     const val SYSTEM = ""
-    const val CHINESE = "zh"
+    const val CHINESE = "zh-Hans"
+    const val CHINESE_TRADITIONAL = "zh-Hant"
     const val ENGLISH = "en"
+    const val JAPANESE = "ja"
+    const val KOREAN = "ko"
 
     private const val PREFS = "app_language"
     private const val KEY = "tag"
 
-    fun current(context: Context): String =
-        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getString(KEY, SYSTEM).orEmpty()
+    fun current(context: Context): String {
+        val tag = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getString(KEY, SYSTEM).orEmpty()
+        return if (tag == "zh") CHINESE else tag
+    }
 
     fun set(context: Context, tag: String) {
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().putString(KEY, tag).apply()

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="media_replay">もう一度再生</string>
+    <string name="media_live_off">ライブフォトをオフ</string>
+    <string name="media_live_on">ライブフォトをオン</string>
+    <string name="media_unmute">ライブフォトの消音を解除</string>
+    <string name="media_mute">ライブフォトを消音</string>
+</resources>

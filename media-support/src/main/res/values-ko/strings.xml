@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="media_replay">다시 재생</string>
+    <string name="media_live_off">라이브 사진 끄기</string>
+    <string name="media_live_on">라이브 사진 켜기</string>
+    <string name="media_unmute">라이브 사진 음소거 해제</string>
+    <string name="media_mute">라이브 사진 음소거</string>
+</resources>

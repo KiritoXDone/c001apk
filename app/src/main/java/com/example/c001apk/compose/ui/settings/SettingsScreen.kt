@@ -185,7 +185,10 @@ fun SettingsScreen(
         listOf(
             SelectionItem(stringResource(R.string.settings_theme_follow_system), AppLanguage.SYSTEM),
             SelectionItem(stringResource(R.string.language_chinese), AppLanguage.CHINESE),
+            SelectionItem(stringResource(R.string.language_chinese_traditional), AppLanguage.CHINESE_TRADITIONAL),
             SelectionItem(stringResource(R.string.language_english), AppLanguage.ENGLISH),
+            SelectionItem(stringResource(R.string.language_japanese), AppLanguage.JAPANESE),
+            SelectionItem(stringResource(R.string.language_korean), AppLanguage.KOREAN),
         )
     val accountsLabel = stringResource(R.string.settings_accounts)
     val aboutLabel = stringResource(R.string.settings_about)
