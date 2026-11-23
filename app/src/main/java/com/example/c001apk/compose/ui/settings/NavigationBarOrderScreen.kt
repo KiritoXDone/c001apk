@@ -24,10 +24,10 @@ import com.example.c001apk.compose.ui.component.MiuixActionButton
 import com.example.c001apk.compose.ui.component.MiuixScaffold
 import com.example.c001apk.compose.ui.component.MiuixTopBar
 import com.example.c001apk.compose.ui.component.TopBarScrollEffect
+import com.example.c001apk.compose.ui.component.settings.PreferenceLeadingIcon
 import com.example.c001apk.compose.ui.component.settings.ReorderablePreferenceGroup
 import com.example.c001apk.compose.ui.main.Router
 import top.yukonga.miuix.kmp.basic.BasicComponent
-import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import com.example.c001apk.compose.R
@@ -82,7 +82,7 @@ fun NavigationBarOrderScreen(
                     val page = pages[pageId]
                     BasicComponent(
                         title = stringResource(page.stringId!!),
-                        startAction = { Icon(page.unselectedIcon!!, null) },
+                        startAction = { PreferenceLeadingIcon(page.unselectedIcon!!) },
                         endActions = { dragHandle() },
                         holdDownState = dragging,
                         enabled = !viewModel.savingNavigationOrder,

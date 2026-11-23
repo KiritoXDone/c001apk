@@ -8,11 +8,9 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import top.yukonga.miuix.kmp.basic.BasicComponent
-import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.SmallTitle
 import top.yukonga.miuix.kmp.preference.ArrowPreference
 import top.yukonga.miuix.kmp.squircle.squircleClip
-import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @Composable
 fun BasicListItem(
@@ -35,12 +33,7 @@ fun BasicListItem(
         if (leadingImageVector != null || leadingPainter != null) {
             {
                 if (leadingImageVector != null)
-                    Icon(
-                        leadingImageVector,
-                        null,
-                        tint = MiuixTheme.colorScheme.onSurfaceVariantSummary,
-                        modifier = Modifier.size(24.dp),
-                    )
+                    PreferenceLeadingIcon(leadingImageVector)
                 else if (leadingPainter != null)
                     Image(
                         leadingPainter,

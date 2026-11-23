@@ -2,9 +2,7 @@ package com.example.c001apk.compose.ui.component.settings
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.vector.ImageVector
-import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.preference.SwitchPreference
-import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @Composable
 fun SwitchListItem(
@@ -23,9 +21,7 @@ fun SwitchListItem(
             title = headlineText,
             summary = supportingText,
             startAction = leadingImageVector?.let { icon ->
-                {
-                    Icon(icon, null, tint = MiuixTheme.colorScheme.onSurfaceVariantSummary)
-                }
+                { PreferenceLeadingIcon(icon) }
             },
         )
     }

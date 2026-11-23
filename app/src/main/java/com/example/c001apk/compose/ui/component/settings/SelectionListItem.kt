@@ -47,14 +47,7 @@ fun <T> SelectionListItem(
             enabled = enabled,
             startAction =
                 leadingImageVector?.let { icon ->
-                    {
-                        Icon(
-                            icon,
-                            null,
-                            Modifier.size(24.dp),
-                            tint = MiuixTheme.colorScheme.onSurfaceVariantSummary,
-                        )
-                    }
+                    { PreferenceLeadingIcon(icon) }
                 },
             endActions = {
                 Icon(
