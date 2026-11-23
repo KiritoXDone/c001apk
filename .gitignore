@@ -99,6 +99,10 @@
 !/docs/screenshots/
 !/docs/screenshots/*.png
 
+# Pi 项目仅共享技能入口配置。
+!/.pi/
+!/.pi/settings.json
+
 # 共享技能逐项放行，会话与个人设置保持本地。
 !/.codex/
 !/.codex/skills/
