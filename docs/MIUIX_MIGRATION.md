@@ -5,7 +5,7 @@
 - 上游：[frisk1127/c001apk-compose](https://github.com/frisk1127/c001apk-compose)，基线提交 `82ffea3c746955420c1d4f00380f5a6d7a6cad02`。
 - 实现采用 Kotlin 原生 Compose。
 - 设计规范参考：[Mishka UI guidelines](https://github.com/YuKongA/Mishka/blob/main/docs/ui-guidelines.md)。采用 squircle 圆角、12 dp 外边距、分段设置卡片、选中即生效的单选弹窗、窗口弹窗与毛玻璃背景采样。
-- 组件：[miuix v0.9.5-beta02](https://github.com/compose-miuix-ui/miuix/tree/66248bacc7be29ae6bdc0957de9458b42ac67732)，Android 构建使用 Jetpack Compose 1.13.0；源码模块和许可证见 [miuix/README.md](../miuix/README.md)。
+- 组件：[miuix v0.9.5-beta02](https://github.com/compose-miuix-ui/miuix/releases/tag/v0.9.5-beta02) 对应 Maven Central 发布依赖。Android 构建使用 Jetpack Compose 1.13.0。依赖和许可见 [第三方来源](THIRD_PARTY_PORTS.md)。
 
 ## 实现
 
@@ -30,15 +30,15 @@
 - “关注与内容 → 首页内容”分别控制首页动态的轮播横幅、频道快捷入口、推荐话题与数码入口；切换直接更新已加载列表，重新开启无需刷新。横幅和频道入口默认开启，升级保留原“头条显示广场”的选择作为推荐话题与数码入口开关。设置文案使用当前页面名称，并明确酷安表情开关控制表情代码转图片。
 - 应用界面的操作和导航图标使用 MiuixIcons；发帖工具栏及实况播放器的传统 View 使用同源 VectorDrawable，不依赖 Material 图标库。品牌标识与内容表情保留原素材。
 - “外观与字号”将栏样式、排序、背景模糊和标签收起归入“栏与标签”，字体与内容比例归入“字号与缩放”。关闭系统主题色后才显示自定义配色，关闭触感反馈时隐藏下级设置；隐藏不清除原有配置。
-- 删除直接 Material 3、Material Components、Material 图标库及旧 MaterialKolor Compose 配色依赖。miuix 源码模块按上游使用 Material Color Utilities 配色算法。折叠工具栏库未使用 Material API，已排除其发布时附带的 Material 和预览工具依赖。
+- 删除直接 Material 3、Material Components、Material 图标库及旧 MaterialKolor Compose 配色依赖。miuix 的发布依赖使用 Material Color Utilities 配色算法。折叠工具栏库未使用 Material API，已排除其发布时附带的 Material 和预览工具依赖。
 
 - 启动页采用 Android 原生 AnimatedVectorDrawable，无穷符号展开后回到原图标。参考 TG-Twilight/c001apk 的系统启动画面形式，沿用本项目现有图标路径，自行实现展开、回弹和淡入动画；系统启动画面仅等待本地账号恢复，数盟 ID 在后台获取，不阻塞首页或深链导航；主地址和回退地址均失败时，前台仅提示一次 Toast，引导前往“设置 → 协议与设备 → 数字联盟 ID”手动填写。已有 ID 或用户已手动填写时不提示，不显示额外加载页面。
 
 ## 构建
 
-应用支持 Android **7 / API 24，ARM64**；模糊效果需要 Android 13 / API 33，使用官方 miuix-blur 的 AGSL 渲染。目标 API 35，编译平台 `android-37.1`。
+应用支持 Android **7 / API 24，ARM64**；模糊效果需要 Android 13 / API 33，使用官方 miuix-blur 的 AGSL 渲染。目标 API 35。Miuix 发布的 Android AAR 要求编译平台 `android-37.2`。
 
-构建工具版本已固定：JDK 21（miuix-nav 内联 API 的字节码要求）、Gradle 9.7.1、AGP 9.4.1、Kotlin 2.4.20、KSP 2.3.12、Hilt 2.60.1、Activity / Activity Compose 1.13.0。Activity 版本提供 miuix 窗口菜单要求的 NavigationEventDispatcher。Android SDK 需安装 `platforms;android-37.1` 和 `build-tools;36.0.0`，子模块还使用 API 34/35。
+构建工具版本已固定：JDK 21（miuix-nav 内联 API 的字节码要求）、Gradle 9.7.1、AGP 9.4.1、Kotlin 2.4.20、KSP 2.3.12、Hilt 2.60.1、Activity / Activity Compose 1.13.0。Activity 版本提供 miuix 窗口菜单要求的 NavigationEventDispatcher。Android SDK 需安装 `platforms;android-37.2` 和 `build-tools;36.0.0`，子模块还使用 API 34/35。
 
 工具链与 SDK 配置见[构建指南](BUILDING.md)，使用统一脚本执行：
 

@@ -45,6 +45,7 @@ import com.example.c001apk.compose.ui.component.pullToRefreshTexts
 import com.example.c001apk.compose.logic.state.LoadingState
 import com.example.c001apk.compose.ui.component.FooterCard
 import com.example.c001apk.compose.ui.component.ItemCard
+import com.example.c001apk.compose.ui.component.MiuixHeader
 import com.example.c001apk.compose.ui.component.MiuixDialogButton as TextButton
 import com.example.c001apk.compose.ui.component.MiuixAlertDialog as AlertDialog
 import com.example.c001apk.compose.ui.component.MiuixMenu as DropdownMenu
@@ -64,10 +65,8 @@ import com.example.c001apk.compose.util.makeToast
 import com.example.c001apk.compose.util.shareText
 import top.yukonga.miuix.kmp.basic.Icon
 import com.example.c001apk.compose.ui.component.MiuixToolbarIconButton as IconButton
-import top.yukonga.miuix.kmp.basic.SmallTopAppBar
 import top.yukonga.miuix.kmp.basic.RefreshState
 import top.yukonga.miuix.kmp.basic.rememberPullToRefreshState
-import top.yukonga.miuix.kmp.basic.TopAppBarTitleAlignment
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.basic.Search
@@ -151,11 +150,9 @@ fun UserScreen(
         modifier = Modifier.fillMaxSize(),
         topBarColor = colors.surface.copy(alpha = topBarProgress),
         topBar = {
-            SmallTopAppBar(
+            MiuixHeader(
                 color = Color.Transparent,
-                titleColor = foreground,
-                titleAlignment = TopAppBarTitleAlignment.Center,
-                consumeBarTaps = false,
+                centerTitle = true,
                 windowInsets =
                     WindowInsets.statusBars.union(WindowInsets.displayCutout),
                 navigationIcon = {
@@ -167,7 +164,16 @@ fun UserScreen(
                         Icon(MiuixIcons.Back, stringResource(R.string.action_back), Modifier.size(24.dp), tint = foreground)
                     }
                 },
-                title = if (topBarProgress >= 0.8f) profile?.username ?: stringResource(R.string.user_profile) else "",
+                title = {
+                    if (topBarProgress >= 0.8f) {
+                        Text(
+                            text = profile?.username ?: stringResource(R.string.user_profile),
+                            color = foreground,
+                            maxLines = 1,
+                            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                        )
+                    }
+                },
                 actions = {
                     if (viewModel.userState is LoadingState.Success) {
                         Row(Modifier.wrapContentSize(Alignment.TopEnd)) {

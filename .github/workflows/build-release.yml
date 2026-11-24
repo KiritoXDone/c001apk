@@ -130,7 +130,7 @@ jobs:
           log-accepted-android-sdk-licenses: false
 
       - name: Install explicit Android SDK packages
-        run: sdkmanager 'platforms;android-34' 'platforms;android-35' 'platforms;android-37.1' 'build-tools;36.0.0'
+        run: sdkmanager 'platforms;android-34' 'platforms;android-35' 'platforms;android-37.2' 'build-tools;36.0.0'
 
       - name: Set up Gradle dependencies
         uses: gradle/actions/setup-gradle@v6.4.0

@@ -18,7 +18,6 @@ fun MiuixTopBar(
     navigationIcon: @Composable () -> Unit = {},
     actions: @Composable RowScope.() -> Unit = {},
 ) {
-    // SmallTopAppBar consumes taps internally, hiding title gestures from the page.
     MiuixHeader(
         centerTitle = true,
         title = {

@@ -1,9 +1,12 @@
 package com.example.c001apk.compose.ui.component
 
+import android.os.Build
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -18,19 +21,26 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import com.example.c001apk.compose.R
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.withResumed
 import top.yukonga.miuix.kmp.basic.Icon
-import top.yukonga.miuix.kmp.basic.InputField
+import kotlinx.coroutines.delay
+import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.TextField
 import top.yukonga.miuix.kmp.basic.TextFieldDefaults
 import top.yukonga.miuix.kmp.glass.GlassIconButton
@@ -66,19 +76,42 @@ fun MiuixSearchField(
             }
         }
     }
-    InputField(
-        query = query,
-        onQueryChange = onQueryChange,
-        onSearch = onSearch,
-        expanded = expanded,
-        onExpandedChange = onExpandedChange,
-        modifier = modifier,
-        label = label,
-        enabled = enabled,
-        leadingIcon = { SearchFieldIcon() },
-        trailingIcon = { SearchFieldClearButton(query, enabled) { onQueryChange("") } },
-        interactionSource = interactionSource,
+    val fieldInteraction = interactionSource ?: remember { MutableInteractionSource() }
+    val isFocused by fieldInteraction.collectIsFocusedAsState()
+    val focusRequester = remember { FocusRequester() }
+    val focusManager = LocalFocusManager.current
+    val currentOnExpandedChange by rememberUpdatedState(onExpandedChange)
+    val currentOnQueryChange by rememberUpdatedState(onQueryChange)
+    // Android 8 的输入框可能在清焦点后重新获得焦点。
+    val isFieldEnabled = enabled && (expanded || Build.VERSION.SDK_INT !in 26..27)
+    val expandOnTap = if (enabled && !isFieldEnabled) {
+        Modifier.pointerInput(Unit) { detectTapGestures { currentOnExpandedChange(true) } }
+    } else {
+        Modifier
+    }
+    MiuixSearchTextField(
+        value = query,
+        onValueChange = onQueryChange,
+        modifier = modifier.then(expandOnTap).focusRequester(focusRequester).onFocusChanged {
+            if (it.isFocused) currentOnExpandedChange(true)
+        },
+        label = label.takeUnless { expanded || query.isNotEmpty() }.orEmpty(),
+        enabled = isFieldEnabled,
+        interactionSource = fieldInteraction,
+        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+        keyboardActions = KeyboardActions(onSearch = { onSearch(query) }),
     )
+    LaunchedEffect(expanded, enabled) {
+        if (expanded && enabled) {
+            focusRequester.requestFocus()
+        } else if (isFocused) {
+            delay(100)
+            if (isFocused) {
+                currentOnQueryChange("")
+                focusManager.clearFocus()
+            }
+        }
+    }
 }
 
 @Suppress("DEPRECATION")
@@ -91,6 +124,8 @@ fun MiuixSearchTextField(
     textStyle: TextStyle = MiuixTheme.textStyles.main,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     keyboardActions: KeyboardActions = KeyboardActions.Default,
+    enabled: Boolean = true,
+    interactionSource: MutableInteractionSource? = null,
 ) {
     val backgroundColor = MiuixTheme.colorScheme.surfaceContainerHigh
     // 外部文本变化时把光标移到末尾，避免重建编辑器后从开头插入。
@@ -114,12 +149,14 @@ fun MiuixSearchTextField(
         cornerRadius = 24.dp,
         label = label,
         useLabelAsPlaceholder = true,
+        enabled = enabled,
+        interactionSource = interactionSource,
         textStyle = textStyle,
         keyboardOptions = keyboardOptions,
         keyboardActions = keyboardActions,
         leadingIcon = { SearchFieldIcon() },
         trailingIcon = {
-            SearchFieldClearButton(value, true) {
+            SearchFieldClearButton(value, enabled) {
                 inputValue = TextFieldValue()
                 onValueChange("")
             }
@@ -143,22 +180,37 @@ private fun SearchFieldIcon() {
 @Composable
 private fun SearchFieldClearButton(value: String, enabled: Boolean, onClear: () -> Unit) {
     AnimatedVisibility(visible = value.isNotEmpty(), enter = fadeIn(), exit = fadeOut()) {
-        GlassIconButton(
-            onClick = onClear,
-            modifier = Modifier.padding(end = 4.dp),
-            enabled = enabled,
-            backdrop = null,
-            inheritTopBarMaterial = false,
-            fill = MiuixTheme.colorScheme.surfaceContainerHigh.copy(alpha = 1f),
-            size = 36.dp,
-            stroke = null,
-            shadow = null,
-        ) {
+        val fill = MiuixTheme.colorScheme.surfaceContainerHigh.copy(alpha = 1f)
+        val icon: @Composable () -> Unit = {
             Icon(
                 imageVector = MiuixIcons.Basic.SearchCleanup,
                 contentDescription = stringResource(R.string.search_clear),
                 modifier = Modifier.size(24.dp),
                 tint = MiuixTheme.colorScheme.onSurfaceContainerHigh,
+            )
+        }
+        val modifier = Modifier.padding(end = 4.dp)
+        if (enabled) {
+            GlassIconButton(
+                onClick = onClear,
+                modifier = modifier,
+                backdrop = null,
+                inheritTopBarMaterial = false,
+                fill = fill,
+                size = 36.dp,
+                stroke = null,
+                shadow = null,
+                content = icon,
+            )
+        } else {
+            IconButton(
+                onClick = onClear,
+                modifier = modifier,
+                enabled = false,
+                backgroundColor = fill,
+                minHeight = 36.dp,
+                minWidth = 36.dp,
+                content = icon,
             )
         }
     }

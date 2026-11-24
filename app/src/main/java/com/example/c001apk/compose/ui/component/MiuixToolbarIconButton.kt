@@ -53,17 +53,30 @@ fun MiuixToolbarIconButton(
     val backdrop = LocalBarBackdrop.current?.rawBackdrop
     val size = maxOf(minHeight, minWidth)
     val shape = GlassShape(cornerRadius.coerceAtMost(size / 2))
+    val fill = if (backgroundColor.isSpecified && backgroundColor != Color.Transparent) backgroundColor
+        else MiuixTheme.colorScheme.surfaceContainer.copy(alpha = 1f)
+    if (!enabled || holdDownState) {
+        IconButton(
+            onClick = onClick,
+            modifier = spacedModifier.glassShadow(shape, ToolbarButtonDefaults.Shadow, if (enabled) 1f else 0.38f),
+            enabled = enabled,
+            holdDownState = holdDownState,
+            backgroundColor = fill,
+            cornerRadius = cornerRadius,
+            minHeight = minHeight,
+            minWidth = minWidth,
+            content = content,
+        )
+        return
+    }
     GlassIconButton(
         onClick = onClick,
         modifier = spacedModifier.glassShadow(shape, ToolbarButtonDefaults.Shadow, if (enabled) 1f else 0.38f),
-        enabled = enabled,
-        holdDownState = holdDownState,
         inheritTopBarMaterial = false,
         backdrop = backdrop,
         size = size,
         shape = shape,
-        fill = if (backgroundColor.isSpecified && backgroundColor != Color.Transparent) backgroundColor
-            else MiuixTheme.colorScheme.surfaceContainer.copy(alpha = 1f),
+        fill = fill,
         stroke = if (backdrop != null) GlassTopAppBarDefaults.buttonStroke() else null,
         shadow = null,
         content = content,

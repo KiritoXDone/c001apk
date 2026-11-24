@@ -3,7 +3,7 @@
 ## 环境
 
 - Python 3.12 及以上；便携 JDK 21 由预构建脚本准备，也可通过 `JAVA_HOME` 指定 JDK 21。
-- Android SDK：`platforms;android-34`、`platforms;android-35`、`platforms;android-37.1` 和 `build-tools;36.0.0`。
+- Android SDK：`platforms;android-34`、`platforms;android-35`、`platforms;android-37.2` 和 `build-tools;36.0.0`。
 - 仓库自带的 Gradle Wrapper，依赖版本见 [版本目录](../gradle/libs.versions.toml)。
 
 通过 `ANDROID_HOME` 或根目录 `local.properties` 中的 `sdk.dir` 指定 SDK 路径。例如将以下占位符替换为本机实际路径，配置文件不入库：
@@ -16,7 +16,7 @@ sdk.dir=<本机 Android SDK 路径>
 
 ```sh
 sdkmanager 'platforms;android-34' 'platforms;android-35' \
-  'platforms;android-37.1' 'build-tools;36.0.0'
+  'platforms;android-37.2' 'build-tools;36.0.0'
 ```
 
 请使用包含完整历史的 Git 克隆。`versionCode` 由 `git rev-list HEAD --count` 生成；源码 ZIP 缺少 `.git`，无法直接按当前配置构建，浅克隆则会产生不正确的版本号。

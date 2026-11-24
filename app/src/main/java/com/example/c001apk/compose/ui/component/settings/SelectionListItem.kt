@@ -50,7 +50,7 @@ fun <T> SelectionListItem(
         BasicComponent(
             title = title,
             summary = label,
-            enabled = enabled,
+            enabled = enabled && selections.isNotEmpty(),
             startAction =
                 leadingImageVector?.let { icon ->
                     { PreferenceLeadingIcon(icon) }

@@ -8,9 +8,11 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.semantics.clearAndSetSemantics
@@ -61,32 +63,50 @@ internal fun AppNavHost(
             // Measuring retains the native host; not placing it removes even expanded touch bounds.
             layout(constraints.constrainWidth(placeable.width), placeable.height) {}
         }
+    val focusManager = LocalFocusManager.current
+    val navigationFocus = remember(navigator, focusManager) {
+        object : FocusManager by focusManager {
+            private var previousEntryId = navigator.currentEntry.id
+
+            override fun clearFocus(force: Boolean) {
+                // 原生导航比较整个路由；同次访问的搜索参数变更仍属于当前编辑器。
+                val currentEntryId = navigator.currentEntry.id
+                if (previousEntryId != currentEntryId) {
+                    previousEntryId = currentEntryId
+                    focusManager.clearFocus(force)
+                }
+            }
+        }
+    }
     NavigationPaneScope(active = active) {
-        NavDisplay(
-            navController = navigator.controller,
-            modifier = modifier.clipToBounds().then(hiddenPane),
-            onBack = onBack,
-            transition = NavTransitions.MiuixDefault,
-            effects = NavDisplayEffects(
-                cornerClipRadius = if (pane) 0.dp else screenCornerRadius,
-                backdropColor = if (transparentRoot) Color.Unspecified else MiuixTheme.colorScheme.background,
-            ),
-        ) {
-            entry<AppNavEntry>(contentKey = { it.id }, swipeDismiss = swipeDismiss) { entry ->
-                // Register once, before the page's own handlers. The native entry dispatcher gates
-                // covered/removing entries; inner WebView/dialog handlers retain higher priority.
-                // Completion-only handling leaves the page still until a system gesture commits.
-                NavigationBackHandler(
-                    state = rememberNavigationEventState(NavigationEventInfo.None),
-                    isBackEnabled = !LocalUserPreferences.current.predictiveBack && navigator.canGoBack,
-                    onBackCompleted = { currentOnBack() },
-                )
-                CompositionLocalProvider(
-                    LocalParentNavigationGesture provides remember(childGestures, entry.id) {
-                        ParentNavigationGesture(childGestures, entry.id)
-                    },
-                ) {
-                    content(entry)
+        CompositionLocalProvider(LocalFocusManager provides navigationFocus) {
+            NavDisplay(
+                navController = navigator.controller,
+                modifier = modifier.clipToBounds().then(hiddenPane),
+                onBack = onBack,
+                transition = NavTransitions.MiuixDefault,
+                effects = NavDisplayEffects(
+                    cornerClipRadius = if (pane) 0.dp else screenCornerRadius,
+                    backdropColor = if (transparentRoot) Color.Unspecified else MiuixTheme.colorScheme.background,
+                ),
+            ) {
+                entry<AppNavEntry>(contentKey = { it.id }, swipeDismiss = swipeDismiss) { entry ->
+                    // Register once, before the page's own handlers. The native entry dispatcher gates
+                    // covered/removing entries; inner WebView/dialog handlers retain higher priority.
+                    // Completion-only handling leaves the page still until a system gesture commits.
+                    NavigationBackHandler(
+                        state = rememberNavigationEventState(NavigationEventInfo.None),
+                        isBackEnabled = !LocalUserPreferences.current.predictiveBack && navigator.canGoBack,
+                        onBackCompleted = { currentOnBack() },
+                    )
+                    CompositionLocalProvider(
+                        LocalFocusManager provides focusManager,
+                        LocalParentNavigationGesture provides remember(childGestures, entry.id) {
+                            ParentNavigationGesture(childGestures, entry.id)
+                        },
+                    ) {
+                        content(entry)
+                    }
                 }
             }
         }

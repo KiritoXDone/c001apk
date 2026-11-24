@@ -35,7 +35,7 @@ require(
 
 android {
     namespace = "com.example.c001apk.compose"
-    compileSdkVersion("android-37.1")
+    compileSdkVersion("android-37.2")
     buildToolsVersion = "36.0.0"
 
     defaultConfig {
@@ -170,13 +170,13 @@ configurations.matching {
 
 dependencies {
     coreLibraryDesugaring(libs.desugar.jdk)
-    implementation(project(":miuix:ui"))
-    implementation(project(":miuix:blur"))
-    implementation(project(":miuix:preference"))
-    implementation(project(":miuix:icons"))
-    implementation(project(":miuix:nav"))
-    implementation(project(":miuix:glass"))
-    implementation(project(":miuix:glass-icons"))
+    implementation(libs.miuix.ui)
+    implementation(libs.miuix.blur)
+    implementation(libs.miuix.preference)
+    implementation(libs.miuix.icons)
+    implementation(libs.miuix.nav)
+    implementation(libs.miuix.glass)
+    implementation(libs.miuix.glassIcons)
     implementation(libs.kotlinx.serialization.json)
 
     androidTestImplementation(libs.androidx.junit)

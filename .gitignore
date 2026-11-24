@@ -19,16 +19,7 @@
 !/gradle/wrapper/gradle-wrapper.jar
 !/gradle/wrapper/gradle-wrapper.properties
 
-# 应用模块与固定版本的 Miuix Android 源码。
-!/miuix/
-!/miuix/LICENSE
-!/miuix/README.md
-!/miuix/*/
-!/miuix/*/build.gradle.kts
-!/miuix/*/src/
-!/miuix/*/src/**/
-!/miuix/*/src/**/*.kt
-!/miuix/*/src/**/baseline-prof.txt
+# 应用模块。
 !/app/
 !/app/build.gradle.kts
 !/app/proguard-rules.pro

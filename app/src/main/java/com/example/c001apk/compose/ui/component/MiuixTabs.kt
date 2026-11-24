@@ -2,23 +2,31 @@ package com.example.c001apk.compose.ui.component
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.PagerState
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -30,8 +38,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.example.c001apk.compose.logic.model.TopBarStyle
 import com.example.c001apk.compose.logic.providable.LocalUserPreferences
@@ -39,6 +51,8 @@ import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.TabRow
 import top.yukonga.miuix.kmp.basic.TabRowDefaults
 import top.yukonga.miuix.kmp.basic.TabRowWithContour
+import top.yukonga.miuix.kmp.basic.Text
+import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop
 import top.yukonga.miuix.kmp.glass.GlassSegmentedTabRow
 import top.yukonga.miuix.kmp.glass.GlassSegmentedTabRowDefaults
 import top.yukonga.miuix.kmp.glass.glassShadow
@@ -166,22 +180,73 @@ private fun Os4TabRow(
         }
         Box(Modifier.fillMaxWidth().height(height).glassShadow(shape, GlassShadows.Float).clip(shape).then(surface)) {
             Box(Modifier.horizontalScroll(scroll, enabled = canScroll, overscrollEffect = null)) {
-                GlassSegmentedTabRow(
-                    tabs = tabs,
-                    selectedIndex = selected,
-                    onSelect = onSelect,
-                    backdrop = null,
-                    modifier = Modifier.width(with(density) { contentWidth.toDp() }),
-                    height = height,
-                    surfaceAlpha = 0f,
-                    trackColor = Color.Transparent,
-                    stroke = null,
-                    shadow = null,
-                    indicatorColor = indicator,
-                    selectedContentColor = MiuixTheme.colorScheme.onSurface,
-                    contentColor = MiuixTheme.colorScheme.onSurfaceVariantSummary,
-                    dragToSelect = !canScroll,
-                )
+                val width = with(density) { contentWidth.toDp() }
+                if (canScroll) {
+                    ScrollableOs4Tabs(tabs, selected, onSelect, width, height, slotWidth, gap, indicator)
+                } else {
+                    GlassSegmentedTabRow(
+                        tabs = tabs,
+                        selectedIndex = selected,
+                        onSelect = onSelect,
+                        backdrop = rememberLayerBackdrop(),
+                        modifier = Modifier.width(width),
+                        height = height,
+                        surfaceAlpha = 0f,
+                        trackColor = Color.Transparent,
+                        stroke = null,
+                        shadow = null,
+                        indicatorColor = indicator,
+                        selectedContentColor = MiuixTheme.colorScheme.onSurface,
+                        contentColor = MiuixTheme.colorScheme.onSurfaceVariantSummary,
+                    )
+                }
+            }
+        }
+    }
+}
+
+// 溢出时由外层水平滚动处理拖动，标签仅处理点击。
+@Composable
+private fun ScrollableOs4Tabs(
+    tabs: List<String>,
+    selected: Int,
+    onSelect: (Int) -> Unit,
+    width: Dp,
+    height: Dp,
+    slotWidthPx: Float,
+    gapPx: Int,
+    indicatorColor: Color,
+) {
+    val padding = GlassSegmentedTabRowDefaults.TrackPadding
+    val indicatorShape = GlassSegmentedTabRowDefaults.shape(height - padding * 2)
+    val indicatorSlot by animateFloatAsState(selected.toFloat(), label = "selectedTabSlot")
+    val slotWidth = with(LocalDensity.current) { slotWidthPx.toDp() }
+    Box(Modifier.width(width).height(height).padding(padding)) {
+        Box(
+            Modifier.fillMaxHeight().width(slotWidth).offset {
+                IntOffset((indicatorSlot * (slotWidthPx + gapPx)).roundToInt(), 0)
+            }.background(indicatorColor, indicatorShape),
+        )
+        Row(
+            modifier = Modifier.fillMaxWidth().fillMaxHeight().selectableGroup(),
+            horizontalArrangement = Arrangement.spacedBy(GlassSegmentedTabRowDefaults.TabGap),
+        ) {
+            tabs.forEachIndexed { index, label ->
+                val isSelected = index == selected
+                Box(
+                    modifier = Modifier.weight(1f).fillMaxHeight().clip(indicatorShape)
+                        .selectable(selected = isSelected, role = Role.Tab) { onSelect(index) }
+                        .padding(horizontal = GlassSegmentedTabRowDefaults.TabPaddingHorizontal),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        text = label,
+                        style = if (isSelected) MiuixTheme.textStyles.subtitle else MiuixTheme.textStyles.body2,
+                        color = if (isSelected) MiuixTheme.colorScheme.onSurface else MiuixTheme.colorScheme.onSurfaceVariantSummary,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
             }
         }
     }

@@ -22,11 +22,13 @@ CommonMark 0.30.0 与 GFM 表格、删除线、任务列表扩展遵循 BSD 3-Cl
 
 ## Miuix
 
-Miuix 的公共和 Android 源码来自 [compose-miuix-ui/miuix](https://github.com/compose-miuix-ui/miuix)，遵循 Apache-2.0；原始许可保存在 `miuix/LICENSE`，应用内附带 `app/src/main/assets/licenses/Miuix-Apache-2.0.txt`。固定提交、模块范围与构建适配见 [miuix/README.md](../miuix/README.md)。
+应用从 Maven Central 使用 [compose-miuix-ui/miuix v0.9.5-beta02](https://github.com/compose-miuix-ui/miuix/releases/tag/v0.9.5-beta02)（`66248ba`）发布的 UI、偏好设置、图标、导航、模糊和玻璃组件。Gradle 版本统一固定在 `gradle/libs.versions.toml`。完整 Apache-2.0 许可随应用收录于 [Miuix-Apache-2.0.txt](../app/src/main/assets/licenses/Miuix-Apache-2.0.txt)。
+
+应用侧保留带标题内容和自定义 inset 的紧凑顶栏、搜索选区及访问 ID 焦点保护、可滚动的 OS4 标签轨道和底栏回退颜色。菜单继续使用支持关闭完成回调的原生窗口弹层。
 
 ## BoxProxy 界面适配
 
-分段标签轨道的尺寸、选中项居中与玻璃材质组合、顶栏渐进模糊和紧凑顶栏按钮的外层阴影参考并改编自 [BoxProxy 的固定提交 `bf0b1d5`](https://github.com/boxproxy/com.boxproxy.box/tree/bf0b1d502b52d5f6065cb1e37db94a081f810b4c)，对应上游 `MiuixSegmentedTabRow.kt`、`MiuixGlassTopBarBackground.kt`、`MiuixTopBar.kt` 和 `MiuixBlur.kt`。这些适配遵循 GPL-3.0；上游完整许可证随应用收录于 [BoxProxy-GPL-3.0.txt](../app/src/main/assets/licenses/BoxProxy-GPL-3.0.txt)。Miuix 自身源码与许可仍按上一节分别保留。
+分段标签轨道的尺寸、选中项居中与玻璃材质组合、顶栏渐进模糊和紧凑顶栏按钮的外层阴影参考并改编自 [BoxProxy 的固定提交 `bf0b1d5`](https://github.com/boxproxy/com.boxproxy.box/tree/bf0b1d502b52d5f6065cb1e37db94a081f810b4c)，对应上游 `MiuixSegmentedTabRow.kt`、`MiuixGlassTopBarBackground.kt`、`MiuixTopBar.kt` 和 `MiuixBlur.kt`。这些适配遵循 GPL-3.0；上游完整许可证随应用收录于 [BoxProxy-GPL-3.0.txt](../app/src/main/assets/licenses/BoxProxy-GPL-3.0.txt)。Miuix 的版本与许可见上一节。
 
 ## 本版本更新渠道
 

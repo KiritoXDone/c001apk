@@ -84,31 +84,32 @@ fun MiuixNavigationScaffold(
                     val bottomPadding = if (bottomInset == 0.dp) 32.dp else bottomInset + 16.dp
                     val container = if (prefs.pureBlack && MiuixTheme.colorScheme.background.luminance() < 0.5f)
                         MiuixTheme.colorScheme.surface else MiuixTheme.colorScheme.surfaceContainer
-                    GlassNavigationBar(
-                        items = items.mapIndexed { index, (icon, label) ->
-                            val description = if (index == badgeIndex && unreadCount > 0) {
-                                stringResource(
-                                    R.string.unread_description,
-                                    label,
-                                    if (unreadCount > 99) "99+" else unreadCount.toString(),
+                    MiuixTheme(colors = MiuixTheme.colorScheme.copy(surfaceContainer = container.copy(alpha = 1f))) {
+                        GlassNavigationBar(
+                            items = items.mapIndexed { index, (icon, label) ->
+                                val description = if (index == badgeIndex && unreadCount > 0) {
+                                    stringResource(
+                                        R.string.unread_description,
+                                        label,
+                                        if (unreadCount > 99) "99+" else unreadCount.toString(),
+                                    )
+                                } else label
+                                GlassNavigationItem(
+                                    icon = icon,
+                                    label = label,
+                                    contentDescription = description,
+                                    badge = badge.takeIf { index == badgeIndex && unreadCount > 0 },
                                 )
-                            } else label
-                            GlassNavigationItem(
-                                icon = icon,
-                                label = label,
-                                contentDescription = description,
-                                badge = badge.takeIf { index == badgeIndex && unreadCount > 0 },
-                            )
-                        },
-                        selectedIndex = selectedIndex,
-                        onSelect = onSelect,
-                        backdrop = backdrop,
-                        modifier = Modifier.padding(horizontal = 12.dp).padding(bottom = bottomPadding),
-                        defaultWindowInsetsPadding = false,
-                        containerColor = container.copy(alpha = 1f),
-                        stroke = if (backdrop != null) GlassNavigationBarDefaults.stroke() else null,
-                        shadow = if (backdrop != null) GlassShadows.Float else null,
-                    )
+                            },
+                            selectedIndex = selectedIndex,
+                            onSelect = onSelect,
+                            backdrop = backdrop,
+                            modifier = Modifier.padding(horizontal = 12.dp).padding(bottom = bottomPadding),
+                            defaultWindowInsetsPadding = false,
+                            stroke = if (backdrop != null) GlassNavigationBarDefaults.stroke() else null,
+                            shadow = if (backdrop != null) GlassShadows.Float else null,
+                        )
+                    }
                 } else if (!wide)
                     NavigationBar(color = LocalBarColor.current) {
                         items.forEachIndexed { index, item ->
