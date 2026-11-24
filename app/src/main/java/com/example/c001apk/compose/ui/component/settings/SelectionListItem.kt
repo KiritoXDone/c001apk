@@ -14,6 +14,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.disabled
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -45,12 +47,14 @@ fun <T> SelectionListItem(
 ) {
     var showDialog by remember { mutableStateOf(false) }
     var pendingSelection by remember { mutableStateOf<SelectionItem<T>?>(null) }
+    val canSelect = enabled && selections.isNotEmpty()
     val label = selections.firstOrNull { it.value == value }?.label
     PreferenceCard {
         BasicComponent(
+            modifier = if (canSelect) Modifier else Modifier.semantics(mergeDescendants = true) { disabled() },
             title = title,
             summary = label,
-            enabled = enabled && selections.isNotEmpty(),
+            enabled = canSelect,
             startAction =
                 leadingImageVector?.let { icon ->
                     { PreferenceLeadingIcon(icon) }
