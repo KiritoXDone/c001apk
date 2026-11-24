@@ -14,7 +14,6 @@ import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.selection.toggleable
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
@@ -49,18 +48,6 @@ inline val String.isGifUrl: Boolean
 
 fun Context.makeToast(text: String) {
     Toast.makeText(this, text, Toast.LENGTH_SHORT).show()
-}
-
-fun Modifier.noRippleToggleable(
-    value: Boolean,
-    onValueChange: (Boolean) -> Unit,
-): Modifier = composed {
-    toggleable(
-        value = value,
-        indication = null,
-        interactionSource = remember { MutableInteractionSource() },
-        onValueChange = onValueChange,
-    )
 }
 
 inline fun Modifier.noRippleClickable(

@@ -108,7 +108,7 @@ internal fun SearchResultHeader(
                             .focusRequester(focusRequester)
                             .semantics { contentDescription = editDescription },
                         label = stringResource(R.string.search_hint),
-                        textStyle = titleStyle,
+                        textStyle = titleStyle.copy(textAlign = TextAlign.Start),
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
                         keyboardActions = KeyboardActions(onSearch = { submit(query) }),
                     )

@@ -46,7 +46,6 @@ class FeedViewModel
 @AssistedInject
 constructor(
     @Assisted var id: String,
-    @Assisted var isViewReply: Boolean,
     networkRepo: NetworkRepo,
     blackListRepo: BlackListRepo,
     contentFilters: ContentFilterStore,
@@ -56,7 +55,7 @@ constructor(
 
     @AssistedFactory
     interface ViewModelFactory {
-        fun create(id: String, isViewReply: Boolean): FeedViewModel
+        fun create(id: String): FeedViewModel
     }
 
     var feedState by mutableStateOf<LoadingState<HomeFeedResponse.Data>>(LoadingState.Loading)
@@ -968,9 +967,8 @@ constructor(
         }
     }
 
-    fun refresh(id: String, isViewReply: Boolean) {
+    fun refresh(id: String) {
         this.id = id
-        this.isViewReply = isViewReply
         resetParams()
         isRefreshing = false
         articleList = null

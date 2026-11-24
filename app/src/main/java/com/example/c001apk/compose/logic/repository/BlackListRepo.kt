@@ -1,6 +1,5 @@
 package com.example.c001apk.compose.logic.repository
 
-import androidx.lifecycle.LiveData
 import com.example.c001apk.compose.di.TopicBlackList
 import com.example.c001apk.compose.di.UserBlackList
 import com.example.c001apk.compose.logic.dao.StringEntityDao
@@ -18,10 +17,6 @@ class BlackListRepo @Inject constructor(
     @param:TopicBlackList
     private val topicBlackListDao: StringEntityDao,
 ) {
-
-    fun loadAllUserListLive(): LiveData<List<StringEntity>> {
-        return userBlackListDao.loadAllListLive()
-    }
 
     fun loadAllUserListFlow(): Flow<List<StringEntity>> {
         return userBlackListDao.loadAllListFlow()
@@ -51,10 +46,6 @@ class BlackListRepo @Inject constructor(
 
     suspend fun deleteAllUser() {
         userBlackListDao.deleteAll()
-    }
-
-    fun loadAllTopicListLive(): LiveData<List<StringEntity>> {
-        return topicBlackListDao.loadAllListLive()
     }
 
     fun loadAllTopicListFlow(): Flow<List<StringEntity>> {

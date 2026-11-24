@@ -3,13 +3,13 @@ package com.example.c001apk.compose.ui.main
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.c001apk.compose.logic.cache.StartupImageCacheCleaner
 import com.example.c001apk.compose.logic.repository.NetworkRepo
 import com.example.c001apk.compose.logic.repository.UserPreferencesRepository
 import com.example.c001apk.compose.logic.smid.DigitalUnionRepository
 import com.example.c001apk.compose.logic.smid.observeProtocolIdentityRefresh
-import com.example.c001apk.compose.ui.base.PrefsViewModel
 import com.example.c001apk.compose.util.CookieUtil
 import com.example.c001apk.compose.util.encodeCookieValue
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -28,7 +28,7 @@ constructor(
     private val digitalUnion: DigitalUnionRepository,
     private val accounts: com.example.c001apk.compose.logic.accounts.AccountStore,
     private val startupImageCacheCleaner: StartupImageCacheCleaner,
-) : PrefsViewModel(userPreferencesRepository) {
+) : ViewModel() {
 
     internal val startup = MainStartupState()
 
@@ -38,14 +38,20 @@ constructor(
                 initializeAccount = {
                     startupImageCacheCleaner.awaitCleanup()
                     accounts.initialize()
+                    userPreferencesRepository.initializeMissingDeviceParameters()
                 },
-                ensureId = { digitalUnion.ensureId() },
+                ensureId = {
+                    viewModelScope.launch {
+                        observeProtocolIdentityRefresh(
+                            userPreferencesRepository.data,
+                            refresh = { digitalUnion.ensureId() },
+                            onFailure = startup::reportIdentityFailure,
+                        )
+                    }
+                    digitalUnion.ensureId()
+                },
             )
             getCheckLoginInfo()
-        }
-        viewModelScope.launch {
-            observeProtocolIdentityRefresh(userPreferencesRepository.data,
-                refresh = { digitalUnion.ensureId() }, onFailure = startup::reportIdentityFailure)
         }
     }
 

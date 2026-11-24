@@ -22,7 +22,7 @@ val gitCommitCount =
         .asText
         .map { it.trim().toInt() }
         .get()
-val appVersion = providers.gradleProperty("appVersion").orElse("1.6.7").get()
+val appVersion = providers.gradleProperty("appVersion").orElse("1.6.8").get()
 
 require(Regex("[0-9]+\\.[0-9]+\\.[0-9]+").matches(appVersion))
 
@@ -197,7 +197,6 @@ dependencies {
     implementation(libs.androidx.datastore.core)
     implementation(libs.androidx.exifinterface)
     implementation(libs.androidx.hilt.navigation.compose)
-    implementation(libs.androidx.lifecycle.livedata.ktx)
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.viewModel.compose)

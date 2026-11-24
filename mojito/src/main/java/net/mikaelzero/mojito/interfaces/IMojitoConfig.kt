@@ -1,5 +1,6 @@
 package net.mikaelzero.mojito.interfaces
 
+import android.content.Context
 
 /**
  * @Author:         MikaelZero
@@ -7,6 +8,7 @@ package net.mikaelzero.mojito.interfaces
  * @Description:
  */
 interface IMojitoConfig {
+    fun wrapPreviewContext(context: Context): Context = context
     fun duration(): Long
     fun maxTransYRatio(): Float
     fun errorDrawableResId(): Int

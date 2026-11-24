@@ -52,9 +52,7 @@ class SmoothInputLayout : LinearLayout {
     private var mEmojiPanelId = 0
     private var mEmojiPanel: View? = null
     private var mListener: OnVisibilityChangeListener? = null
-    private var keyboardChangeListener: OnKeyboardChangeListener? = null
     private var mAutoSaveKeyboardHeight = false
-    private var mKeyboardProcessor: KeyboardProcessor? = null
     private var isShowEmojiPanel = false
     private var keepEmojiPanelWhileKeyboardOpen = false
 
@@ -153,11 +151,6 @@ class SmoothInputLayout : LinearLayout {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
     }
 
-    override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
-        super.onSizeChanged(w, h, oldw, oldh)
-        keyboardChangeListener?.onKeyboardChanged(isKeyBoardOpen)
-    }
-
     private val keyboardSharedPreferences: SharedPreferences
         /**
          * 获取键盘SP
@@ -172,8 +165,6 @@ class SmoothInputLayout : LinearLayout {
     private fun saveKeyboardHeight() {
         if (mAutoSaveKeyboardHeight)
             keyboardSharedPreferences.edit().putInt(KEY_HEIGHT, mKeyboardHeight).apply()
-        else
-            mKeyboardProcessor?.onSaveKeyboardHeight(mKeyboardHeight)
     }
 
     /**
@@ -192,8 +183,6 @@ class SmoothInputLayout : LinearLayout {
     private fun getKeyboardHeight(defaultHeight: Int): Int {
         return if (mAutoSaveKeyboardHeight)
             keyboardSharedPreferences.getInt(KEY_HEIGHT, defaultHeight)
-        else if (mKeyboardProcessor != null)
-            mKeyboardProcessor?.getSavedKeyboardHeight(defaultHeight) ?: defaultHeight
         else defaultHeight
     }
 
@@ -247,31 +236,12 @@ class SmoothInputLayout : LinearLayout {
     }
 
     /**
-     * 设置键盘改变监听
-     *
-     * @param listener 键盘改变监听
-     */
-    fun setOnKeyboardChangeListener(listener: OnKeyboardChangeListener?) {
-        keyboardChangeListener = listener
-    }
-
-    /**
      * 设置自动保存键盘高度
      *
      * @param auto 是否自动
      */
     private fun setAutoSaveKeyboardHeight(auto: Boolean) {
         mAutoSaveKeyboardHeight = auto
-    }
-
-    /**
-     * 设置键盘处理器
-     * 仅在关闭自动保存键盘高度时设置的处理器才有效[.setAutoSaveKeyboardHeight]
-     *
-     * @param processor 处理器
-     */
-    fun setKeyboardProcessor(processor: KeyboardProcessor?) {
-        mKeyboardProcessor = processor
     }
 
     val isEmojiPanelOpen: Boolean
@@ -370,33 +340,6 @@ class SmoothInputLayout : LinearLayout {
      */
     interface OnVisibilityChangeListener {
         fun onVisibilityChange(visibility: Int)
-    }
-
-    /**
-     * 键盘改变监听
-     */
-    interface OnKeyboardChangeListener {
-        fun onKeyboardChanged(open: Boolean)
-    }
-
-    /**
-     * 键盘处理器
-     */
-    interface KeyboardProcessor {
-        /**
-         * 存储键盘高度
-         *
-         * @param height 高度
-         */
-        fun onSaveKeyboardHeight(height: Int)
-
-        /**
-         * 获取存储的键盘高度
-         *
-         * @param defaultHeight 默认高度
-         * @return 键盘高度
-         */
-        fun getSavedKeyboardHeight(defaultHeight: Int): Int
     }
 
     companion object {

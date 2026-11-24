@@ -1,6 +1,5 @@
 package com.example.c001apk.compose.logic.dao
 
-import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
@@ -16,9 +15,6 @@ interface HistoryFavoriteDao {
 
     @Query("SELECT * FROM FeedEntity ORDER BY time DESC")
     suspend fun loadAllList(): List<FeedEntity>
-
-    @Query("SELECT * FROM FeedEntity ORDER BY time DESC")
-    fun loadAllListLive(): LiveData<List<FeedEntity>>
 
     @Query("SELECT * FROM FeedEntity ORDER BY time DESC")
     fun loadAllListFlow(): Flow<List<FeedEntity>>

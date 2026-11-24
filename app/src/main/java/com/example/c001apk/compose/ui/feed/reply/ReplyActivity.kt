@@ -346,9 +346,6 @@ class ReplyActivity :
     private fun resolveSurfaceContainerColor(): Int =
         com.example.c001apk.compose.ui.theme.miuixViewColors(this).surfaceContainer.toArgb()
 
-    private fun resolveSurfaceColor(): Int =
-        com.example.c001apk.compose.ui.theme.miuixViewColors(this).surface.toArgb()
-
     private fun resolvePrimaryDarkColor(primary: Int): Int =
         ColorUtils.blendARGB(primary, Color.BLACK, 0.2f)
 
@@ -534,7 +531,6 @@ class ReplyActivity :
         }
         binding.out.setOnClickListener { finish() }
         (binding.main as? SmoothInputLayout)?.setOnVisibilityChangeListener(this)
-        (binding.main as? SmoothInputLayout)?.setOnKeyboardChangeListener(null)
         val radius = listOf(16.dp.toFloat(), 16.dp.toFloat(), 0f, 0f)
         val radiusBg =
             GradientDrawable().apply {

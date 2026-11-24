@@ -1,6 +1,5 @@
 package com.example.c001apk.compose.logic.dao
 
-import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
@@ -21,9 +20,6 @@ interface StringEntityDao {
 
     @Query("SELECT * FROM StringEntity ORDER BY id DESC")
     suspend fun loadAllList(): List<StringEntity>
-
-    @Query("SELECT * FROM StringEntity ORDER BY id DESC")
-    fun loadAllListLive(): LiveData<List<StringEntity>>
 
     @Query("SELECT * FROM StringEntity ORDER BY id DESC")
     fun loadAllListFlow(): Flow<List<StringEntity>>

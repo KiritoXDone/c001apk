@@ -1,6 +1,5 @@
 package com.example.c001apk.compose.logic.repository
 
-import androidx.lifecycle.LiveData
 import com.example.c001apk.compose.logic.dao.HomeMenuDao
 import com.example.c001apk.compose.logic.model.HomeMenu
 import kotlinx.coroutines.flow.Flow
@@ -11,10 +10,6 @@ import javax.inject.Singleton
 class HomeMenuRepo @Inject constructor(
     private val homeMenuDao: HomeMenuDao,
 ) {
-
-    fun loadAllListLive(): LiveData<List<HomeMenu>> {
-        return homeMenuDao.loadAllListLive()
-    }
 
     fun loadAllListFlow(): Flow<List<HomeMenu>> {
         return homeMenuDao.loadAllListFlow()

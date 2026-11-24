@@ -95,6 +95,10 @@ constructor(
         userPreferencesDataSource.useCurrentDevice().also(::publishIdentity)
     }
 
+    internal suspend fun initializeMissingDeviceParameters() = identityWrites.withLock {
+        userPreferencesDataSource.initializeMissingDeviceParameters().also(::publishIdentity)
+    }
+
     suspend fun setImageQuality(value: Int) = userPreferencesDataSource.setImageQuality(value)
 
     suspend fun setAutoClearImageCache(value: Boolean) = userPreferencesDataSource.setAutoClearImageCache(value)
