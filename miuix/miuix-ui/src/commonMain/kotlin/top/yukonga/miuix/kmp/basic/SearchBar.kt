@@ -33,8 +33,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.computedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -48,9 +50,11 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -177,6 +181,12 @@ fun InputField(
     val internalInteractionSource = interactionSource ?: remember { MutableInteractionSource() }
     val capsuleShape = CircleShape
 
+    // 外部改写查询时把光标移到末尾，避免复用输入框后从旧位置插入。
+    var inputValue by remember { mutableStateOf(TextFieldValue(query, TextRange(query.length))) }
+    if (inputValue.text != query) {
+        inputValue = TextFieldValue(query, TextRange(query.length))
+    }
+
     val actualLeadingIcon = leadingIcon ?: {
         Icon(
             modifier = Modifier.padding(start = SearchBarDefaults.LeadingIconStartPadding, end = SearchBarDefaults.LeadingIconEndPadding),
@@ -202,7 +212,10 @@ fun InputField(
                 Icon(
                     modifier = Modifier
                         .clip(capsuleShape)
-                        .clickable { currentOnQueryChange("") },
+                        .clickable {
+                            inputValue = TextFieldValue()
+                            currentOnQueryChange("")
+                        },
                     imageVector = MiuixIcons.Basic.SearchCleanup,
                     tint = MiuixTheme.colorScheme.onSurfaceContainerHighest,
                     contentDescription = "Search Cleanup",
@@ -239,8 +252,11 @@ fun InputField(
 
     @Suppress("DEPRECATION")
     BasicTextField(
-        value = query,
-        onValueChange = currentOnQueryChange,
+        value = inputValue,
+        onValueChange = {
+            inputValue = it
+            currentOnQueryChange(it.text)
+        },
         modifier = modifier
             .then(expandOnTapModifier)
             .focusRequester(focusRequester)
@@ -308,6 +324,7 @@ fun InputField(
             delay(100)
             if (query.isNotEmpty()) {
                 textAlpha.animateTo(0f)
+                inputValue = TextFieldValue()
                 currentOnQueryChange("")
                 textAlpha.snapTo(1f)
             }

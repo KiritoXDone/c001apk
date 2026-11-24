@@ -13,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -21,7 +22,9 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import com.example.c001apk.compose.R
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -73,11 +76,12 @@ fun MiuixSearchField(
         label = label,
         enabled = enabled,
         leadingIcon = { SearchFieldIcon() },
-        trailingIcon = { SearchFieldClearButton(query, enabled, onQueryChange) },
+        trailingIcon = { SearchFieldClearButton(query, enabled) { onQueryChange("") } },
         interactionSource = interactionSource,
     )
 }
 
+@Suppress("DEPRECATION")
 @Composable
 fun MiuixSearchTextField(
     value: String,
@@ -89,9 +93,17 @@ fun MiuixSearchTextField(
     keyboardActions: KeyboardActions = KeyboardActions.Default,
 ) {
     val backgroundColor = MiuixTheme.colorScheme.surfaceContainerHigh
+    // 外部文本变化时把光标移到末尾，避免重建编辑器后从开头插入。
+    var inputValue by remember { mutableStateOf(TextFieldValue(value, TextRange(value.length))) }
+    if (inputValue.text != value) {
+        inputValue = TextFieldValue(value, TextRange(value.length))
+    }
     TextField(
-        value = value,
-        onValueChange = onValueChange,
+        value = inputValue,
+        onValueChange = {
+            inputValue = it
+            onValueChange(it.text)
+        },
         modifier = modifier.heightIn(min = 45.dp),
         insideMargin = DpSize(0.dp, 10.dp),
         colors = TextFieldDefaults.textFieldColors(
@@ -106,7 +118,12 @@ fun MiuixSearchTextField(
         keyboardOptions = keyboardOptions,
         keyboardActions = keyboardActions,
         leadingIcon = { SearchFieldIcon() },
-        trailingIcon = { SearchFieldClearButton(value, true, onValueChange) },
+        trailingIcon = {
+            SearchFieldClearButton(value, true) {
+                inputValue = TextFieldValue()
+                onValueChange("")
+            }
+        },
         singleLine = true,
         cursorBrush = SolidColor(MiuixTheme.colorScheme.primary),
     )
@@ -124,10 +141,10 @@ private fun SearchFieldIcon() {
 }
 
 @Composable
-private fun SearchFieldClearButton(value: String, enabled: Boolean, onValueChange: (String) -> Unit) {
+private fun SearchFieldClearButton(value: String, enabled: Boolean, onClear: () -> Unit) {
     AnimatedVisibility(visible = value.isNotEmpty(), enter = fadeIn(), exit = fadeOut()) {
         GlassIconButton(
-            onClick = { onValueChange("") },
+            onClick = onClear,
             modifier = Modifier.padding(end = 4.dp),
             enabled = enabled,
             backdrop = null,

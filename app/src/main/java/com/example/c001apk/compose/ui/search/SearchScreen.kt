@@ -12,6 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -83,7 +84,7 @@ fun SearchScreen(
                         interactionSource = interactionSource,
                         label = if (!title.isNullOrEmpty()) stringResource(R.string.search_hint_in, title)
                             else stringResource(R.string.search_all_hint),
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier.weight(1f).testTag("search_input"),
                     )
                     AnimatedVisibility(visible = focused || searchExpanded || query.isNotEmpty()) {
                         IconButton(onClick = ::cancelSearch, modifier = Modifier.padding(start = 4.dp)) {
