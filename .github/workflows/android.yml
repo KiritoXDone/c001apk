@@ -83,6 +83,15 @@ jobs:
           set -euo pipefail
           if [[ "$APP_VERSION" == 1.6.5 ]]; then
             filters=(--tests '*BarPreferencesTest' --tests '*MainNavigationOrderTest' --tests '*MainPageStateTest' --tests '*MessageEntryTest')
+          elif [[ "$APP_VERSION" == 1.6.8 ]]; then
+            filters=(
+              --tests '*MainStartupStateTest'
+              --tests '*IdentityWriteGuardTest'
+              --tests '*DeviceIdentityPublicationTest'
+              --tests '*ProtocolVersionTest'
+              --tests '*HomeMenuOrderTest'
+              --tests '*RecentAtUserDaoTest'
+            )
           else
             filters=(--tests '*BarPreferencesTest' --tests '*HomeMenuOrderTest' --tests '*MainStartupStateTest')
           fi

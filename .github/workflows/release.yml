@@ -48,7 +48,7 @@ jobs:
       variant: release
       app_version: ${{ needs.version.outputs.version }}
       source_ref: refs/tags/${{ needs.version.outputs.tag }}
-      focused_checks: ${{ contains(fromJSON('["v1.6.1", "v1.6.2", "v1.6.5"]'), needs.version.outputs.tag) }}
+      focused_checks: ${{ contains(fromJSON('["v1.6.1", "v1.6.2", "v1.6.5", "v1.6.8"]'), needs.version.outputs.tag) }}
     secrets: inherit
 
   publish:
