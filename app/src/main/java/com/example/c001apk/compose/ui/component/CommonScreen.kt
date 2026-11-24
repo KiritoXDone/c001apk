@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.core.view.isVisible
 import com.example.c001apk.compose.logic.model.HomeFeedResponse
+import com.example.c001apk.compose.logic.state.FooterState
 import com.example.c001apk.compose.logic.state.LoadingState
 import com.example.c001apk.compose.ui.base.BaseViewModel
 import com.example.c001apk.compose.util.ReportType
@@ -139,19 +140,15 @@ fun CommonScreen(
                     onToggleProductEntityComparison = onToggleProductEntityComparison,
                 )
 
-                item(key = "footer", span = StaggeredGridItemSpan.FullLine) {
-                    com.example.c001apk.compose.ui.component.cards.LoadingCard(
-                        modifier = Modifier.padding(horizontal = 12.dp),
-                        state = viewModel.footerState,
-                        onClick =
-                            if (
-                                viewModel.footerState
-                                    is com.example.c001apk.compose.logic.state.FooterState.Error
-                            )
-                                viewModel::loadMore
-                            else null,
-                        isFeed = false,
-                    )
+                val footer = viewModel.footerState
+                if (displayState is LoadingState.Success && footer != FooterState.Success) {
+                    item(key = "footer", span = StaggeredGridItemSpan.FullLine) {
+                        com.example.c001apk.compose.ui.component.cards.LoadingCard(
+                            modifier = Modifier.padding(horizontal = 12.dp),
+                            state = footer,
+                            onClick = if (footer is FooterState.Error) viewModel::loadMore else null,
+                        )
+                    }
                 }
             }
         }

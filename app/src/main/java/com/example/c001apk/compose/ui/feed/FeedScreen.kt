@@ -107,14 +107,15 @@ fun FeedScreen(
         hiltViewModel<FeedViewModel, FeedViewModel.ViewModelFactory>(
             key = if (isCompat) id else "KEY",
         ) { factory ->
-            factory.create(id, isViewReply)
+            factory.create(id)
         }
 
     var rawMarkdown by rememberSaveable(id) { mutableStateOf(false) }
     val context = LocalContext.current
     val resources = LocalResources.current
     val layoutDirection = LocalLayoutDirection.current
-    val lazyListState = rememberLazyListState()
+    val lazyListState = key(id) { rememberLazyListState() }
+    var initialScrollApplied by rememberSaveable(id) { mutableStateOf(false) }
     var dropdownMenuExpanded by remember(id) { mutableStateOf(false) }
     var menuHeld by remember(id) { mutableStateOf(false) }
     var confirmDelete by remember(id) { mutableStateOf(false) }
@@ -165,7 +166,7 @@ fun FeedScreen(
         if (id != viewModel.id) {
             viewReply = false
             setReplyType(0)
-            viewModel.refresh(id, isViewReply)
+            viewModel.refresh(id)
         }
     }
 
@@ -234,6 +235,14 @@ fun FeedScreen(
             )
         }
         return
+    }
+
+    val feedReady = filterData != null && viewModel.id == id
+    LaunchedEffect(id, feedReady) {
+        if (feedReady && !initialScrollApplied) {
+            lazyListState.requestScrollToItem(if (isViewReply) viewModel.itemSize else 0)
+            initialScrollApplied = true
+        }
     }
 
     CompositionLocalProvider(
@@ -562,7 +571,9 @@ fun FeedScreen(
                                         selected = selected,
                                         updateSortReply = { index ->
                                             setReplyType(index)
-                                            if (shouldShowSortCard) viewModel.isViewReply = true
+                                            if (shouldShowSortCard) {
+                                                lazyListState.requestScrollToItem(viewModel.itemSize)
+                                            }
                                             viewModel.refresh()
                                         },
                                     )
@@ -631,12 +642,6 @@ fun FeedScreen(
                                                 )
                                             }
                                         }
-                                    }
-                                }
-                                if (viewModel.isViewReply) {
-                                    viewModel.isViewReply = false
-                                    scope.launch {
-                                        lazyListState.scrollToItem(viewModel.itemSize)
                                     }
                                 }
                             }
