@@ -1,16 +1,10 @@
 package com.example.c001apk.media
 
-import android.graphics.Bitmap
-import android.graphics.drawable.BitmapDrawable
-import android.graphics.drawable.Drawable
-import android.graphics.drawable.TransitionDrawable
 import android.net.Uri
-import android.os.Build
 import android.util.Log
 import android.view.View
-import com.example.c001apk.imageviewer.ImageViewLoadFactory
 import com.example.c001apk.imageviewer.ContentLoader
-import net.mikaelzero.mojito.view.sketch.core.SketchImageView
+import com.example.c001apk.imageviewer.ImageViewLoadFactory
 import java.io.File
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executors
@@ -54,24 +48,13 @@ class MediaImageFactory(
             return
         }
 
-        val expectUltraHdr = mediaHint == RichMediaHint.ULTRA_HDR
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE &&
-            expectUltraHdr && view is SketchImageView
-        ) {
-            view.options
-                .setBitmapConfig(Bitmap.Config.ARGB_8888)
-                .setBitmapPoolDisabled(true)
-                .setCacheProcessedImageInDisk(false)
-                .setCorrectImageOrientationDisabled(true)
-        }
-
         delegate.showImage(view, uri, isPreview)
         if (file == null || fileKey == null) return
 
         val generation = ++parseGeneration
         val targetLoader = contentLoader
         parsedMedia[fileKey]?.let { mediaInfo ->
-            bindParsedMedia(view, file, fileKey, mediaInfo, wasCached = true)
+            bindParsedMedia(file, fileKey, mediaInfo, wasCached = true)
             return
         }
         MEDIA_PARSE_EXECUTOR.execute {
@@ -86,7 +69,7 @@ class MediaImageFactory(
             parsedMedia[fileKey] = mediaInfo
             view.post {
                 if (generation == parseGeneration && contentLoader === targetLoader) {
-                    bindParsedMedia(view, file, fileKey, mediaInfo, wasCached = false)
+                    bindParsedMedia(file, fileKey, mediaInfo, wasCached = false)
                 }
             }
         }
@@ -116,15 +99,7 @@ class MediaImageFactory(
         onComplete: (Result<File>) -> Unit,
     ): Boolean = contentLoader?.exportLivePhoto(destination, onComplete) == true
 
-    private fun findBitmap(drawable: Drawable?): Bitmap? = when (drawable) {
-        is BitmapDrawable -> drawable.bitmap
-        is TransitionDrawable -> (drawable.numberOfLayers - 1 downTo 0)
-            .firstNotNullOfOrNull { findBitmap(drawable.getDrawable(it)) }
-        else -> null
-    }
-
     private fun bindParsedMedia(
-        view: View,
         file: File,
         fileKey: String,
         mediaInfo: EmbeddedMediaInfo,
@@ -137,17 +112,6 @@ class MediaImageFactory(
                     "motion=${mediaInfo.hasMotionPhoto} declared=${mediaInfo.declaredVideoLength} " +
                     "embedded=${mediaInfo.embeddedVideoLength}",
             )
-        }
-        if (BuildConfig.DEBUG && Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE &&
-            mediaInfo.hasUltraHdr && view is SketchImageView
-        ) {
-            view.postDelayed({
-                val bitmap = findBitmap(view.drawable)
-                Log.d(
-                    TAG,
-                    "decoded file=${file.name} config=${bitmap?.config} gainmap=${bitmap?.hasGainmap()}",
-                )
-            }, 1200L)
         }
         if ((mediaInfo.hasMotionPhoto || mediaInfo.hasUltraHdr) && fileKey != lastBoundFileKey) {
             lastBoundFileKey = fileKey

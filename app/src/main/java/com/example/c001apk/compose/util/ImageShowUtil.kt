@@ -16,6 +16,7 @@ import com.example.c001apk.compose.constant.Constants.SUFFIX_THUMBNAIL
 import com.example.c001apk.compose.ui.component.MiuixViewDialogBuilder
 import com.example.c001apk.compose.view.NineGridImageView
 import com.example.c001apk.imageviewer.ImageViewer
+import com.example.c001apk.imageviewer.NativeImageLoadFactory
 import com.example.c001apk.imageviewer.R as ImageViewerR
 import com.example.c001apk.media.LivePhotoVideoUrlResolver
 import com.example.c001apk.media.MediaImageFactory
@@ -28,7 +29,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import net.mikaelzero.mojito.view.sketch.SketchImageLoadFactory
 
 object ImageShowUtil {
 
@@ -137,7 +137,7 @@ object ImageShowUtil {
         val mediaUrls = originalUrls ?: previewUrls
         val mediaHints = mediaUrls.map(String::coolApkRichMediaHint)
         val playback = MediaPlaybackSession()
-        val defaultFactory = SketchImageLoadFactory()
+        val defaultFactory = NativeImageLoadFactory()
         val mediaFactories = mutableMapOf<Int, MediaImageFactory>()
         ImageViewer.open(
             context,

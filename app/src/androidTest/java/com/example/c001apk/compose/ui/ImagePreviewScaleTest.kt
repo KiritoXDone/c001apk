@@ -11,7 +11,6 @@ import kotlinx.coroutines.runBlocking
 import android.graphics.Bitmap
 import android.graphics.Rect
 import android.graphics.RenderNode
-import android.graphics.RectF
 import android.os.Bundle
 import androidx.test.filters.SdkSuppress
 import android.graphics.drawable.BitmapDrawable
@@ -19,8 +18,8 @@ import android.os.SystemClock
 import android.view.MotionEvent
 import android.view.View
 import androidx.test.platform.app.InstrumentationRegistry
-import net.mikaelzero.mojito.view.sketch.SketchContentLoaderImpl
-import net.mikaelzero.mojito.view.sketch.core.SketchImageView
+import com.example.c001apk.imageviewer.NativeImageContentLoader
+import com.example.c001apk.imageviewer.NativeImageView
 import com.example.c001apk.imageviewer.OnLongTapCallback
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
@@ -134,12 +133,12 @@ class ImagePreviewScaleTest {
         val instrumentation = InstrumentationRegistry.getInstrumentation()
         val called = CountDownLatch(1)
         val bitmap = Bitmap.createBitmap(900, 6000, Bitmap.Config.ARGB_8888)
-        lateinit var view: SketchImageView
+        lateinit var view: NativeImageView
+        val loader = NativeImageContentLoader()
         val downTime = SystemClock.uptimeMillis()
         instrumentation.runOnMainSync {
-            val loader = SketchContentLoaderImpl()
             loader.init(instrumentation.targetContext, "", null)
-            view = loader.providerRealView() as SketchImageView
+            view = loader.providerRealView()
             loader.providerView().apply {
                 measure(
                     View.MeasureSpec.makeMeasureSpec(1080, View.MeasureSpec.EXACTLY),
@@ -149,10 +148,8 @@ class ImagePreviewScaleTest {
             }
             assertTrue(loader.isLongImage(900, 6000))
             view.setImageDrawable(BitmapDrawable(view.resources, bitmap))
-            val zoomer = checkNotNull(view.zoomer)
-            assertTrue(zoomer.reset("long-preview-regression"))
-            assertEquals(zoomer.fillZoomScale, zoomer.zoomScale, 0.001f)
-            assertEquals(zoomer.fullZoomScale, zoomer.minZoomScale, 0.001f)
+            assertTrue(view.fitScale < view.fillScale)
+            assertEquals(view.fillScale, view.currentScale, 0.001f)
             loader.onLongTapCallback(object : OnLongTapCallback {
                 override fun onLongTap(view: View, x: Float, y: Float) { called.countDown() }
             })
@@ -167,8 +164,7 @@ class ImagePreviewScaleTest {
                 view.dispatchTouchEvent(it)
                 it.recycle()
             }
-            view.zoomer?.recycle("test-finished")
-            view.setImageDrawable(null)
+            loader.dispose()
             bitmap.recycle()
         }
         assertTrue("Long-image reading mode must keep its long-press menu", received)
@@ -179,9 +175,9 @@ class ImagePreviewScaleTest {
         val instrumentation = InstrumentationRegistry.getInstrumentation()
         instrumentation.runOnMainSync {
             for ((width, height) in listOf(1600 to 900, 900 to 1600)) {
-                val loader = SketchContentLoaderImpl()
+                val loader = NativeImageContentLoader()
                 loader.init(instrumentation.targetContext, "", null)
-                val view = loader.providerRealView() as SketchImageView
+                val view = loader.providerRealView()
                 val host = loader.providerView()
                 host.measure(
                     View.MeasureSpec.makeMeasureSpec(1080, View.MeasureSpec.EXACTLY),
@@ -193,20 +189,16 @@ class ImagePreviewScaleTest {
                 assertFalse(loader.isLongImage(width, height))
                 val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
                 view.setImageDrawable(BitmapDrawable(view.resources, bitmap))
-                val zoomer = checkNotNull(view.zoomer)
-                assertTrue(zoomer.reset("preview-regression"))
-                assertEquals(zoomer.fullZoomScale, zoomer.zoomScale, 0.001f)
-                assertEquals(zoomer.fullZoomScale, zoomer.minZoomScale, 0.001f)
-                val rect = RectF()
-                zoomer.getDrawRect(rect)
+                assertTrue(view.fitScale > 0f)
+                assertEquals(view.fitScale, view.currentScale, 0.001f)
+                val rect = view.displayRect
                 assertTrue(rect.width() <= 1080.1f && rect.height() <= 2400.1f)
-                assertTrue(zoomer.zoom(zoomer.maxZoomScale, false))
+                assertTrue(view.zoomTo(view.maxScale))
                 assertTrue(loader.ownsVerticalDrag(isDown = true))
-                assertTrue(zoomer.zoom(zoomer.fullZoomScale, false))
-                zoomer.getDrawRect(rect)
-                assertTrue(rect.width() <= 1080.1f && rect.height() <= 2400.1f)
-                zoomer.recycle("test-finished")
-                view.setImageDrawable(null)
+                assertTrue(view.zoomTo(view.fitScale))
+                val restoredRect = view.displayRect
+                assertTrue(restoredRect.width() <= 1080.1f && restoredRect.height() <= 2400.1f)
+                loader.dispose()
                 bitmap.recycle()
             }
         }

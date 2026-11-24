@@ -7,13 +7,12 @@
 | 位置 | 职责 |
 | --- | --- |
 | `app/` | 应用入口、导航、页面、业务逻辑、账号与网络协议 |
-| `image-viewer/` | 全屏图片浏览、翻页、转场与渲染接口 |
-| `SketchImageViewLoader/` | Sketch 图片加载实现与图片浏览适配 |
+| `image-viewer/` | 全屏图片浏览、翻页、转场与 Kotlin 图片渲染 |
 | `media-support/` | Media3 播放与媒体浏览适配 |
 | `tools/` | APK 身份、资源、签名与对齐校验 |
 | `scripts/` | 预构建、工具链检查、编译与产物收集 |
 
-依赖方向为 `app` → 三个业务库模块和上游 Miuix 发布依赖，`media-support` → `SketchImageViewLoader` 和 `image-viewer`，`SketchImageViewLoader` → `image-viewer`。Miuix 的版本和来源见 `docs/THIRD_PARTY_PORTS.md`。禁止循环依赖，库模块不得引用应用业务。四个业务模块不套用其他项目的 `core/*`、`feature/*` 分层。
+依赖方向为 `app` → `image-viewer`、`media-support` 和上游 Miuix 发布依赖，`media-support` → `image-viewer`。Miuix 的版本和来源见 `docs/THIRD_PARTY_PORTS.md`。禁止循环依赖，库模块不得引用应用业务。三个业务模块不套用其他项目的 `core/*`、`feature/*` 分层。仓库维护的 Android 应用源码使用 Kotlin。
 
 ### 应用内分层
 
@@ -125,8 +124,8 @@ python -B -m unittest discover -s tools -p test_*.py
 - 便携工具链位于 `build/jdk/`；模块输出位于 `build/gradle/<模块>/`；收集的安装包位于 `build/apk/<构建类型>/`；项目缓存位于 `build/cache/`。
 - Gradle 的 `clean` 只清理模块输出，不清理工具链、安装包和本地记录。禁止为重新构建先删除整个 `build/`。
 - 保留应用包名 `com.example.c001apk.compose`、最低 API 24、目标 API 35、ARM64 ABI 与当前签名策略。
-- 编译 SDK 分别为应用的 37.2、媒体模块的 35、两个图片模块的 34；构建工具为 36.0.0。不要因为本机缺组件就改项目 SDK 版本。
-- 应用 Java/Kotlin 目标为 21，三个业务库模块为 17；当前显式关闭 AGP 内置 Kotlin 和新 DSL，继续使用已有插件，不照搬参考项目的插件配置。
+- 编译 SDK 分别为应用的 37.2、媒体模块的 35、图片模块的 34；构建工具为 36.0.0。不要因为本机缺组件就改项目 SDK 版本。
+- 应用 Java/Kotlin 目标为 21，两个业务库模块为 17；当前显式关闭 AGP 内置 Kotlin 和新 DSL，继续使用已有插件，不照搬参考项目的插件配置。
 - 本项目没有 `ktlintFormat`、`ktlintCheck`、`versionCatalogUpdate` 任务，不写不存在的检查命令。
 - 纯文档或技能调整无需编译，除非用户要求。构建、源码、资源或清单改动运行相关已有检查与编译；没有实际执行或没有测试用例，不能报告通过。
 - 不默认新增测试文件；优先使用现有测试。模拟器验收区分编译成功、安装成功、启动成功与功能验证。

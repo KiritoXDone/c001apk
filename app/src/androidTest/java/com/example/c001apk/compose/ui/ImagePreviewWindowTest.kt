@@ -16,10 +16,10 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.example.c001apk.compose.R
 import com.example.c001apk.imageviewer.ImageViewer
 import com.example.c001apk.imageviewer.ImageViewerActivity
+import com.example.c001apk.imageviewer.NativeImageLoadFactory
 import java.io.File
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
-import net.mikaelzero.mojito.view.sketch.SketchImageLoadFactory
 import org.junit.Assert.*
 import org.junit.Test
 
@@ -72,7 +72,7 @@ class ImagePreviewWindowTest {
                         activity,
                         ImageViewer.Request(
                             images = listOf(ImageViewer.Image(Uri.fromFile(file).toString())),
-                            rendererAt = { SketchImageLoadFactory() },
+                            rendererAt = { NativeImageLoadFactory() },
                             retryLabel = R.string.loading_error_retry,
                             thumbnailAt = { thumbnail },
                             onOpened = { shown.countDown() },

@@ -1,7 +1,6 @@
 package com.example.c001apk.compose.ui
 
 import android.graphics.Bitmap
-import android.graphics.RectF
 import android.graphics.drawable.BitmapDrawable
 import android.os.Bundle
 import android.os.SystemClock
@@ -12,9 +11,11 @@ import androidx.activity.ComponentActivity
 import androidx.test.core.app.ActivityScenario
 import androidx.test.platform.app.InstrumentationRegistry
 import com.example.c001apk.imageviewer.ImageGestureLayout
-import net.mikaelzero.mojito.view.sketch.SketchContentLoaderImpl
-import net.mikaelzero.mojito.view.sketch.core.SketchImageView
-import org.junit.Assert.*
+import com.example.c001apk.imageviewer.NativeImageContentLoader
+import com.example.c001apk.imageviewer.NativeImageView
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class ImageFreeZoomTest {
@@ -42,19 +43,19 @@ class ImageFreeZoomTest {
         val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
         ActivityScenario.launch(ComponentActivity::class.java).use { scenario ->
             lateinit var host: ImageGestureLayout
-            lateinit var image: SketchImageView
+            lateinit var image: NativeImageView
+            val loader = NativeImageContentLoader()
             var fullScale = 0f
             var initialScale = 0f
             var doubleTapScale = 0f
             var releasedScale = 0f
             scenario.onActivity { activity ->
-                val loader = SketchContentLoaderImpl()
                 loader.init(activity, "", null)
                 host = ImageGestureLayout(activity, { !loader.ownsVerticalDrag(true) }, { _, _ -> }, {})
                 host.addView(loader.providerView())
                 host.keepScreenOn = true
-                image = loader.providerRealView() as SketchImageView
-                loader.isLongImage(width, height)
+                image = loader.providerRealView()
+                assertEquals(readMode, loader.isLongImage(width, height))
                 image.setImageDrawable(BitmapDrawable(activity.resources, bitmap))
                 activity.setContentView(host)
                 loader.loadAnimFinish()
@@ -62,14 +63,17 @@ class ImageFreeZoomTest {
             instrumentation.waitForIdleSync()
             report("Image host ready")
             scenario.onActivity {
-                val zoomer = checkNotNull(image.zoomer)
-                assertTrue(zoomer.reset("free-zoom-regression"))
-                fullScale = zoomer.fullZoomScale
-                initialScale = zoomer.zoomScale
-                // These fixtures have no larger original: normal images use fill (at
-                // least 1.5x fit), while the long fixture uses its width-fit reading scale.
-                doubleTapScale = if (readMode) initialScale else maxOf(zoomer.fillZoomScale, fullScale * 1.5f)
-                assertTrue(zoomer.maxZoomScale > doubleTapScale * 8f)
+                fullScale = image.fitScale
+                initialScale = image.currentScale
+                assertTrue(fullScale > 0f)
+                assertEquals(if (readMode) image.fillScale else fullScale, initialScale, 0.001f)
+                doubleTapScale = if (readMode) {
+                    maxOf(image.fillScale, 1f)
+                } else {
+                    val adaptiveScale = if (image.fillScale * 1.2f >= 1f) image.fillScale else 1f
+                    maxOf(adaptiveScale, fullScale * 1.5f)
+                }
+                assertTrue(image.maxScale > doubleTapScale * 8f)
                 report("Initial/fit=${initialScale / fullScale}; double-tap/fit=${doubleTapScale / fullScale}")
             }
             // Android starts scaling only after its minimum finger-span threshold;
@@ -77,47 +81,44 @@ class ImageFreeZoomTest {
             repeat(6) { step ->
                 scenario.onActivity {
                     pinch(host, 200f, 700f)
-                    releasedScale = checkNotNull(image.zoomer).zoomScale
+                    releasedScale = image.currentScale
                     report("Pinch ${step + 1}: ${releasedScale / fullScale}x fit")
                 }
                 SystemClock.sleep(400)
             }
             scenario.onActivity {
-                val zoomer = checkNotNull(image.zoomer)
-                assertTrue("Pinch must pass the former screen-based upper limit", zoomer.zoomScale > fullScale * 8f)
-                assertEquals("Releasing must keep the chosen zoom", releasedScale, zoomer.zoomScale, releasedScale * 0.001f)
+                assertTrue("Pinch must pass the former screen-based upper limit", image.currentScale > fullScale * 8f)
+                assertEquals("Releasing must keep the chosen zoom", releasedScale, image.currentScale, releasedScale * 0.001f)
                 assertFalse(host.isDragging)
                 report("Released zoom retained; double-tap reset")
                 doubleTap(host)
             }
             SystemClock.sleep(600)
             scenario.onActivity {
-                assertEquals(initialScale, checkNotNull(image.zoomer).zoomScale, initialScale * 0.001f)
+                assertEquals(initialScale, image.currentScale, initialScale * 0.001f)
                 doubleTap(host)
             }
             SystemClock.sleep(600)
             scenario.onActivity {
                 assertEquals("Double tap must keep its former adaptive target", doubleTapScale,
-                    checkNotNull(image.zoomer).zoomScale, doubleTapScale * 0.001f)
+                    image.currentScale, doubleTapScale * 0.001f)
                 doubleTap(host)
             }
             SystemClock.sleep(600)
             scenario.onActivity {
-                val zoomer = checkNotNull(image.zoomer)
-                assertEquals(initialScale, zoomer.zoomScale, initialScale * 0.001f)
+                assertEquals(initialScale, image.currentScale, initialScale * 0.001f)
                 report("Adaptive double-tap cycle passed; checking numerical guard")
-                assertFalse(zoomer.zoom(Float.NaN, false))
-                assertFalse(zoomer.zoom(Float.POSITIVE_INFINITY, false))
-                assertTrue(zoomer.zoom(zoomer.maxZoomScale, false))
+                assertFalse(image.zoomTo(Float.NaN))
+                assertFalse(image.zoomTo(Float.POSITIVE_INFINITY))
+                assertTrue(image.zoomTo(image.maxScale))
                 pinch(host, 200f, 700f)
             }
             SystemClock.sleep(400)
             scenario.onActivity {
-                val zoomer = checkNotNull(image.zoomer)
-                val rect = RectF().also(zoomer::getDrawRect)
+                val rect = image.displayRect
                 assertTrue(rect.left.isFinite() && rect.top.isFinite() && rect.right.isFinite() && rect.bottom.isFinite())
-                assertEquals(zoomer.maxZoomScale, zoomer.zoomScale, zoomer.maxZoomScale * 0.001f)
-                assertTrue(zoomer.zoom(fullScale * 2f, false))
+                assertEquals(image.maxScale, image.currentScale, image.maxScale * 0.001f)
+                assertTrue(image.zoomTo(fullScale * 2f))
             }
             repeat(3) {
                 scenario.onActivity { pinch(host, 700f, 80f) }
@@ -126,8 +127,7 @@ class ImageFreeZoomTest {
             scenario.onActivity {
                 assertFits(image, fullScale)
                 report("Pinch returned to full image")
-                image.zoomer?.recycle("test-finished")
-                image.setImageDrawable(null)
+                loader.dispose()
             }
         }
         bitmap.recycle()
@@ -139,10 +139,9 @@ class ImageFreeZoomTest {
         })
     }
 
-    private fun assertFits(image: SketchImageView, fullScale: Float) {
-        val zoomer = checkNotNull(image.zoomer)
-        assertEquals(fullScale, zoomer.zoomScale, fullScale * 0.001f)
-        val rect = RectF().also(zoomer::getDrawRect)
+    private fun assertFits(image: NativeImageView, fullScale: Float) {
+        assertEquals(fullScale, image.currentScale, fullScale * 0.001f)
+        val rect = image.displayRect
         assertTrue(rect.width() <= image.width + 1f && rect.height() <= image.height + 1f)
     }
 

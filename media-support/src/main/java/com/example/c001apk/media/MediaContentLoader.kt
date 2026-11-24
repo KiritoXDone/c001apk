@@ -29,8 +29,6 @@ import androidx.media3.common.PlaybackException
 import com.example.c001apk.imageviewer.ContentLoader
 import com.example.c001apk.imageviewer.OnLongTapCallback
 import com.example.c001apk.imageviewer.OnTapCallback
-import net.mikaelzero.mojito.view.sketch.core.SketchImageView
-import net.mikaelzero.mojito.view.sketch.core.zoom.ImageZoomer
 import java.io.File
 import java.io.FileOutputStream
 import java.io.RandomAccessFile
@@ -82,19 +80,13 @@ internal class MediaContentLoader(
     private var disposed = false
     private var boundImage: File? = null
     private var boundMediaInfo: EmbeddedMediaInfo? = null
-    private var imageZoomer: ImageZoomer? = null
+    private var displayRectChangedListener: (() -> Unit)? = null
     private var exitTransitionActive = false
     private var exitTransitionGeneration = 0
     private var exitPreviewGeneration = 0
     private var exitPreviewReady = false
     private var exitPreviewBitmap: Bitmap? = null
     private var usingExitPreview = false
-    private val matrixChangeListener = ImageZoomer.OnMatrixChangeListener {
-        positionVideoLayer()
-        positionControls()
-        maybeStartPlayback()
-    }
-
     override val displayRect: RectF
         get() = delegate.displayRect
 
@@ -253,8 +245,12 @@ internal class MediaContentLoader(
             updateVideoTransform()
         }
 
-        imageZoomer = (delegate.providerRealView() as? SketchImageView)?.zoomer
-        imageZoomer?.addOnMatrixChangeListener(matrixChangeListener)
+        delegate.onDisplayRectChanged {
+            positionVideoLayer()
+            positionControls()
+            maybeStartPlayback()
+            displayRectChangedListener?.invoke()
+        }
         playbackSession.register(this)
         (context as? LifecycleOwner)?.lifecycle?.addObserver(this)
     }
@@ -264,6 +260,7 @@ internal class MediaContentLoader(
     override fun providerRealView(): View = delegate.providerRealView()
 
     fun bindExitPreview(file: File) {
+        if (disposed) return
         val generation = ++exitPreviewGeneration
         executor.execute {
             val bitmap = decodeExitPreview(file)?.also(Bitmap::prepareToDraw)
@@ -282,13 +279,13 @@ internal class MediaContentLoader(
     }
 
     fun bind(file: File, info: EmbeddedMediaInfo) {
+        if (disposed) return
         boundImage = file
         boundMediaInfo = info
         val isLivePhoto = mediaHint == RichMediaHint.LIVE_PHOTO
         hasUltraHdr = mediaHint == RichMediaHint.ULTRA_HDR
         setControlsVisible(isLivePhoto)
         positionControls()
-        if (hasUltraHdr) pauseSketchBlockRendering()
         if (!isLivePhoto) return
         val generation = ++bindGeneration
         logState(
@@ -800,14 +797,9 @@ internal class MediaContentLoader(
         audioButton.contentDescription = context.getString(if (muted) R.string.media_unmute else R.string.media_mute)
     }
 
-    private fun pauseSketchBlockRendering() {
-        (delegate.providerRealView() as? SketchImageView)
-            ?.zoomer
-            ?.blockDisplayer
-            ?.setPause(true)
+    override fun onDisplayRectChanged(onChange: () -> Unit) {
+        displayRectChangedListener = onChange
     }
-
-    override fun onDisplayRectChanged(onChange: () -> Unit) = delegate.onDisplayRectChanged(onChange)
 
     override fun ownsVerticalDrag(isDown: Boolean): Boolean = delegate.ownsVerticalDrag(isDown)
 
@@ -845,7 +837,6 @@ internal class MediaContentLoader(
     override fun loadAnimFinish() {
         delegate.loadAnimFinish()
         loadAnimationFinished = true
-        if (hasUltraHdr) pauseSketchBlockRendering()
         positionControls()
         maybeStartPlayback()
     }
@@ -892,9 +883,8 @@ internal class MediaContentLoader(
         bindGeneration++
         exitPreviewGeneration++
         playbackSession.unregister(this)
+        displayRectChangedListener = null
         delegate.dispose()
-        imageZoomer?.removeOnMatrixChangeListener(matrixChangeListener)
-        imageZoomer = null
         if (::exitPreviewView.isInitialized) {
             exitPreviewView.setImageDrawable(null)
         }

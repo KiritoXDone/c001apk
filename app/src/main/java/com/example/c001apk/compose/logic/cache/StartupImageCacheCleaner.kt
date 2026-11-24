@@ -16,8 +16,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.first
-import net.mikaelzero.mojito.view.sketch.core.cache.DiskCache
-import net.mikaelzero.mojito.view.sketch.core.util.SketchUtils
 
 @Singleton
 class StartupImageCacheCleaner @Inject constructor(
@@ -50,11 +48,10 @@ class StartupImageCacheCleaner @Inject constructor(
             context.externalCacheDirs.filterNotNull().forEach { root ->
                 add(File(root, "imageShare"))
             }
-            val sketchName = SketchUtils.appendProcessName(context, DiskCache.DISK_CACHE_DIR_NAME)
-            // Sketch 可在内外部缓存目录中使用带数字后缀的目录。
+            // 清理旧版看图器留下的主进程 Sketch 缓存及数字后缀目录。
             (listOf(context.cacheDir) + context.externalCacheDirs.filterNotNull()).forEach { root ->
                 for (index in 0..10) {
-                    add(File(root, sketchName + if (index == 0) "" else index.toString()))
+                    add(File(root, "sketch" + if (index == 0) "" else index.toString()))
                 }
             }
         }

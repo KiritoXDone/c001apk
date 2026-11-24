@@ -10,10 +10,12 @@ import androidx.activity.ComponentActivity
 import androidx.test.core.app.ActivityScenario
 import androidx.test.platform.app.InstrumentationRegistry
 import com.example.c001apk.imageviewer.ImageGestureLayout
+import com.example.c001apk.imageviewer.NativeImageContentLoader
+import com.example.c001apk.imageviewer.NativeImageView
 import com.example.c001apk.imageviewer.OnLongTapCallback
-import net.mikaelzero.mojito.view.sketch.SketchContentLoaderImpl
-import net.mikaelzero.mojito.view.sketch.core.SketchImageView
-import org.junit.Assert.*
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class ImagePinchGestureTest {
@@ -29,15 +31,16 @@ class ImagePinchGestureTest {
         val bitmap = Bitmap.createBitmap(1600, 900, Bitmap.Config.ARGB_8888)
         ActivityScenario.launch(ComponentActivity::class.java).use { scenario ->
             lateinit var host: ImageGestureLayout
-            lateinit var image: SketchImageView
+            lateinit var image: NativeImageView
+            val loader = NativeImageContentLoader()
             var fullScale = 0f
+            var draggedToDismiss = false
             var longPressed = false
             scenario.onActivity { activity ->
-                val loader = SketchContentLoaderImpl()
                 loader.init(activity, "", null)
-                host = ImageGestureLayout(activity, { !loader.ownsVerticalDrag(true) }, { _, _ -> }, {})
+                host = ImageGestureLayout(activity, { !loader.ownsVerticalDrag(true) }, { _, _ -> draggedToDismiss = true }, {})
                 host.addView(loader.providerView())
-                image = loader.providerRealView() as SketchImageView
+                image = loader.providerRealView()
                 loader.isLongImage(1600, 900)
                 image.setImageDrawable(BitmapDrawable(activity.resources, bitmap))
                 loader.onLongTapCallback(object : OnLongTapCallback {
@@ -48,11 +51,10 @@ class ImagePinchGestureTest {
             }
             instrumentation.waitForIdleSync()
             scenario.onActivity {
-                val zoomer = checkNotNull(image.zoomer)
-                assertTrue(zoomer.reset("pinch-regression"))
-                fullScale = zoomer.fullZoomScale
+                fullScale = image.fitScale
+                assertTrue(fullScale > 0f)
                 pinch(host, 200f, 700f)
-                assertTrue("Two fingers must enlarge the image", zoomer.zoomScale > fullScale * 1.5f)
+                assertTrue("Two fingers must enlarge the image", image.currentScale > fullScale * 1.5f)
                 assertFalse(host.isDragging)
             }
             SystemClock.sleep(400)
@@ -64,11 +66,11 @@ class ImagePinchGestureTest {
                 SystemClock.sleep(600)
             }
             scenario.onActivity {
-                assertEquals(fullScale, checkNotNull(image.zoomer).zoomScale, 0.02f)
+                assertEquals(fullScale, image.currentScale, 0.02f)
                 assertFalse(host.isDragging)
+                assertFalse(draggedToDismiss)
                 assertFalse(longPressed)
-                image.zoomer?.recycle("test-finished")
-                image.setImageDrawable(null)
+                loader.dispose()
             }
         }
         bitmap.recycle()
