@@ -69,14 +69,19 @@ object ApiFailures {
     }
 
     fun safeMessage(error: Throwable?): String =
+        safeMessage(error) { resId, formatArgs ->
+            AppLanguage.getString(resId, *formatArgs.toTypedArray())
+        }
+
+    fun safeMessage(error: Throwable?, resolveString: (Int, List<Any>) -> String): String =
         when (error) {
             is ApiFailure -> error.userMessageRes?.let {
-                AppLanguage.getString(it, *error.messageArgs.toTypedArray())
+                resolveString(it, error.messageArgs)
             } ?: error.message.orEmpty()
-            is java.net.SocketTimeoutException -> AppLanguage.getString(R.string.api_timeout)
-            is javax.net.ssl.SSLException -> AppLanguage.getString(R.string.api_certificate)
-            is IOException -> AppLanguage.getString(R.string.api_connection)
-            else -> AppLanguage.getString(R.string.api_invalid_response)
+            is java.net.SocketTimeoutException -> resolveString(R.string.api_timeout, emptyList())
+            is javax.net.ssl.SSLException -> resolveString(R.string.api_certificate, emptyList())
+            is IOException -> resolveString(R.string.api_connection, emptyList())
+            else -> resolveString(R.string.api_invalid_response, emptyList())
         }
 }
 

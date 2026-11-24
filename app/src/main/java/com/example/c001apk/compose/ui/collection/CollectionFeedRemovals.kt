@@ -18,6 +18,9 @@ internal class CollectionFeedRemovals(
     private val remove: suspend (String) -> CollectionSaveResult,
     private val onRemoved: (String) -> Unit,
     private val notify: (String) -> Unit,
+    private val resolveString: (Int, List<Any>) -> String = { resId, formatArgs ->
+        AppLanguage.getString(resId, *formatArgs.toTypedArray())
+    },
 ) {
     var pending by mutableStateOf<Set<String>>(emptySet())
         private set
@@ -34,11 +37,11 @@ internal class CollectionFeedRemovals(
                 if (!isCurrentOwner()) return@launch
                 removed = removed + id
                 onRemoved(id)
-                notify(AppLanguage.getString(R.string.collection_item_removed))
+                notify(resolveString(R.string.collection_item_removed, emptyList()))
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                if (isCurrentOwner()) notify(ApiFailures.safeMessage(e))
+                if (isCurrentOwner()) notify(ApiFailures.safeMessage(e, resolveString))
             } finally {
                 pending = pending - id
             }

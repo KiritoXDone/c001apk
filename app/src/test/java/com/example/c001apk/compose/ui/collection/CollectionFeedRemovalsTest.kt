@@ -1,5 +1,6 @@
 package com.example.c001apk.compose.ui.collection
 
+import com.example.c001apk.compose.R
 import com.example.c001apk.compose.logic.model.CollectionSaveResult
 import com.example.c001apk.compose.logic.model.HomeFeedResponse
 import com.google.gson.Gson
@@ -8,6 +9,8 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class CollectionFeedRemovalsTest {
+    private val resolveString: (Int, List<Any>) -> String = { resId, _ -> "message:$resId" }
+
     private fun row(id: String, type: String = "feed") = Gson().fromJson(
         """{"id":"$id","entityType":"$type"}""", HomeFeedResponse.Data::class.java)
 
@@ -17,11 +20,18 @@ class CollectionFeedRemovalsTest {
             val removed = mutableListOf<String>()
             val notices = mutableListOf<String>()
             try {
-                val actions = CollectionFeedRemovals(scope, { true }, { CollectionSaveResult(collect, null) }, removed::add, notices::add)
+                val actions = CollectionFeedRemovals(
+                    scope,
+                    { true },
+                    { CollectionSaveResult(collect, null) },
+                    removed::add,
+                    notices::add,
+                    resolveString,
+                )
                 actions.removeFeed("1")
                 assertEquals(listOf("1"), removed)
                 assertEquals(listOf("2", "1"), actions.filter(listOf(row("1"), row("2"), row("1", "card"))).map { it.id })
-                assertEquals(1, notices.size)
+                assertEquals(listOf("message:${R.string.collection_item_removed}"), notices)
                 actions.resetForRefresh()
                 assertEquals(1, actions.filter(listOf(row("1"))).size)
             } finally { scope.cancel() }
@@ -36,7 +46,14 @@ class CollectionFeedRemovalsTest {
         var callbacks = 0
         val notices = mutableListOf<String>()
         try {
-            val actions = CollectionFeedRemovals(scope, { owner }, { requests++; result.await() }, { callbacks++ }, notices::add)
+            val actions = CollectionFeedRemovals(
+                scope,
+                { owner },
+                { requests++; result.await() },
+                { callbacks++ },
+                notices::add,
+                resolveString,
+            )
             actions.removeFeed("1"); actions.removeFeed("1")
             assertEquals(1, requests)
             assertEquals(setOf("1"), actions.pending)
@@ -62,7 +79,7 @@ class CollectionFeedRemovalsTest {
                     2 -> CollectionSaveResult(null, null)
                     else -> CollectionSaveResult(1, null)
                 }
-            }, { callbacks++ }, notices::add)
+            }, { callbacks++ }, notices::add, resolveString)
             repeat(2) {
                 actions.removeFeed("1")
                 assertEquals(1, actions.filter(listOf(row("1"))).size)
@@ -72,7 +89,14 @@ class CollectionFeedRemovalsTest {
             actions.removeFeed("1")
             assertEquals(1, callbacks)
             assertTrue(actions.filter(listOf(row("1"))).isEmpty())
-            assertEquals(3, notices.size)
+            assertEquals(
+                listOf(
+                    "message:${R.string.api_connection}",
+                    "message:${R.string.api_invalid_response}",
+                    "message:${R.string.collection_item_removed}",
+                ),
+                notices,
+            )
         } finally { scope.cancel() }
     }
 }

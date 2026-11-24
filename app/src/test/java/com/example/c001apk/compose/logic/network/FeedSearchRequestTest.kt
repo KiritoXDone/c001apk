@@ -1,5 +1,6 @@
 package com.example.c001apk.compose.logic.network
 
+import com.example.c001apk.compose.R
 import com.example.c001apk.compose.logic.repository.NetworkRepo
 import com.example.c001apk.compose.logic.state.LoadingState
 import com.example.c001apk.compose.ui.search.SearchOrderType
@@ -43,7 +44,7 @@ class FeedSearchRequestTest {
         .addConverterFactory(GsonConverterFactory.create())
         .build()
         .create(ApiService::class.java)
-    private val repository = NetworkRepo(api, api, api, api)
+    private val repository = NetworkRepo(api, api, api, api) { resId, _ -> "message:$resId" }
 
     @Test
     fun globalFeedTypesAndOrdersUseTheOfficialSearchEndpoint() = runBlocking {
@@ -98,6 +99,7 @@ class FeedSearchRequestTest {
         assertThrows(IllegalArgumentException::class.java) { feedSearchScope(null, "THANOX") }
         val state = repository.getFeedSearch("测试", "all", "none", false, "tag", null, 1, null).first()
         assertTrue(state is LoadingState.Error)
+        assertEquals("message:${R.string.api_invalid_response}", (state as LoadingState.Error).errMsg)
         assertTrue(requests.isEmpty())
     }
 
@@ -106,6 +108,7 @@ class FeedSearchRequestTest {
         failRequest = true
         val state = repository.getFeedSearch("测试", "picture", "none", false, null, null, 1, null).first()
         assertTrue(state is LoadingState.Error)
+        assertEquals("message:${R.string.api_connection}", (state as LoadingState.Error).errMsg)
         val apk = api.getSearch("apk", "all", "default", "测试", null, null, 1, null).request().url
         assertEquals("/v6/search", apk.encodedPath)
         assertEquals("apk", apk.queryParameter("type"))

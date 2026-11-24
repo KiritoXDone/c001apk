@@ -40,14 +40,26 @@ import retrofit2.Response
 
 /** Created by bggRGjQaUbCoE on 2024/6/3 */
 @Singleton
-class NetworkRepo
-@Inject
-constructor(
-    @param:Api1Service private val apiService: ApiService,
-    @param:Api1ServiceNoRedirect private val apiServiceNoRedirect: ApiService,
-    @param:Api2Service private val api2Service: ApiService,
-    @param:AccountService private val accountService: ApiService,
+class NetworkRepo internal constructor(
+    private val apiService: ApiService,
+    private val apiServiceNoRedirect: ApiService,
+    private val api2Service: ApiService,
+    private val accountService: ApiService,
+    private val resolveString: (Int, List<Any>) -> String,
 ) {
+    @Inject
+    constructor(
+        @Api1Service apiService: ApiService,
+        @Api1ServiceNoRedirect apiServiceNoRedirect: ApiService,
+        @Api2Service api2Service: ApiService,
+        @AccountService accountService: ApiService,
+    ) : this(
+        apiService,
+        apiServiceNoRedirect,
+        api2Service,
+        accountService,
+        { resId, formatArgs -> AppLanguage.getString(resId, *formatArgs.toTypedArray()) },
+    )
 
     suspend fun getHomeFeed(
         page: Int,
@@ -283,7 +295,7 @@ constructor(
                         LoadingState.Error(mapServerMessage(response.message))
 
                     response.data != null -> LoadingState.Success(response.data)
-                    else -> LoadingState.Error(AppLanguage.getString(R.string.error_load))
+                    else -> LoadingState.Error(resolveString(R.string.error_load, emptyList()))
                 }
             } catch (e: CancellationException) {
                 throw e
@@ -566,7 +578,7 @@ constructor(
                 } else if (response.data?.isEmpty() == true) {
                     LoadingState.Empty
                 } else {
-                    LoadingState.Error(AppLanguage.getString(R.string.error_load))
+                    LoadingState.Error(resolveString(R.string.error_load, emptyList()))
                 }
             } catch (e: CancellationException) {
                 throw e
@@ -618,7 +630,7 @@ constructor(
                 } else if (response.data != null) {
                     LoadingState.Success(response.data, isPublic = response.isPublic)
                 } else {
-                    LoadingState.Error(AppLanguage.getString(R.string.error_load))
+                    LoadingState.Error(resolveString(R.string.error_load, emptyList()))
                 }
             } catch (e: CancellationException) {
                 throw e
@@ -632,11 +644,11 @@ constructor(
     private fun mapServerMessage(message: String?): String {
         val normalized = message?.trim().orEmpty()
         if (normalized.equals("timeout", ignoreCase = true)) {
-            return AppLanguage.getString(R.string.api_timeout)
+            return resolveString(R.string.api_timeout, emptyList())
         }
-        return normalized.ifEmpty { AppLanguage.getString(R.string.error_load) }
+        return normalized.ifEmpty { resolveString(R.string.error_load, emptyList()) }
     }
 
     private fun mapErrorMessage(e: Exception): String =
-        com.example.c001apk.compose.logic.network.ApiFailures.safeMessage(e)
+        com.example.c001apk.compose.logic.network.ApiFailures.safeMessage(e, resolveString)
 }
