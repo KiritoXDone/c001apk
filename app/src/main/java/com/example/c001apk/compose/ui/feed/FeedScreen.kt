@@ -39,6 +39,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalResources
@@ -69,6 +70,8 @@ import com.example.c001apk.compose.ui.component.cards.FeedCard
 import com.example.c001apk.compose.ui.component.cards.FeedReplyCard
 import com.example.c001apk.compose.ui.component.cards.FeedReplySortCard
 import com.example.c001apk.compose.ui.component.cards.LoadingCard
+import com.example.c001apk.compose.ui.component.cards.SkeletonCard
+import com.example.c001apk.compose.ui.component.cards.SkeletonType
 import com.example.c001apk.compose.ui.component.rememberHapticClick
 import com.example.c001apk.compose.ui.component.TopBarScrollEffect
 import com.example.c001apk.compose.ui.feed.reply.ReplyActivity
@@ -79,11 +82,13 @@ import com.example.c001apk.compose.util.ReportType
 import com.example.c001apk.compose.util.ShareType
 import com.example.c001apk.compose.util.makeToast
 import kotlinx.coroutines.launch
+import kotlin.math.ceil
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.ExpandMore
 import top.yukonga.miuix.kmp.icon.glass.Reply
+import top.yukonga.miuix.kmp.nav.core.LocalNavTransitionScope
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 /** Created by bggRGjQaUbCoE on 2024/6/4 */
@@ -114,6 +119,7 @@ fun FeedScreen(
     val context = LocalContext.current
     val resources = LocalResources.current
     val layoutDirection = LocalLayoutDirection.current
+    val showEntrySkeletons = !LocalNavTransitionScope.current.isRunning
     val lazyListState = key(id) { rememberLazyListState() }
     var initialScrollApplied by rememberSaveable(id) { mutableStateOf(false) }
     var dropdownMenuExpanded by remember(id) { mutableStateOf(false) }
@@ -238,8 +244,9 @@ fun FeedScreen(
     }
 
     val feedReady = filterData != null && viewModel.id == id
-    LaunchedEffect(id, feedReady) {
-        if (feedReady && !initialScrollApplied) {
+    LaunchedEffect(id, feedReady, showEntrySkeletons) {
+        if (feedReady && showEntrySkeletons && !initialScrollApplied) {
+            // 评论占位先覆盖可视高度，首次定位不受短列表的滚动上限影响。
             lazyListState.requestScrollToItem(if (isViewReply) viewModel.itemSize else 0)
             initialScrollApplied = true
         }
@@ -251,6 +258,7 @@ fun FeedScreen(
     ) {
         BoxWithConstraints(Modifier.fillMaxSize()) {
             val detailInset = ((maxWidth - 800.dp) / 2).coerceAtLeast(12.dp)
+            val replySkeletonCount = ceil(maxHeight.value / 142f).toInt()
             Scaffold(
                 modifier = modifier.fillMaxSize(),
                 topBar = {
@@ -427,11 +435,7 @@ fun FeedScreen(
                                 else 0.dp,
                         ),
                     contentPadding = PaddingValues(top = paddingValues.calculateTopPadding()),
-                    isRefreshing =
-                        viewModel.isRefreshing ||
-                            viewModel.feedState is LoadingState.Loading ||
-                            (viewModel.feedState is LoadingState.Success &&
-                                viewModel.loadingState is LoadingState.Loading),
+                    isRefreshing = viewModel.isRefreshing,
                     onRefresh = {
                         viewModel.isPull = true
                         viewModel.refresh()
@@ -442,7 +446,11 @@ fun FeedScreen(
                         lazyListState.animateScrollToItem(0)
                     }
                     LazyColumn(
-                        modifier = Modifier.fillMaxSize(),
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .graphicsLayer {
+                                alpha = if (isViewReply && feedReady && !initialScrollApplied) 0f else 1f
+                            },
                         contentPadding =
                             PaddingValues(
                                 start = detailInset,
@@ -453,7 +461,36 @@ fun FeedScreen(
                         state = lazyListState,
                     ) {
                         when (viewModel.feedState) {
-                            LoadingState.Loading -> Unit
+                            LoadingState.Loading -> {
+                                if (showEntrySkeletons) {
+                                    // 评论入口保持评论区布局，骨架不抢占原生入场转场。
+                                    if (!isViewReply) {
+                                        item(key = "feedSkeleton", contentType = "skeleton") {
+                                            SkeletonCard(
+                                                modifier = Modifier.padding(bottom = 10.dp),
+                                                type = SkeletonType.DETAIL,
+                                            )
+                                        }
+                                    } else {
+                                        item(key = "sort") {
+                                            FeedReplySortCard(
+                                                replyCount = viewModel.replyCount,
+                                                selected = selected,
+                                                enabled = false,
+                                                updateSortReply = ::setReplyType,
+                                            )
+                                        }
+                                    }
+                                    repeat(replySkeletonCount) { index ->
+                                        item(key = "replySkeleton:$index", contentType = "skeleton") {
+                                            SkeletonCard(
+                                                modifier = Modifier.padding(bottom = 10.dp),
+                                                type = SkeletonType.REPLY,
+                                            )
+                                        }
+                                    }
+                                }
+                            }
                             LoadingState.Empty,
                             is LoadingState.Error -> {
                                 item(key = "feedState") {
@@ -654,6 +691,8 @@ fun FeedScreen(
                                 loadMore = viewModel::loadMore,
                                 isEnd = viewModel.stopAutomaticLoading,
                                 isVoteCommentList = filterData?.isVoteFeed == true,
+                                showLoadingSkeletons = showEntrySkeletons,
+                                loadingSkeletonCount = replySkeletonCount,
                                 onViewUser = onViewUser,
                                 onViewFeed = onViewFeed,
                                 onOpenLink = onOpenLink,

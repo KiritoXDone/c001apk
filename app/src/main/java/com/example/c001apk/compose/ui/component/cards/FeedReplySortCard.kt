@@ -23,6 +23,7 @@ fun FeedReplySortCard(
     modifier: Modifier = Modifier,
     replyCount: String,
     selected: Int = 0,
+    enabled: Boolean = true,
     updateSortReply: (Int) -> Unit,
 ) {
     Row(
@@ -47,6 +48,7 @@ fun FeedReplySortCard(
                 Box(
                     modifier =
                         Modifier.selectable(
+                                enabled = enabled,
                                 selected = isSelected,
                                 interactionSource = null,
                                 indication = SinkFeedback(),

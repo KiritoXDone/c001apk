@@ -34,6 +34,9 @@ import com.example.c001apk.compose.ui.component.cards.ImageSquareScrollCard
 import com.example.c001apk.compose.ui.component.cards.ImageTextGridCard
 import com.example.c001apk.compose.ui.component.cards.ImageTextScrollCard
 import com.example.c001apk.compose.ui.component.cards.LoadingCard
+import com.example.c001apk.compose.ui.component.cards.LocalDetailComments
+import com.example.c001apk.compose.ui.component.cards.SkeletonCard
+import com.example.c001apk.compose.ui.component.cards.SkeletonType
 import com.example.c001apk.compose.ui.component.cards.MessageCard
 import com.example.c001apk.compose.ui.component.cards.NotificationCard
 import com.example.c001apk.compose.ui.component.cards.ProductConfigListCard
@@ -80,10 +83,27 @@ fun LazyListScope.ItemCard(
     onShowGlobalProductComparison: (() -> Unit)? = null,
     onToggleProductEntityComparison: ((HomeFeedResponse.Entities) -> Unit)? = null,
     isVoteCommentList: Boolean = false,
+    showLoadingSkeletons: Boolean = true,
+    loadingSkeletonCount: Int = 4,
 ) {
 
     when (loadingState) {
-        LoadingState.Loading -> Unit
+        LoadingState.Loading -> {
+            if (showLoadingSkeletons) {
+                repeat(loadingSkeletonCount) { index ->
+                    item(key = "loadingSkeleton:$index", contentType = "skeleton") {
+                        val isDetail = LocalDetailComments.current
+                        val isReply = isDetail || isTotalReply || isReply2Reply || onReply != null || isVoteCommentList
+                        SkeletonCard(
+                            modifier = Modifier
+                                .padding(horizontal = if (isDetail) 0.dp else 12.dp)
+                                .padding(bottom = 10.dp),
+                            type = if (isReply) SkeletonType.REPLY else SkeletonType.FEED,
+                        )
+                    }
+                }
+            }
+        }
         LoadingState.Empty,
         is LoadingState.Error -> {
             item(key = "loadingState") {
@@ -437,7 +457,17 @@ fun LazyStaggeredGridScope.GridItemCard(
 ) {
 
     when (loadingState) {
-        LoadingState.Loading -> Unit
+        LoadingState.Loading -> {
+            repeat(6) { index ->
+                item(
+                    key = "loadingSkeleton:$index",
+                    contentType = "skeleton",
+                    span = if (isReceivedLikeList) StaggeredGridItemSpan.FullLine else StaggeredGridItemSpan.SingleLane,
+                ) {
+                    SkeletonCard(modifier = Modifier.padding(horizontal = 12.dp))
+                }
+            }
+        }
         LoadingState.Empty,
         is LoadingState.Error -> {
             item(key = "loadingState", span = StaggeredGridItemSpan.FullLine) {

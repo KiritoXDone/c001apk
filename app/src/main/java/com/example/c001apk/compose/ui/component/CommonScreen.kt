@@ -81,7 +81,7 @@ fun CommonScreen(
                 start = paddingValues.calculateLeftPadding(layoutDirection),
                 end = paddingValues.calculateRightPadding(layoutDirection),
             ),
-        isRefreshing = viewModel.isRefreshing || displayState is LoadingState.Loading,
+        isRefreshing = viewModel.isRefreshing,
         onRefresh = viewModel::refresh,
         refreshTexts = pullToRefreshTexts(),
         contentPadding =
