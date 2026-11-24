@@ -48,15 +48,12 @@ object ImageShowUtil {
         cookie: String? = null,
         userAgent: String? = null,
     ) {
-        val originList = urlList.map {
-            if (it.contains(SUFFIX_THUMBNAIL)) it.replace(SUFFIX_THUMBNAIL, EMPTY_STRING).http2https
-            else it.http2https
-        }
+        val originList = urlList.map { it.viewerOriginalUrl() }
         val autoLoadOriginal = shouldAutoLoadTarget()
         val thumbnailList = urlList.mapIndexed { index, url ->
             val preview =
                 if (autoLoadOriginal || !originList[index].mayContainCoolApkRichMedia())
-                    url.http2https
+                    url.viewerUrl()
                 else originList[index]
             uncroppedPreviewUrl(originList[index], preview)
         }
@@ -77,17 +74,15 @@ object ImageShowUtil {
         cookie: String? = null,
         userAgent: String? = null,
     ) {
-        val originList = urlList.map {
-            if (it.contains(SUFFIX_THUMBNAIL)) it.replace(SUFFIX_THUMBNAIL, EMPTY_STRING).http2https
-            else it.http2https
-        }
+        val originList = urlList.map { it.viewerOriginalUrl() }
         val autoLoadOriginal = shouldAutoLoadTarget()
         val thumbnailList = urlList.mapIndexed { index, url ->
             val preview =
                 when {
+                    !url.isNetworkImage() -> url
                     !autoLoadOriginal && originList[index].mayContainCoolApkRichMedia() ->
                         originList[index]
-                    url.contains(SUFFIX_THUMBNAIL) -> url.http2https
+                    url.contains(SUFFIX_THUMBNAIL) -> url.viewerUrl()
                     else -> "${originList[index]}$SUFFIX_THUMBNAIL"
                 }
             uncroppedPreviewUrl(originList[index], preview)
@@ -107,7 +102,7 @@ object ImageShowUtil {
         cookie: String? = null,
         userAgent: String? = null,
     ) {
-        val originalUrl = url.replace(SUFFIX_THUMBNAIL, EMPTY_STRING)
+        val originalUrl = url.viewerOriginalUrl()
         val previewUrl = if (originalUrl.mayContainCoolApkRichMedia()) {
             originalUrl
         } else {
@@ -121,6 +116,14 @@ object ImageShowUtil {
             userAgent = userAgent,
         )
     }
+
+    private fun String.isNetworkImage(): Boolean =
+        startsWith("http://") || startsWith("https://")
+
+    private fun String.viewerUrl(): String = if (startsWith("http://")) http2https else this
+
+    private fun String.viewerOriginalUrl(): String =
+        if (isNetworkImage()) replace(SUFFIX_THUMBNAIL, EMPTY_STRING).viewerUrl() else this
 
     private fun openViewer(
         context: Context,
@@ -400,12 +403,23 @@ object ImageShowUtil {
             else -> false
         }
 
-    private enum class SaveImageAction(@param:StringRes val titleRes: Int) {
-        LOAD_ORIGINAL(ImageViewerR.string.image_viewer_original),
-        SAVE_IMAGE(R.string.image_save),
-        SAVE_LIVE_PHOTO(R.string.image_save_live),
-        SAVE_ALL(R.string.image_save_all),
-        SHARE(R.string.image_share),
-        COPY_URL(R.string.image_copy_url),
+    private enum class SaveImageAction {
+        LOAD_ORIGINAL,
+        SAVE_IMAGE,
+        SAVE_LIVE_PHOTO,
+        SAVE_ALL,
+        SHARE,
+        COPY_URL;
+
+        @get:StringRes
+        val titleRes: Int
+            get() = when (this) {
+                LOAD_ORIGINAL -> ImageViewerR.string.image_viewer_original
+                SAVE_IMAGE -> R.string.image_save
+                SAVE_LIVE_PHOTO -> R.string.image_save_live
+                SAVE_ALL -> R.string.image_save_all
+                SHARE -> R.string.image_share
+                COPY_URL -> R.string.image_copy_url
+            }
     }
 }
