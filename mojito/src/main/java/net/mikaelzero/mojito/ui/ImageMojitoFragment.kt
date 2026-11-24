@@ -464,15 +464,6 @@ class ImageMojitoFragment : Fragment(), IMojitoFragment, OnMojitoViewCallback {
         }
     }
 
-    private fun postToMain(r: Runnable) {
-        mainHandler.post {
-            if (_binding == null || isDetached || context == null) {
-                return@post
-            }
-            r.run()
-        }
-    }
-
     override fun backToMin() {
         (activity as? ImageMojitoActivity)?.beginExitIfNeeded()
         _binding?.mojitoView?.backToMin()
