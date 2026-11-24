@@ -89,7 +89,8 @@ def check_version_history(source, after):
             if not parents:
                 source["skip_reason"] = f"Commit {commit} has no parent for the version comparison."
                 return
-            if version_at(commit) != version_at(parents[0]):
+            commit_version = version_at(commit)
+            if all(commit_version != version_at(parent) for parent in parents):
                 source["version_changed"] = True
                 return
     except ValueError as error:
