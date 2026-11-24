@@ -1,6 +1,7 @@
 package com.example.c001apk.compose.ui.component
 
 import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.example.c001apk.compose.logic.state.FooterState
 import com.example.c001apk.compose.ui.component.cards.LoadingCard
@@ -15,12 +16,26 @@ fun LazyListScope.FooterCard(
     isFeed: Boolean = false,
 ) {
     item(key = "footer") {
-        LoadingCard(
+        PaginationFooter(
             modifier = modifier,
-            state = footerState,
-            onClick = if (footerState is FooterState.Error) loadMore
-            else null,
+            footerState = footerState,
+            loadMore = loadMore,
             isFeed = isFeed,
         )
     }
+}
+
+@Composable
+internal fun PaginationFooter(
+    footerState: FooterState,
+    loadMore: () -> Unit,
+    modifier: Modifier,
+    isFeed: Boolean = false,
+) {
+    LoadingCard(
+        modifier = modifier,
+        state = footerState,
+        onClick = if (footerState is FooterState.Error) loadMore else null,
+        isFeed = isFeed,
+    )
 }

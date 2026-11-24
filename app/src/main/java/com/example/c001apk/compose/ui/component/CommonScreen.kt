@@ -143,10 +143,10 @@ fun CommonScreen(
                 val footer = viewModel.footerState
                 if (displayState is LoadingState.Success && footer != FooterState.Success) {
                     item(key = "footer", span = StaggeredGridItemSpan.FullLine) {
-                        com.example.c001apk.compose.ui.component.cards.LoadingCard(
+                        PaginationFooter(
                             modifier = Modifier.padding(horizontal = 12.dp),
-                            state = footer,
-                            onClick = if (footer is FooterState.Error) viewModel::loadMore else null,
+                            footerState = footer,
+                            loadMore = viewModel::loadMore,
                         )
                     }
                 }
