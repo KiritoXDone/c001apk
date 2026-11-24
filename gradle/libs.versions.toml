@@ -39,7 +39,7 @@ toolbarCompose = "2.3.5"
 viewpager2 = "1.1.0"
 webkit = "1.11.0"
 
-miuix = "0.9.5-beta02"
+miuix = "0.9.5-beta04"
 
 [libraries]
 desugar-jdk = { module = "com.android.tools:desugar_jdk_libs", version = "2.1.5" }

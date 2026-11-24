@@ -22,9 +22,9 @@ CommonMark 0.30.0 与 GFM 表格、删除线、任务列表扩展遵循 BSD 3-Cl
 
 ## Miuix
 
-应用从 Maven Central 使用 [compose-miuix-ui/miuix v0.9.5-beta02](https://github.com/compose-miuix-ui/miuix/releases/tag/v0.9.5-beta02)（`66248ba`）发布的 UI、偏好设置、图标、导航、模糊和玻璃组件。Gradle 版本统一固定在 `gradle/libs.versions.toml`。完整 Apache-2.0 许可随应用收录于 [Miuix-Apache-2.0.txt](../app/src/main/assets/licenses/Miuix-Apache-2.0.txt)。
+应用从 Maven Central 使用 [compose-miuix-ui/miuix v0.9.5-beta04](https://github.com/compose-miuix-ui/miuix/releases/tag/v0.9.5-beta04)（`3c56086`）发布的 UI、偏好设置、图标、导航、模糊和玻璃组件。Gradle 版本统一固定在 `gradle/libs.versions.toml`。完整 Apache-2.0 许可随应用收录于 [Miuix-Apache-2.0.txt](../app/src/main/assets/licenses/Miuix-Apache-2.0.txt)。
 
-应用侧保留带标题内容和自定义 inset 的紧凑顶栏、搜索选区及访问 ID 焦点保护、可滚动的 OS4 标签轨道和底栏回退颜色。菜单继续使用支持关闭完成回调的原生窗口弹层。
+应用侧保留带标题内容和自定义 inset 的紧凑顶栏、搜索选区及访问 ID 焦点保护、可滚动的 OS4 标签轨道和底栏回退颜色。启用的搜索清除动作使用 `SearchClearButton`，禁用时使用支持禁用语义的 `IconButton`。菜单使用支持关闭完成回调的原生窗口弹层，菜单行通过 `MiuixIndication` 提供按压反馈。
 
 ## BoxProxy 界面适配
 

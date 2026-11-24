@@ -1,6 +1,6 @@
 Miuix — compose-miuix-ui contributors
 
-Dependency: https://github.com/compose-miuix-ui/miuix/releases/tag/v0.9.5-beta02
+Dependency: https://github.com/compose-miuix-ui/miuix/releases/tag/v0.9.5-beta04
 Bundled icon source: https://github.com/compose-miuix-ui/miuix/tree/2855a36ba516cbf2b5ff46d722da38c94a59c07b
 
 

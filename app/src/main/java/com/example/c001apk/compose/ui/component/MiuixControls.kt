@@ -1,10 +1,6 @@
 package com.example.c001apk.compose.ui.component
 
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.snap
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -20,16 +16,12 @@ import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
@@ -44,12 +36,12 @@ import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.ListPopupColumn
 import top.yukonga.miuix.kmp.basic.PopupPositionProvider
 import top.yukonga.miuix.kmp.glass.GlassBottomSheet
-import top.yukonga.miuix.kmp.glass.GlassMotion
 import top.yukonga.miuix.kmp.glass.GlassPopupDefaults
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.More
 import top.yukonga.miuix.kmp.theme.LocalContentColor
 import top.yukonga.miuix.kmp.theme.MiuixTheme
+import top.yukonga.miuix.kmp.utils.MiuixIndication
 import top.yukonga.miuix.kmp.window.WindowListPopup
 
 @Composable
@@ -130,13 +122,10 @@ fun MiuixMenuItem(
     leadingIcon: (@Composable () -> Unit)? = null,
     trailingIcon: (@Composable () -> Unit)? = null,
 ) {
-    val interactionSource = remember { MutableInteractionSource() }
-    val pressed by interactionSource.collectIsPressedAsState()
     val pressColor = GlassPopupDefaults.itemPressedColor()
-    val pressFill by animateColorAsState(
-        targetValue = if (pressed) pressColor else Color.Transparent,
-        animationSpec = if (pressed) snap() else GlassMotion.popupPressExit(),
-        label = "menuItemPress",
+    val indication = MiuixIndication(
+        color = pressColor.copy(alpha = 1f),
+        pressAlpha = pressColor.alpha,
     )
     val color = MiuixTheme.colorScheme.onSurfaceContainer
     CompositionLocalProvider(LocalContentColor provides if (enabled) color else color.copy(alpha = 0.4f)) {
@@ -150,15 +139,10 @@ fun MiuixMenuItem(
                     .fillMaxWidth()
                     .heightIn(min = GlassPopupDefaults.ItemMinHeight)
                     .padding(horizontal = GlassPopupDefaults.ItemPressInset)
-                    .drawBehind {
-                        drawRoundRect(
-                            color = pressFill,
-                            cornerRadius = CornerRadius(GlassPopupDefaults.ItemPressRadius.toPx()),
-                        )
-                    }
+                    .clip(RoundedCornerShape(GlassPopupDefaults.ItemPressRadius))
                     .combinedClickable(
-                        interactionSource = interactionSource,
-                        indication = null,
+                        interactionSource = null,
+                        indication = indication,
                         enabled = enabled,
                         role = Role.Button,
                         onClick = onClick,

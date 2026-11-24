@@ -41,9 +41,9 @@ import androidx.lifecycle.withResumed
 import top.yukonga.miuix.kmp.basic.Icon
 import kotlinx.coroutines.delay
 import top.yukonga.miuix.kmp.basic.IconButton
+import top.yukonga.miuix.kmp.basic.SearchClearButton
 import top.yukonga.miuix.kmp.basic.TextField
 import top.yukonga.miuix.kmp.basic.TextFieldDefaults
-import top.yukonga.miuix.kmp.glass.GlassIconButton
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.basic.Search
 import top.yukonga.miuix.kmp.icon.basic.SearchCleanup
@@ -180,38 +180,30 @@ private fun SearchFieldIcon() {
 @Composable
 private fun SearchFieldClearButton(value: String, enabled: Boolean, onClear: () -> Unit) {
     AnimatedVisibility(visible = value.isNotEmpty(), enter = fadeIn(), exit = fadeOut()) {
-        val fill = MiuixTheme.colorScheme.surfaceContainerHigh.copy(alpha = 1f)
-        val icon: @Composable () -> Unit = {
-            Icon(
-                imageVector = MiuixIcons.Basic.SearchCleanup,
-                contentDescription = stringResource(R.string.search_clear),
-                modifier = Modifier.size(24.dp),
-                tint = MiuixTheme.colorScheme.onSurfaceContainerHigh,
-            )
-        }
+        val contentDescription = stringResource(R.string.search_clear)
         val modifier = Modifier.padding(end = 4.dp)
         if (enabled) {
-            GlassIconButton(
+            SearchClearButton(
                 onClick = onClear,
-                modifier = modifier,
-                backdrop = null,
-                inheritTopBarMaterial = false,
-                fill = fill,
-                size = 36.dp,
-                stroke = null,
-                shadow = null,
-                content = icon,
+                modifier = modifier.size(36.dp),
+                contentDescription = contentDescription,
             )
         } else {
             IconButton(
                 onClick = onClear,
                 modifier = modifier,
                 enabled = false,
-                backgroundColor = fill,
+                backgroundColor = MiuixTheme.colorScheme.surfaceContainerHigh.copy(alpha = 1f),
                 minHeight = 36.dp,
                 minWidth = 36.dp,
-                content = icon,
-            )
+            ) {
+                Icon(
+                    imageVector = MiuixIcons.Basic.SearchCleanup,
+                    contentDescription = contentDescription,
+                    modifier = Modifier.size(24.dp),
+                    tint = MiuixTheme.colorScheme.onSurfaceContainerHigh,
+                )
+            }
         }
     }
 }
