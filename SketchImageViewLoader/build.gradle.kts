@@ -48,6 +48,6 @@ dependencies {
     implementation(libs.squareup.okhttp)
     implementation(libs.android.gif.drawable)
     implementation(libs.androidx.exifinterface)
-    implementation(project(":mojito"))
+    implementation(project(":image-viewer"))
 }
 

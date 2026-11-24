@@ -156,7 +156,7 @@ jobs:
         run: |
           set -euo pipefail
           python -B -m unittest discover -s tools -p 'test_*.py'
-          python scripts/build.py gradle --jobs 2 :app:testDebugUnitTest :media-support:testDebugUnitTest :mojito:testDebugUnitTest :app:lintDebug
+          python scripts/build.py gradle --jobs 2 :app:testDebugUnitTest :media-support:testDebugUnitTest :image-viewer:testDebugUnitTest :app:lintDebug
 
       - name: Build signed Release APK
         run: |

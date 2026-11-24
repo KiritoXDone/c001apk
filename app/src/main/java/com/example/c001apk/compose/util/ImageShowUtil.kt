@@ -6,25 +6,20 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Environment
 import android.util.Log
-import android.view.View
 import android.widget.ImageView
-import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
-import androidx.core.view.isVisible
-import androidx.fragment.app.FragmentActivity
-import com.example.c001apk.compose.BuildConfig
 import com.example.c001apk.compose.R
 import com.example.c001apk.compose.constant.Constants.EMPTY_STRING
 import com.example.c001apk.compose.constant.Constants.SUFFIX_THUMBNAIL
 import com.example.c001apk.compose.ui.component.MiuixViewDialogBuilder
-import com.example.c001apk.compose.view.CircleIndexIndicator
 import com.example.c001apk.compose.view.NineGridImageView
-import com.example.c001apk.media.HdrMojitoActivityCoverLoader
+import com.example.c001apk.imageviewer.ImageViewer
+import com.example.c001apk.imageviewer.R as ImageViewerR
 import com.example.c001apk.media.LivePhotoVideoUrlResolver
-import com.example.c001apk.media.MojitoMediaImageFactory
-import com.example.c001apk.media.MojitoMediaPlaybackSession
+import com.example.c001apk.media.MediaImageFactory
+import com.example.c001apk.media.MediaPlaybackSession
 import com.example.c001apk.media.RichMediaHint
 import com.example.c001apk.media.coolApkRichMediaHint
 import com.example.c001apk.media.mayContainCoolApkRichMedia
@@ -33,14 +28,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import net.mikaelzero.mojito.Mojito
-import net.mikaelzero.mojito.MojitoBuilder
-import net.mikaelzero.mojito.ext.mojito
-import net.mikaelzero.mojito.impl.DefaultPercentProgress
-import net.mikaelzero.mojito.impl.DefaultTargetFragmentCover
-import net.mikaelzero.mojito.impl.SimpleMojitoViewCallback
-import net.mikaelzero.mojito.interfaces.ImageViewLoadFactory
-import net.mikaelzero.mojito.loader.ContentLoader
+import net.mikaelzero.mojito.view.sketch.SketchImageLoadFactory
 
 object ImageShowUtil {
 
@@ -72,78 +60,15 @@ object ImageShowUtil {
                 else originList[index]
             uncroppedPreviewUrl(originList[index], preview)
         }
-        Mojito.start(imageView.context) {
-            urls(thumbnailList, originList)
-            val mediaFactories =
-                enableRichMedia(
-                    urls = originList,
-                    previewUrls = thumbnailList,
-                )
-            position(position)
-            progressLoader {
-                DefaultPercentProgress()
-            }
-            if (urlList.size != 1) setIndicator(CircleIndexIndicator())
-            views(nineGridView.getImageViews().toTypedArray())
-            autoLoadTarget(autoLoadOriginal)
-            fragmentCoverLoader {
-                DefaultTargetFragmentCover()
-            }
-            setOnMojitoListener(
-                object : SimpleMojitoViewCallback() {
-                    override fun onStartAnim(position: Int) {
-                        nineGridView.getImageViewAt(position)?.apply {
-                            postDelayed(
-                                {
-                                    this.isVisible = false
-                                },
-                                200,
-                            )
-                        }
-                    }
-
-                    override fun onMojitoViewFinish(pagePosition: Int) {
-                        nineGridView.getImageViews().forEach {
-                            it.isVisible = true
-                        }
-                    }
-
-                    override fun onViewPageSelected(position: Int) {
-                        nineGridView.getImageViews().forEachIndexed { index, imageView ->
-                            imageView.isVisible = position != index
-                        }
-                    }
-
-                    override fun onLongClick(
-                        fragmentActivity: FragmentActivity?,
-                        view: View,
-                        x: Float,
-                        y: Float,
-                        position: Int,
-                    ) {
-                        if (BuildConfig.DEBUG) {
-                            Log.d(
-                                "MojitoLongPress",
-                                "ImageShowUtil onLongClick pos=$position x=$x y=$y activity=${fragmentActivity != null}",
-                            )
-                        }
-                        if (fragmentActivity != null) {
-                            showSaveImgDialog(
-                                fragmentActivity,
-                                originList[position],
-                                originList,
-                                userAgent,
-                                mediaFactories[position],
-                            )
-                        } else {
-                            if (BuildConfig.DEBUG) {
-                                Log.i("Mojito", "fragmentActivity is null, skip save image")
-                            }
-                        }
-                    }
-                },
-            )
-        }
+        openViewer(
+            context = imageView.context,
+            previewUrls = thumbnailList,
+            originalUrls = originList,
+            startingPage = position,
+            autoLoadOriginal = autoLoadOriginal,
+            thumbnailAt = nineGridView::getImageViewAt,
+            userAgent = userAgent,
+        )
     }
 
     fun startBigImgViewSimple(
@@ -167,53 +92,13 @@ object ImageShowUtil {
                 }
             uncroppedPreviewUrl(originList[index], preview)
         }
-        Mojito.start(context) {
-            urls(thumbnailList, originList)
-            val mediaFactories =
-                enableRichMedia(
-                    urls = originList,
-                    previewUrls = thumbnailList,
-                )
-            autoLoadTarget(autoLoadOriginal)
-            fragmentCoverLoader {
-                DefaultTargetFragmentCover()
-            }
-            progressLoader {
-                DefaultPercentProgress()
-            }
-            if (urlList.size > 1) setIndicator(CircleIndexIndicator())
-            setOnMojitoListener(
-                object : SimpleMojitoViewCallback() {
-                    override fun onLongClick(
-                        fragmentActivity: FragmentActivity?,
-                        view: View,
-                        x: Float,
-                        y: Float,
-                        position: Int,
-                    ) {
-                        if (BuildConfig.DEBUG) {
-                            Log.d(
-                                "MojitoLongPress",
-                                "ImageShowUtilSimple onLongClick pos=$position x=$x y=$y activity=${fragmentActivity != null}",
-                            )
-                        }
-                        if (fragmentActivity != null) {
-                            showSaveImgDialog(
-                                fragmentActivity,
-                                originList[position],
-                                originList,
-                                userAgent,
-                                mediaFactories[position],
-                            )
-                        } else {
-                            if (BuildConfig.DEBUG) {
-                                Log.i("Mojito", "fragmentActivity is null, skip save image")
-                            }
-                        }
-                    }
-                },
-            )
-        }
+        openViewer(
+            context = context,
+            previewUrls = thumbnailList,
+            originalUrls = originList,
+            autoLoadOriginal = autoLoadOriginal,
+            userAgent = userAgent,
+        )
     }
 
     fun startBigImgViewSimple(
@@ -222,49 +107,83 @@ object ImageShowUtil {
         cookie: String? = null,
         userAgent: String? = null,
     ) {
-        val previewUrl = uncroppedPreviewUrl(url.replace(SUFFIX_THUMBNAIL, EMPTY_STRING), url)
-        imageView.mojito(
-            url = previewUrl,
-            builder = {
-                val mediaFactories =
-                    enableRichMedia(
-                        urls = listOf(previewUrl),
-                    )
-                progressLoader {
-                    DefaultPercentProgress()
-                }
-                setOnMojitoListener(
-                    object : SimpleMojitoViewCallback() {
-                        override fun onLongClick(
-                            fragmentActivity: FragmentActivity?,
-                            view: View,
-                            x: Float,
-                            y: Float,
-                            position: Int,
-                        ) {
-                            if (BuildConfig.DEBUG) {
-                                Log.d(
-                                    "MojitoLongPress",
-                                    "ImageShowUtilSingle onLongClick pos=$position x=$x y=$y activity=${fragmentActivity != null}",
-                                )
-                            }
-                            if (fragmentActivity != null) {
-                                showSaveImgDialog(
-                                    fragmentActivity,
-                                    previewUrl,
-                                    null,
-                                    userAgent,
-                                    mediaFactories[position],
-                                )
-                            } else {
-                                if (BuildConfig.DEBUG) {
-                                    Log.i("Mojito", "fragmentActivity is null, skip save image")
-                                }
-                            }
+        val originalUrl = url.replace(SUFFIX_THUMBNAIL, EMPTY_STRING)
+        val previewUrl = if (originalUrl.mayContainCoolApkRichMedia()) {
+            originalUrl
+        } else {
+            uncroppedPreviewUrl(originalUrl, url)
+        }
+        openViewer(
+            context = imageView.context,
+            previewUrls = listOf(previewUrl),
+            originalUrls = null,
+            thumbnailAt = { imageView },
+            userAgent = userAgent,
+        )
+    }
+
+    private fun openViewer(
+        context: Context,
+        previewUrls: List<String>,
+        originalUrls: List<String>?,
+        startingPage: Int = 0,
+        autoLoadOriginal: Boolean = true,
+        thumbnailAt: (Int) -> ImageView? = { null },
+        userAgent: String?,
+    ) {
+        val mediaUrls = originalUrls ?: previewUrls
+        val mediaHints = mediaUrls.map(String::coolApkRichMediaHint)
+        val playback = MediaPlaybackSession()
+        val defaultFactory = SketchImageLoadFactory()
+        val mediaFactories = mutableMapOf<Int, MediaImageFactory>()
+        ImageViewer.open(
+            context,
+            ImageViewer.Request(
+                images = previewUrls.mapIndexed { position, url ->
+                    val originalUrl = mediaUrls[position]
+                    if (mediaHints[position] != RichMediaHint.NONE) {
+                        ImageViewer.Image(previewUrl = originalUrl)
+                    } else {
+                        ImageViewer.Image(
+                            previewUrl = url,
+                            originalUrl = originalUrls?.get(position)?.takeUnless { it.isGifUrl },
+                        )
+                    }
+                },
+                rendererAt = { position ->
+                    val hint = mediaHints[position]
+                    if (hint == RichMediaHint.NONE) {
+                        defaultFactory
+                    } else {
+                        mediaFactories.getOrPut(position) {
+                            MediaImageFactory(
+                                delegate = defaultFactory,
+                                imageUrl = mediaUrls[position],
+                                videoUrlResolver = livePhotoVideoUrlResolver,
+                                mediaHint = hint,
+                                playbackSession = playback,
+                                pagePosition = position,
+                            )
                         }
-                    },
-                )
-            },
+                    }
+                },
+                retryLabel = R.string.loading_error_retry,
+                startingPage = startingPage,
+                autoLoadOriginal = autoLoadOriginal,
+                enableHdr = mediaHints.any { it != RichMediaHint.NONE },
+                thumbnailAt = thumbnailAt,
+                onPageSelected = playback::selectPage,
+                onLongClick = { viewer, position, loadOriginal ->
+                    showSaveImgDialog(
+                        viewer,
+                        mediaUrls[position],
+                        originalUrls,
+                        userAgent,
+                        mediaFactories[position],
+                        loadOriginal,
+                    )
+                },
+            ),
         )
     }
 
@@ -273,9 +192,10 @@ object ImageShowUtil {
         url: String,
         urlList: List<String>?,
         userAgent: String?,
-        mediaFactory: MojitoMediaImageFactory?,
+        mediaFactory: MediaImageFactory?,
+        loadOriginal: (() -> Unit)?,
     ) {
-        val actions = saveDialogActions(mediaFactory)
+        val actions = saveDialogActions(mediaFactory, canLoadOriginal = loadOriginal != null)
         MiuixViewDialogBuilder(context).apply {
             setItems(actions.map { context.getString(it.titleRes) }.toTypedArray()) { _, position: Int ->
                 handleSaveDialogAction(
@@ -285,6 +205,7 @@ object ImageShowUtil {
                     userAgent,
                     mediaFactory,
                     actions[position],
+                    loadOriginal,
                 )
             }
             show()
@@ -296,8 +217,9 @@ object ImageShowUtil {
         url: String,
         urlList: List<String>?,
         userAgent: String?,
-        mediaFactory: MojitoMediaImageFactory?,
+        mediaFactory: MediaImageFactory?,
         action: SaveImageAction,
+        loadOriginal: (() -> Unit)?,
     ) {
         if (
             action in
@@ -308,7 +230,7 @@ object ImageShowUtil {
                 ) && !GalleryPermission.granted(context)
         ) {
             GalleryPermission.request(context) {
-                handleSaveDialogAction(context, url, urlList, userAgent, mediaFactory, action)
+                handleSaveDialogAction(context, url, urlList, userAgent, mediaFactory, action, loadOriginal)
             }
             return
         }
@@ -354,11 +276,16 @@ object ImageShowUtil {
                 }
 
             SaveImageAction.COPY_URL -> context.copyText(url)
+            SaveImageAction.LOAD_ORIGINAL -> loadOriginal?.invoke()
         }
     }
 
-    private fun saveDialogActions(mediaFactory: MojitoMediaImageFactory?): List<SaveImageAction> =
+    private fun saveDialogActions(
+        mediaFactory: MediaImageFactory?,
+        canLoadOriginal: Boolean,
+    ): List<SaveImageAction> =
         buildList {
+            if (canLoadOriginal) add(SaveImageAction.LOAD_ORIGINAL)
             add(SaveImageAction.SAVE_IMAGE)
             if (mediaFactory?.supportsLivePhotoExport == true) {
                 add(SaveImageAction.SAVE_LIVE_PHOTO)
@@ -371,7 +298,7 @@ object ImageShowUtil {
     private fun saveLivePhoto(
         context: Context,
         url: String,
-        mediaFactory: MojitoMediaImageFactory?,
+        mediaFactory: MediaImageFactory?,
     ) {
         if (mediaFactory == null) {
             context.makeToast(context.getString(R.string.image_live_not_ready))
@@ -466,77 +393,6 @@ object ImageShowUtil {
         return Pair(imgWidth, imgHeight)
     }
 
-    private fun MojitoBuilder.enableRichMedia(
-        urls: List<String>,
-        previewUrls: List<String>? = null,
-    ): MutableMap<Int, MojitoMediaImageFactory> {
-        val mediaFactories = mutableMapOf<Int, MojitoMediaImageFactory>()
-        val mediaHints = urls.map(String::coolApkRichMediaHint)
-        val richMediaPositions =
-            urls.indices.filterTo(mutableSetOf()) { mediaHints[it] != RichMediaHint.NONE }
-        val gifPositions = urls.indices.filterTo(mutableSetOf()) { urls[it].isGifUrl }
-        if (richMediaPositions.isEmpty() && gifPositions.isEmpty()) return mediaFactories
-
-        val defaultFactory = Mojito.imageViewFactory() ?: return mediaFactories
-        val gifFactories = mutableMapOf<Int, ImageViewLoadFactory>()
-        val playbackSession = MojitoMediaPlaybackSession()
-        multiContentLoader(
-            providerLoader = { position ->
-                when (position) {
-                    in richMediaPositions ->
-                        mediaFactories.getOrPut(position) {
-                            MojitoMediaImageFactory(
-                                delegate = defaultFactory,
-                                imageUrl = urls[position],
-                                videoUrlResolver = livePhotoVideoUrlResolver,
-                                mediaHint = mediaHints[position],
-                                playbackSession = playbackSession,
-                                pagePosition = position,
-                                deferMediaBindingUntilTarget =
-                                    previewUrls?.getOrNull(position)?.let {
-                                        it != urls[position]
-                                    } == true,
-                            )
-                        }
-                    in gifPositions ->
-                        gifFactories.getOrPut(position) {
-                            SingleBindGifImageFactory(defaultFactory)
-                        }
-                    else -> defaultFactory
-                }
-            },
-            providerEnableTargetLoad = { position -> position !in gifPositions },
-        )
-        if (richMediaPositions.isNotEmpty()) {
-            setActivityCoverLoader(HdrMojitoActivityCoverLoader(playbackSession))
-        }
-        return mediaFactories
-    }
-
-    private class SingleBindGifImageFactory(
-        private val delegate: ImageViewLoadFactory,
-    ) : ImageViewLoadFactory {
-        private var boundFileKey: String? = null
-
-        override fun loadSillContent(view: View, uri: Uri) {
-            val file = uri.path?.let(::File)
-            val fileKey = file?.let { "${it.absolutePath}:${it.length()}" }
-            if (fileKey != null && fileKey == boundFileKey) return
-
-            boundFileKey = fileKey
-            delegate.loadSillContent(view, uri)
-        }
-
-        override fun loadContentFail(view: View, @DrawableRes drawableResId: Int) {
-            delegate.loadContentFail(view, drawableResId)
-        }
-
-        override fun newContentLoader(): ContentLoader {
-            boundFileKey = null
-            return delegate.newContentLoader()
-        }
-    }
-
     private fun shouldAutoLoadTarget(): Boolean =
         when (CookieUtil.imageQuality) {
             0 -> NetWorkUtil.isWifiConnected()
@@ -545,6 +401,7 @@ object ImageShowUtil {
         }
 
     private enum class SaveImageAction(@param:StringRes val titleRes: Int) {
+        LOAD_ORIGINAL(ImageViewerR.string.image_viewer_original),
         SAVE_IMAGE(R.string.image_save),
         SAVE_LIVE_PHOTO(R.string.image_save_live),
         SAVE_ALL(R.string.image_save_all),

@@ -1,20 +1,17 @@
 package com.example.c001apk.compose
 
 import android.app.Application
-import android.content.Context
 import coil.Coil
 import coil.ImageLoader
 import com.example.c001apk.compose.logic.settings.AppLanguage
 import com.example.c001apk.compose.util.BoundedImageInterceptor
 import com.example.c001apk.compose.util.AddCookiesInterceptor
-import com.example.c001apk.compose.util.MojitoOkHttpImageLoader
+import com.example.c001apk.compose.util.PreviewImageFileLoader
+import com.example.c001apk.imageviewer.ImageViewer
 import com.example.c001apk.compose.util.dp
 import dagger.hilt.android.HiltAndroidApp
 import me.zhanghai.android.appiconloader.coil.AppIconFetcher
 import me.zhanghai.android.appiconloader.coil.AppIconKeyer
-import net.mikaelzero.mojito.Mojito
-import net.mikaelzero.mojito.impl.DefaultMojitoConfig
-import net.mikaelzero.mojito.view.sketch.SketchImageLoadFactory
 import okhttp3.OkHttpClient
 
 /** Created by bggRGjQaUbCoE on 2024/5/29 */
@@ -51,12 +48,6 @@ class C001Application : Application() {
                 .build(),
         )
 
-        Mojito.initialize(
-            MojitoOkHttpImageLoader(this),
-            SketchImageLoadFactory(),
-            object : DefaultMojitoConfig() {
-                override fun wrapPreviewContext(context: Context) = AppLanguage.wrap(context)
-            },
-        )
+        ImageViewer.initialize(PreviewImageFileLoader(this)) { AppLanguage.wrap(it) }
     }
 }

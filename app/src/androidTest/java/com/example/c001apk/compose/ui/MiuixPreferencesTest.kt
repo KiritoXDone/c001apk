@@ -12,7 +12,7 @@ import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.platform.app.InstrumentationRegistry
-import com.example.c001apk.compose.ui.component.settings.DropdownListItem
+import com.example.c001apk.compose.ui.component.settings.SelectionListItem
 import com.example.c001apk.compose.ui.component.MiuixRootPopupHost
 import com.example.c001apk.compose.ui.component.settings.SelectionItem
 import com.example.c001apk.compose.ui.component.settings.SwitchListItem
@@ -67,11 +67,11 @@ class MiuixPreferencesTest {
             C001apkComposeTheme(materialYou = false) {
                 MiuixRootPopupHost {
                     var mode by remember { mutableStateOf("跟随系统") }
-                    DropdownListItem(
+                    SelectionListItem(
                         value = mode,
-                        headlineText = "主题模式",
+                        title = "主题模式",
                         selections = listOf("跟随系统", "浅色", "深色").map { SelectionItem(it, it) },
-                        onValueChanged = { _, value -> mode = value },
+                        onSelected = { mode = it },
                     )
                 }
             }
@@ -91,24 +91,27 @@ class MiuixPreferencesTest {
                     var value by remember { mutableIntStateOf(1) }
                     var saves by remember { mutableIntStateOf(0) }
                     Column {
-                        DropdownListItem(
+                        SelectionListItem(
                             value = value,
-                            headlineText = "可选项",
+                            title = "可选项",
                             selections = listOf(SelectionItem("第一项", 1), SelectionItem("第二项", 7)),
-                            onValueChanged = { _, selected -> value = selected; saves++ },
+                            onSelected = { selected ->
+                                value = selected
+                                saves++
+                            },
                         )
-                        DropdownListItem<Int>(
+                        SelectionListItem<Int>(
                             value = null,
-                            headlineText = "空选项",
+                            title = "空选项",
                             selections = emptyList(),
-                            onValueChanged = { _, _ -> saves++ },
+                            onSelected = { saves++ },
                         )
-                        DropdownListItem(
+                        SelectionListItem(
                             value = 1,
-                            headlineText = "禁用项",
+                            title = "禁用项",
                             selections = listOf(SelectionItem("不可选", 1)),
                             enabled = false,
-                            onValueChanged = { _, _ -> saves++ },
+                            onSelected = { saves++ },
                         )
                         Text("$value / $saves")
                     }

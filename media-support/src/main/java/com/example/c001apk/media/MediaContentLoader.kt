@@ -21,15 +21,14 @@ import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
-import androidx.annotation.DrawableRes
 import androidx.core.content.ContextCompat
+import androidx.annotation.DrawableRes
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.media3.common.PlaybackException
-import net.mikaelzero.mojito.interfaces.OnMojitoViewCallback
-import net.mikaelzero.mojito.loader.ContentLoader
-import net.mikaelzero.mojito.loader.OnLongTapCallback
-import net.mikaelzero.mojito.loader.OnTapCallback
+import com.example.c001apk.imageviewer.ContentLoader
+import com.example.c001apk.imageviewer.OnLongTapCallback
+import com.example.c001apk.imageviewer.OnTapCallback
 import net.mikaelzero.mojito.view.sketch.core.SketchImageView
 import net.mikaelzero.mojito.view.sketch.core.zoom.ImageZoomer
 import java.io.File
@@ -43,7 +42,7 @@ import java.util.concurrent.Executors
 
 internal class MediaContentLoader(
     private val delegate: ContentLoader,
-    private val playbackSession: MojitoMediaPlaybackSession,
+    private val playbackSession: MediaPlaybackSession,
     private val imageUrl: String,
     private val videoUrlResolver: LivePhotoVideoUrlResolver?,
     private val mediaHint: RichMediaHint,
@@ -64,6 +63,8 @@ internal class MediaContentLoader(
     private var lifecycleVisible = false
     private var pageSelected = false
     private var pendingPlayRequest = false
+    private var startedPlaybackForPage = false
+    private var isClosing = false
     private lateinit var soundPreferences: LivePhotoSoundPreferences
     private var muted: Boolean
         get() = soundPreferences.muted
@@ -91,6 +92,7 @@ internal class MediaContentLoader(
     private val matrixChangeListener = ImageZoomer.OnMatrixChangeListener {
         positionVideoLayer()
         positionControls()
+        maybeStartPlayback()
     }
 
     override val displayRect: RectF
@@ -100,13 +102,11 @@ internal class MediaContentLoader(
         context: Context,
         originUrl: String,
         targetUrl: String?,
-        onMojitoViewCallback: OnMojitoViewCallback?,
     ) {
         this.context = context
         soundPreferences = LivePhotoSoundPreferences(context)
         playbackSession.attach(context)
-        playbackSession.register(this)
-        delegate.init(context, originUrl, targetUrl, onMojitoViewCallback)
+        delegate.init(context, originUrl, targetUrl)
         logState("init")
 
         root = FrameLayout(context).apply {
@@ -187,7 +187,7 @@ internal class MediaContentLoader(
         val replayMenuAction = createMenuAction {
             setLivePhotoMenuVisible(false)
             pendingPlayRequest = true
-            startPlayback()
+            maybeStartPlayback()
         }.apply {
             text = context.getString(R.string.media_replay)
             setTextViewIcon(R.drawable.ic_livephoto_replay)
@@ -255,6 +255,7 @@ internal class MediaContentLoader(
 
         imageZoomer = (delegate.providerRealView() as? SketchImageView)?.zoomer
         imageZoomer?.addOnMatrixChangeListener(matrixChangeListener)
+        playbackSession.register(this)
         (context as? LifecycleOwner)?.lifecycle?.addObserver(this)
     }
 
@@ -302,9 +303,7 @@ internal class MediaContentLoader(
                     logState("video ready")
                     setControlsVisible(true)
                     positionControls()
-                    if (livePhotoEnabled && canPlay()) {
-                        startPlayback()
-                    }
+                    maybeStartPlayback()
                 }
             }
         }
@@ -536,7 +535,7 @@ internal class MediaContentLoader(
         updateLivePhotoControls()
         if (enabled) {
             pendingPlayRequest = true
-            startPlayback()
+            maybeStartPlayback()
         } else {
             pendingPlayRequest = false
             playbackSession.stop(this)
@@ -544,16 +543,12 @@ internal class MediaContentLoader(
         }
     }
 
-    private fun startPlayback() {
-        val video = extractedVideo ?: run {
-            logState("play waiting for extract")
-            return
-        }
-        if (!canPlay()) {
-            logState("play ignored")
-            return
-        }
+    private fun maybeStartPlayback() {
+        val video = extractedVideo ?: return
+        if (!canPlay()) return
+        if (!pendingPlayRequest && (!livePhotoEnabled || startedPlaybackForPage)) return
         pendingPlayRequest = false
+        startedPlaybackForPage = true
         playing = false
         playbackFinished = false
         positionVideoLayer()
@@ -568,7 +563,8 @@ internal class MediaContentLoader(
     }
 
     private fun canPlay(): Boolean =
-        lifecycleVisible && pageSelected && loadAnimationFinished
+        !isClosing && !disposed && lifecycleVisible && pageSelected && loadAnimationFinished &&
+            !delegate.displayRect.isEmpty
 
     override fun onVideoFrameAvailable() {
         if (playbackFinished) return
@@ -796,20 +792,6 @@ internal class MediaContentLoader(
         positionControls()
     }
 
-    private fun restoreControlsWhenDragSettles() {
-        restoreControlsWhenDragSettles(++exitTransitionGeneration)
-    }
-
-    private fun restoreControlsWhenDragSettles(generation: Int) {
-        if (disposed || generation != exitTransitionGeneration) return
-        val parentScale = (root.parent as? View)?.scaleX ?: 1f
-        if (parentScale >= 0.995f) {
-            restoreControlsAfterExit()
-        } else {
-            root.postOnAnimation { restoreControlsWhenDragSettles(generation) }
-        }
-    }
-
     private fun updateAudioButton() {
         audioButton.setImageResource(
             if (muted) R.drawable.ic_sound_mute else R.drawable.ic_sound,
@@ -825,22 +807,19 @@ internal class MediaContentLoader(
             ?.setPause(true)
     }
 
-    override fun dispatchTouchEvent(
-        isDrag: Boolean,
-        isActionUp: Boolean,
-        isDown: Boolean,
-        isHorizontal: Boolean,
-    ): Boolean = delegate.dispatchTouchEvent(isDrag, isActionUp, isDown, isHorizontal)
+    override fun onDisplayRectChanged(onChange: () -> Unit) = delegate.onDisplayRectChanged(onChange)
 
-    override fun dragging(width: Int, height: Int, ratio: Float) {
-        delegate.dragging(width, height, ratio)
-        val parentScale = (root.parent as? View)?.scaleX ?: 1f
-        val progress = ((1f - parentScale) / EXIT_CONTROL_FADE_SCALE_RANGE).coerceIn(0f, 1f)
+    override fun ownsVerticalDrag(isDown: Boolean): Boolean = delegate.ownsVerticalDrag(isDown)
+
+    override fun dragging(scale: Float) {
+        delegate.dragging(scale)
+        val progress = ((1f - scale) / EXIT_CONTROL_FADE_SCALE_RANGE).coerceIn(0f, 1f)
         updateExitTransition(progress)
     }
 
     override fun beginBackToMin(isResetSize: Boolean) {
         if (!isResetSize) {
+            isClosing = true
             playbackSession.pause(this)
             pendingPlayRequest = false
             playbackFinished = true
@@ -860,7 +839,7 @@ internal class MediaContentLoader(
 
     override fun backToNormal() {
         delegate.backToNormal()
-        restoreControlsWhenDragSettles()
+        restoreControlsAfterExit()
     }
 
     override fun loadAnimFinish() {
@@ -868,12 +847,8 @@ internal class MediaContentLoader(
         loadAnimationFinished = true
         if (hasUltraHdr) pauseSketchBlockRendering()
         positionControls()
-        if (livePhotoEnabled && extractedVideo != null && canPlay()) startPlayback()
+        maybeStartPlayback()
     }
-
-    override fun needReBuildSize(): Boolean = delegate.needReBuildSize()
-
-    override fun useTransitionApi(): Boolean = delegate.useTransitionApi()
 
     override fun isLongImage(width: Int, height: Int): Boolean = delegate.isLongImage(width, height)
 
@@ -887,16 +862,13 @@ internal class MediaContentLoader(
         delegate.pageChange(isHidden)
         logState("lifecycle visible=${!isHidden}")
         if (isHidden) {
+            startedPlaybackForPage = false
             setLivePhotoMenuVisible(false)
             playbackSession.stop(this)
             showStaticLayer()
         } else {
             hideExitPreview()
-            if (livePhotoEnabled && extractedVideo != null && canPlay()) {
-                setControlsVisible(true)
-                positionControls()
-                startPlayback()
-            }
+            maybeStartPlayback()
         }
     }
 
@@ -905,22 +877,22 @@ internal class MediaContentLoader(
         if (selected && ::audioButton.isInitialized) updateAudioButton()
         logState("selected=$selected")
         if (!selected) {
+            startedPlaybackForPage = false
             setLivePhotoMenuVisible(false)
             playbackSession.stop(this)
             showStaticLayer()
-        } else if (livePhotoEnabled && extractedVideo != null && canPlay()) {
-            setControlsVisible(true)
-            positionControls()
-            startPlayback()
+        } else {
+            maybeStartPlayback()
         }
     }
 
-    internal fun dispose() {
+    override fun dispose() {
         if (disposed) return
         disposed = true
         bindGeneration++
         exitPreviewGeneration++
         playbackSession.unregister(this)
+        delegate.dispose()
         imageZoomer?.removeOnMatrixChangeListener(matrixChangeListener)
         imageZoomer = null
         if (::exitPreviewView.isInitialized) {
@@ -989,7 +961,7 @@ internal class MediaContentLoader(
     }
 
     private companion object {
-        const val TAG = "MojitoMedia"
+        const val TAG = "ImageViewerMedia"
         const val MAX_EXTERNAL_VIDEO_BYTES = 128L * 1024 * 1024
         const val LAYER_CROSSFADE_DURATION_MS = 250L
         const val MENU_ANIMATION_DURATION_MS = 160L

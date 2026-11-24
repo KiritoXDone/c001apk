@@ -11,7 +11,7 @@ import android.view.View
 import androidx.activity.ComponentActivity
 import androidx.test.core.app.ActivityScenario
 import androidx.test.platform.app.InstrumentationRegistry
-import net.mikaelzero.mojito.MojitoView
+import com.example.c001apk.imageviewer.ImageGestureLayout
 import net.mikaelzero.mojito.view.sketch.SketchContentLoaderImpl
 import net.mikaelzero.mojito.view.sketch.core.SketchImageView
 import org.junit.Assert.*
@@ -41,7 +41,7 @@ class ImageFreeZoomTest {
         report("Foreground activity ready")
         val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
         ActivityScenario.launch(ComponentActivity::class.java).use { scenario ->
-            lateinit var host: MojitoView
+            lateinit var host: ImageGestureLayout
             lateinit var image: SketchImageView
             var fullScale = 0f
             var initialScale = 0f
@@ -49,14 +49,15 @@ class ImageFreeZoomTest {
             var releasedScale = 0f
             scenario.onActivity { activity ->
                 val loader = SketchContentLoaderImpl()
-                host = MojitoView(activity)
+                loader.init(activity, "", null)
+                host = ImageGestureLayout(activity, { !loader.ownsVerticalDrag(true) }, { _, _ -> }, {})
+                host.addView(loader.providerView())
                 host.keepScreenOn = true
-                host.setContentLoader(loader, "", null)
                 image = loader.providerRealView() as SketchImageView
                 loader.isLongImage(width, height)
                 image.setImageDrawable(BitmapDrawable(activity.resources, bitmap))
                 activity.setContentView(host)
-                host.showWithoutView(width, height, true)
+                loader.loadAnimFinish()
             }
             instrumentation.waitForIdleSync()
             report("Image host ready")
@@ -85,7 +86,7 @@ class ImageFreeZoomTest {
                 val zoomer = checkNotNull(image.zoomer)
                 assertTrue("Pinch must pass the former screen-based upper limit", zoomer.zoomScale > fullScale * 8f)
                 assertEquals("Releasing must keep the chosen zoom", releasedScale, zoomer.zoomScale, releasedScale * 0.001f)
-                assertFalse(host.isDrag)
+                assertFalse(host.isDragging)
                 report("Released zoom retained; double-tap reset")
                 doubleTap(host)
             }

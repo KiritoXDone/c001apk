@@ -238,7 +238,7 @@ dependencies {
     }
     implementation(libs.oss.android.sdk)
 
-    implementation(project(":mojito"))
+    implementation(project(":image-viewer"))
     implementation(project(":SketchImageViewLoader"))
     implementation(project(":media-support"))
 }

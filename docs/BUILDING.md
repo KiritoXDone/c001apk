@@ -83,7 +83,7 @@ python scripts/build.py build-apk --build-type release --require-release-signing
 
 ```sh
 python scripts/build.py gradle :app:testDebugUnitTest :media-support:testDebugUnitTest \
-  :mojito:testDebugUnitTest :app:lintDebug
+  :image-viewer:testDebugUnitTest :app:lintDebug
 python -B -m unittest discover -s tools -p 'test_*.py'
 ```
 

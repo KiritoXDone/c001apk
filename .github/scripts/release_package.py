@@ -31,7 +31,7 @@ def check_environment(_args):
         configured = os.environ.get("JAVA_HOME")
         if not configured or not is_project_jdk(Path(configured)):
             raise ValueError("JDK 21 is not prepared. Run scripts/prebuild.py first.")
-    for module in ("app", "media-support", "mojito", "SketchImageViewLoader"):
+    for module in ("app", "media-support", "image-viewer", "SketchImageViewLoader"):
         script = (ROOT / module / "build.gradle.kts").read_text(encoding="utf-8")
         platform = re.search(r'compileSdkVersion\("android-([^"\n]+)"\)', script)
         if platform is None:

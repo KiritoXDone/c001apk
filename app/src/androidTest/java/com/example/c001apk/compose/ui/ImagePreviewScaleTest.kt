@@ -21,7 +21,7 @@ import android.view.View
 import androidx.test.platform.app.InstrumentationRegistry
 import net.mikaelzero.mojito.view.sketch.SketchContentLoaderImpl
 import net.mikaelzero.mojito.view.sketch.core.SketchImageView
-import net.mikaelzero.mojito.loader.OnLongTapCallback
+import com.example.c001apk.imageviewer.OnLongTapCallback
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import org.junit.Assert.*
@@ -138,7 +138,7 @@ class ImagePreviewScaleTest {
         val downTime = SystemClock.uptimeMillis()
         instrumentation.runOnMainSync {
             val loader = SketchContentLoaderImpl()
-            loader.init(instrumentation.targetContext, "", null, null)
+            loader.init(instrumentation.targetContext, "", null)
             view = loader.providerRealView() as SketchImageView
             loader.providerView().apply {
                 measure(
@@ -180,7 +180,7 @@ class ImagePreviewScaleTest {
         instrumentation.runOnMainSync {
             for ((width, height) in listOf(1600 to 900, 900 to 1600)) {
                 val loader = SketchContentLoaderImpl()
-                loader.init(instrumentation.targetContext, "", null, null)
+                loader.init(instrumentation.targetContext, "", null)
                 val view = loader.providerRealView() as SketchImageView
                 val host = loader.providerView()
                 host.measure(
@@ -201,7 +201,7 @@ class ImagePreviewScaleTest {
                 zoomer.getDrawRect(rect)
                 assertTrue(rect.width() <= 1080.1f && rect.height() <= 2400.1f)
                 assertTrue(zoomer.zoom(zoomer.maxZoomScale, false))
-                assertTrue(loader.dispatchTouchEvent(false, false, false, false))
+                assertTrue(loader.ownsVerticalDrag(isDown = true))
                 assertTrue(zoomer.zoom(zoomer.fullZoomScale, false))
                 zoomer.getDrawRect(rect)
                 assertTrue(rect.width() <= 1080.1f && rect.height() <= 2400.1f)

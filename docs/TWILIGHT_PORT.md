@@ -16,7 +16,7 @@
 
 内容过滤默认关闭，不预置针对特定用户的名单。用户可手动导入 [TG-Twilight 远程规则](https://github.com/TG-Twilight/c001apk/blob/filters/rules.json)，导入不自动启用过滤，不在启动时请求或后台自动更新。规则下载使用独立无账号凭据的客户端，限制 1 MiB、20 秒总超时，拒绝重定向、无效格式及旧版本/同版本变更；通过校验后原子替换远程快照，保留个人规则、例外及停用选择。匹配保留 schema v1 的 UID、完整话题名/ID、多组关键词距离、句内例外及严格级别语义，不执行远程正则。
 
-液态玻璃不移植。HDR 与实况照片已由 `media-support` / Mojito 实现，本次保留现有链路。
+液态玻璃不移植。HDR 与实况照片已由 `media-support` 与图片浏览模块实现，本次保留现有链路。
 
 本批回归入口：`IdentityWriteGuardTest`、`ContentFilterTest`、`ContentFilterStoreTest`、`TwilightRulesTest`、`TwilightRulesClientTest`、`FilteredPaginationTest`、`LocalFollowPagerTest`、`TopicFollowResultTest`、`AppNavigatorTest`，以及实机 `ContentFilterInteractionTest`、`FilteredFeedPaginationTest`、`MainRailLayoutTest`、`MiuixNavigationTest`。
 

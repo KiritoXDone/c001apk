@@ -16,7 +16,7 @@
         <item name="android:windowContentOverlay">@null</item>
     </style>
     <style name="Theme.C001apkCompose.ImagePreview" parent="AppThemeTranslucent">
-        <!-- Mojito animates its own backdrop; a second window dim layer flashes on exit. -->
+        <!-- 图片浏览页自行绘制背景，避免窗口在退出时重复压暗。 -->
         <item name="android:backgroundDimEnabled">false</item>
     </style>
 </resources>

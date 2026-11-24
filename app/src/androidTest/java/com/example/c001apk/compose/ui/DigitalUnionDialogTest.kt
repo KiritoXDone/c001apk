@@ -29,7 +29,10 @@ class DigitalUnionDialogTest {
         compose.setContent {
             MiuixTheme {
                 DigitalUnionDialog(id.value, generating = false, error = null,
-                    onGenerate = {}, onImport = {}, onDismiss = {}, onSave = { saved = it })
+                    onGenerate = {}, onImport = {}, onDismiss = {}, onSave = { value, onComplete ->
+                        saved = value
+                        onComplete(true)
+                    })
             }
         }
         compose.onNode(hasSetTextAction()).performTextReplacement("manual-synthetic-id")

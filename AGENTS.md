@@ -7,14 +7,14 @@
 | 位置 | 职责 |
 | --- | --- |
 | `app/` | 应用入口、导航、页面、业务逻辑、账号与网络协议 |
-| `mojito/` | 图片浏览、缩放与转场基础组件 |
+| `image-viewer/` | 全屏图片浏览、翻页、转场与渲染接口 |
 | `SketchImageViewLoader/` | Sketch 图片加载实现与图片浏览适配 |
 | `media-support/` | Media3 播放与媒体浏览适配 |
 | `miuix/` | 固定上游版本的 Miuix Android 及公共源码模块 |
 | `tools/` | APK 身份、资源、签名与对齐校验 |
 | `scripts/` | 预构建、工具链检查、编译与产物收集 |
 
-依赖方向为 `app` → 三个业务库模块和 Miuix 源码模块，`media-support` → `SketchImageViewLoader` 和 `mojito`，`SketchImageViewLoader` → `mojito`。Miuix 模块关系与源码来源见 `miuix/README.md`。禁止循环依赖，库模块不得引用应用业务。四个业务模块不套用其他项目的 `core/*`、`feature/*` 分层。
+依赖方向为 `app` → 三个业务库模块和 Miuix 源码模块，`media-support` → `SketchImageViewLoader` 和 `image-viewer`，`SketchImageViewLoader` → `image-viewer`。Miuix 模块关系与源码来源见 `miuix/README.md`。禁止循环依赖，库模块不得引用应用业务。四个业务模块不套用其他项目的 `core/*`、`feature/*` 分层。
 
 ### 应用内分层
 
@@ -118,7 +118,7 @@ python scripts/prebuild.py --portable
 python scripts/build.py doctor
 python scripts/build.py build-apk --build-type debug
 python scripts/build.py build-apk --build-type release
-python scripts/build.py gradle :app:testDebugUnitTest :media-support:testDebugUnitTest :mojito:testDebugUnitTest :app:lintDebug
+python scripts/build.py gradle :app:testDebugUnitTest :media-support:testDebugUnitTest :image-viewer:testDebugUnitTest :app:lintDebug
 python -B -m unittest discover -s tools -p test_*.py
 ```
 

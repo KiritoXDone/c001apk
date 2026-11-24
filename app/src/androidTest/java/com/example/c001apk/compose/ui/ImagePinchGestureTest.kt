@@ -9,8 +9,8 @@ import android.view.View
 import androidx.activity.ComponentActivity
 import androidx.test.core.app.ActivityScenario
 import androidx.test.platform.app.InstrumentationRegistry
-import net.mikaelzero.mojito.MojitoView
-import net.mikaelzero.mojito.loader.OnLongTapCallback
+import com.example.c001apk.imageviewer.ImageGestureLayout
+import com.example.c001apk.imageviewer.OnLongTapCallback
 import net.mikaelzero.mojito.view.sketch.SketchContentLoaderImpl
 import net.mikaelzero.mojito.view.sketch.core.SketchImageView
 import org.junit.Assert.*
@@ -28,14 +28,15 @@ class ImagePinchGestureTest {
         }
         val bitmap = Bitmap.createBitmap(1600, 900, Bitmap.Config.ARGB_8888)
         ActivityScenario.launch(ComponentActivity::class.java).use { scenario ->
-            lateinit var host: MojitoView
+            lateinit var host: ImageGestureLayout
             lateinit var image: SketchImageView
             var fullScale = 0f
             var longPressed = false
             scenario.onActivity { activity ->
                 val loader = SketchContentLoaderImpl()
-                host = MojitoView(activity)
-                host.setContentLoader(loader, "", null)
+                loader.init(activity, "", null)
+                host = ImageGestureLayout(activity, { !loader.ownsVerticalDrag(true) }, { _, _ -> }, {})
+                host.addView(loader.providerView())
                 image = loader.providerRealView() as SketchImageView
                 loader.isLongImage(1600, 900)
                 image.setImageDrawable(BitmapDrawable(activity.resources, bitmap))
@@ -43,7 +44,7 @@ class ImagePinchGestureTest {
                     override fun onLongTap(view: View, x: Float, y: Float) { longPressed = true }
                 })
                 activity.setContentView(host)
-                host.showWithoutView(1600, 900, true)
+                loader.loadAnimFinish()
             }
             instrumentation.waitForIdleSync()
             scenario.onActivity {
@@ -52,7 +53,7 @@ class ImagePinchGestureTest {
                 fullScale = zoomer.fullZoomScale
                 pinch(host, 200f, 700f)
                 assertTrue("Two fingers must enlarge the image", zoomer.zoomScale > fullScale * 1.5f)
-                assertFalse(host.isDrag)
+                assertFalse(host.isDragging)
             }
             SystemClock.sleep(400)
             // Reset finger spacing between pinches, as users do after reaching Android's
@@ -64,7 +65,7 @@ class ImagePinchGestureTest {
             }
             scenario.onActivity {
                 assertEquals(fullScale, checkNotNull(image.zoomer).zoomScale, 0.02f)
-                assertFalse(host.isDrag)
+                assertFalse(host.isDragging)
                 assertFalse(longPressed)
                 image.zoomer?.recycle("test-finished")
                 image.setImageDrawable(null)

@@ -3,8 +3,8 @@ package net.mikaelzero.mojito.view.sketch;
 import android.net.Uri;
 import android.view.View;
 
-import net.mikaelzero.mojito.interfaces.ImageViewLoadFactory;
-import net.mikaelzero.mojito.loader.ContentLoader;
+import com.example.c001apk.imageviewer.ImageViewLoadFactory;
+import com.example.c001apk.imageviewer.ContentLoader;
 import android.graphics.drawable.Drawable;
 
 import net.mikaelzero.mojito.view.sketch.core.Sketch;
@@ -16,7 +16,7 @@ import org.jetbrains.annotations.NotNull;
 
 public class SketchImageLoadFactory implements ImageViewLoadFactory {
     @Override
-    public void loadSillContent(@NotNull View view, @NotNull Uri uri) {
+    public void showImage(@NotNull View view, @NotNull Uri uri, boolean isPreview) {
         if (view instanceof SketchImageView) {
             SketchImageView sketchView = (SketchImageView) view;
             String path = uri.getPath();
@@ -39,13 +39,6 @@ public class SketchImageLoadFactory implements ImageViewLoadFactory {
                     sketchView.getZoomer().reset("postLoad");
                 }
             });
-        }
-    }
-
-    @Override
-    public void loadContentFail(@NotNull View view, int drawableResId) {
-        if (view instanceof SketchImageView) {
-            ((SketchImageView) view).displayResourceImage(drawableResId);
         }
     }
 

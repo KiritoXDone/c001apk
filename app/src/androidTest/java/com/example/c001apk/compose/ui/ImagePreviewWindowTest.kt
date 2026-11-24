@@ -13,13 +13,13 @@ import android.widget.ImageView
 import androidx.activity.ComponentActivity
 import androidx.test.core.app.ActivityScenario
 import androidx.test.platform.app.InstrumentationRegistry
+import com.example.c001apk.compose.R
+import com.example.c001apk.imageviewer.ImageViewer
+import com.example.c001apk.imageviewer.ImageViewerActivity
 import java.io.File
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
-import net.mikaelzero.mojito.Mojito
-import net.mikaelzero.mojito.MojitoView
-import net.mikaelzero.mojito.impl.SimpleMojitoViewCallback
-import net.mikaelzero.mojito.ui.ImageMojitoActivity
+import net.mikaelzero.mojito.view.sketch.SketchImageLoadFactory
 import org.junit.Assert.*
 import org.junit.Test
 
@@ -42,7 +42,7 @@ class ImagePreviewWindowTest {
         }
         val file = File.createTempFile("preview-window-", ".png", context.cacheDir)
         file.outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
-        var preview: ImageMojitoActivity? = null
+        var preview: ImageViewerActivity? = null
         try {
             ActivityScenario.launch(ComponentActivity::class.java).use { scenario ->
                 val laidOut = CountDownLatch(1)
@@ -68,19 +68,17 @@ class ImagePreviewWindowTest {
                 SystemClock.sleep(700)
                 assertHostIsWhite()
                 scenario.onActivity { activity ->
-                    Mojito.start(activity) {
-                        urls(Uri.fromFile(file).toString())
-                        views(thumbnail)
-                        autoLoadTarget(false)
-                        setOnMojitoListener(object : SimpleMojitoViewCallback() {
-                            override fun onShowFinish(view: MojitoView, immediately: Boolean) {
-                                shown.countDown()
-                            }
-                            override fun onMojitoViewFinish(position: Int) {
-                                closed.countDown()
-                            }
-                        })
-                    }
+                    ImageViewer.open(
+                        activity,
+                        ImageViewer.Request(
+                            images = listOf(ImageViewer.Image(Uri.fromFile(file).toString())),
+                            rendererAt = { SketchImageLoadFactory() },
+                            retryLabel = R.string.loading_error_retry,
+                            thumbnailAt = { thumbnail },
+                            onOpened = { shown.countDown() },
+                            onClosed = { closed.countDown() },
+                        ),
+                    )
                     activity.window.decorView.viewTreeObserver.addOnWindowFocusChangeListener {
                         if (it) resumed.countDown()
                     }
@@ -88,10 +86,10 @@ class ImagePreviewWindowTest {
                 assertTrue("Preview must open", shown.await(5, TimeUnit.SECONDS))
                 SystemClock.sleep(500)
                 instrumentation.runOnMainSync {
-                    preview = checkNotNull(Mojito.currentActivity?.get())
-                    assertEquals("Only Mojito's animated backdrop may darken the host", 0,
+                    preview = checkNotNull(ImageViewer.currentActivity?.get())
+                    assertEquals("Only the viewer's animated backdrop may darken the host", 0,
                         preview!!.window.attributes.flags and WindowManager.LayoutParams.FLAG_DIM_BEHIND)
-                    // Isolate the actual window compositor from Mojito's animated black backdrop.
+                    // Isolate the actual window compositor from the viewer's animated black backdrop.
                     // A system dim layer would keep the white host gray even at zero view alpha.
                     preview!!.findViewById<View>(android.R.id.content).alpha = 0f
                 }
