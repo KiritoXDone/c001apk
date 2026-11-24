@@ -199,8 +199,6 @@ internal fun LazyListScope.appearancePreferences(
     }
 }
 
-private fun scaleLabel(scale: Float): String = "%.2fx".format(scale)
-
 private fun themeTypeLabelRes(themeType: ThemeType): Int =
     when (themeType) {
         ThemeType.Default, ThemeType.UNRECOGNIZED -> R.string.theme_type_default
