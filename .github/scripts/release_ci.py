@@ -178,9 +178,9 @@ def prepare(args):
         "repository": repository, "run_id": run_id, "sha": os.environ["GITHUB_SHA"],
         "channel": args.channel, "app_name": source["app_name"],
         "artifact_name": source["artifact_name"], "base_version": source["version"],
-        "matrix": matrix,
+        "matrix": matrix, "publish_release": not args.build_only,
     }
-    tags, releases = remote_state(repository)
+    tags, releases = ({}, {}) if args.build_only else remote_state(repository)
     if int(os.environ["GITHUB_RUN_ATTEMPT"]) > 1:
         plan = restore_plan(repository, run_id)
         if any(plan.get(key) != value for key, value in identity.items()):
@@ -201,9 +201,11 @@ def prepare(args):
         (PLAN / "release.json").write_text(json.dumps(plan, indent=2) + "\n", encoding="utf-8")
         (PLAN / "notes.md").write_text(notes, encoding="utf-8")
 
-    check_tag(tags, plan)
+    if plan["publish_release"]:
+        check_tag(tags, plan)
     summary = (
-        f"App: {plan['app_name']}\nBase version: {plan['base_version']}\n"
+        f"App: {plan['app_name']}\nMode: {'release' if plan['publish_release'] else 'build only'}\n"
+        f"Base version: {plan['base_version']}\n"
         f"Version: {plan['version']}\nPlanned tag: {plan['tag']}\nCommit: {plan['sha']}\n\n{notes}"
     )
     print_text(summary)
@@ -217,7 +219,8 @@ def prepare(args):
         output(should_build="false")
         return
     output(
-        should_build="true", app_name=plan["app_name"], version=plan["version"],
+        should_build="true", publish_release=str(plan["publish_release"]).lower(),
+        app_name=plan["app_name"], version=plan["version"],
         tag=plan["tag"], matrix=json.dumps(matrix, separators=(",", ":")),
     )
 
@@ -281,6 +284,8 @@ def collect_packages(plan):
 
 def publish(_args):
     plan = load_plan()
+    if not plan["publish_release"]:
+        raise ValueError("A build-only plan cannot create tags or publish a Release.")
     files = collect_packages(plan)
     repository = plan["repository"]
     tags, releases = remote_state(repository)
@@ -334,6 +339,7 @@ def main():
     prepare_parser = commands.add_parser("prepare", help="Check metadata and save the release plan.")
     prepare_parser.add_argument("--channel", choices=("release", "beta"), required=True)
     prepare_parser.add_argument("--changelog-mode", choices=("current", "versioned"), required=True)
+    prepare_parser.add_argument("--build-only", action="store_true", help="Build the current version without checking tags or publishing.")
     prepare_parser.set_defaults(action=prepare)
     check_parser = commands.add_parser("check-artifacts", help="Verify one target's release packages.")
     check_parser.add_argument("--target", required=True)

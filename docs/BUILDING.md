@@ -123,6 +123,8 @@ ZIP 的 16 千字节对齐不等于原生库的内存页兼容性。仍需在目
 2. 提交修改，并按当前授权推送到 `main`。工作流检查 push 前后及全部新增提交中的实际应用版本；版本变化会自动构建，无需提前创建或推送标签。同文件中仅修改依赖或构建配置会跳过。
 3. 等待 `Build Release` 完成预检查、签名构建与发布；也可在 Actions 页面选择该工作流，在 `main` 上点击 `Run workflow` 手动发布当前提交。
 
+需要重新构建已有版本、验证 CI 而不发布时，手动运行时勾选 `build_only`。该模式保留源码版本，执行相同构建与 APK 校验并上传 Artifacts，跳过标签检查和发布，不修改已有 Release。
+
 预检查只读取元数据和日志，固定本次提交 SHA，保存 `release-plan-<run_id>`。构建沿用当前 Android ARM64、JDK 21、SDK 与正式签名，执行现有单元测试、Lint、Release 构建和 APK 校验；`versionCode` 来自该提交的完整 Git 历史。发布前核对文件清单、大小和 SHA-256，以同一 SHA 创建 `vMAJOR.MINOR.PATCH` 标签，先完整上传草稿，再公开并标记为最新版本。
 
 公开附件为 `c001apk-v<版本>-android-arm64.apk`、对应 `.apk.json` 校验报告、`.sha256` 校验和与 `.manifest.json` 文件清单，保存在本次运行的 `packages-android-arm64` artifact 中。

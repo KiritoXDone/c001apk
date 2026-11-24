@@ -5,6 +5,11 @@ on:
     branches:
       - main
   workflow_dispatch:
+    inputs:
+      build_only:
+        description: Build the current version without publishing a Release
+        type: boolean
+        default: false
 
 concurrency:
   group: build-release
@@ -30,6 +35,7 @@ jobs:
         shell: bash
     outputs:
       should_build: ${{ steps.meta.outputs.should_build }}
+      publish_release: ${{ steps.meta.outputs.publish_release }}
       version: ${{ steps.meta.outputs.version }}
       matrix: ${{ steps.meta.outputs.matrix }}
     steps:
@@ -55,7 +61,11 @@ jobs:
         id: meta
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: python .github/scripts/release_ci.py prepare --channel release --changelog-mode versioned
+          BUILD_ONLY: ${{ github.event_name == 'workflow_dispatch' && inputs.build_only }}
+        run: |
+          extra=()
+          if [ "$BUILD_ONLY" = true ]; then extra=(--build-only); fi
+          python .github/scripts/release_ci.py prepare --channel release --changelog-mode versioned "${extra[@]}"
 
       - name: Save release plan
         if: steps.meta.outputs.should_build == 'true'
@@ -171,7 +181,7 @@ jobs:
   publish:
     name: Publish release
     needs: [prepare, build]
-    if: needs.prepare.outputs.should_build == 'true' && needs.build.result == 'success'
+    if: needs.prepare.outputs.publish_release == 'true' && needs.build.result == 'success'
     runs-on: ubuntu-26.04
     permissions:
       contents: write
