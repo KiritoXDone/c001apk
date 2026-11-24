@@ -31,7 +31,7 @@ description: 调试 c001apk（com.example.c001apk.compose）的 Debug 构建，�
 1. 确认目标是 Debug 构建；Release 包没有调试通道，装 Release 会覆盖 Debug 包。
 2. 代码改动按 `AGENTS.md` 核对分层与约束；应用源码或构建配置变化后，用项目构建入口重新生成 Debug 产物，其余操作复用当前产物。
 3. 每次调用先 `app.status` 确认 `device` 与 `resumed`，再执行动作；同一实例的启动、交互与截图串行。
-4. 控件交互用应用内模拟，经真实输入路由并核对事件、状态与渲染。
+4. 控件交互用应用内模拟，经真实输入路由并核对事件、状态与渲染；Compose 窗口支持 `--x/--y` 坐标，输入框结合截图核对实际文本与焦点。
 5. 业务指令调用真实业务对象；设置项传显式值。未知命令与解析失败按失败处理。
 6. 分别核对控件事件链、业务状态与页面就绪结果。
 7. 退出用 `app.quit`，并核对进程终态；改过动画倍率先恢复。
@@ -56,8 +56,9 @@ description: 调试 c001apk（com.example.c001apk.compose）的 Debug 构建，�
 
 ## 截图与查阅
 
-- 应用内 `PixelCopy` 合成截图，默认原尺寸 WebP、质量 `40`，保存到 `build/screenshots/`。
-- `--high-quality` 输出原尺寸无损 PNG，供用户查看细节。
+- 默认输出原尺寸 WebP，编码质量 `40`，供 agent 查阅，保存到 `build/screenshots/`。
+- agent 默认使用普通截图命令；只有用户明确要求高质量截图时，才添加 `--high-quality`。
+- `--high-quality` 输出原尺寸无损 PNG，供用户查看和保存；PNG 压缩级别只影响体积。
 - 连续截图用 `screenshot.sequence`，参数与文件命名见 [截图指南](guides/screenshots.md)。
 
 ## 平台约束

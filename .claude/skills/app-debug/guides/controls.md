@@ -7,6 +7,7 @@
 - 点击在目标节点 `boundsInRoot` 的中心派发 `ACTION_DOWN`，60 ms 后派发 `ACTION_UP`；长按保持按下 700 ms 后抬起。
 - 滚动在目标节点或最大可滚动节点上派发按下、12 段移动、抬起序列（每段 16 ms），`--dx/--dy` 为手势位移，负数向上/向左，必须至少一个非零。
 - 文本先点击目标输入框使其获得焦点，再通过 `onCreateInputConnection` 提交文本并结束组合输入。
+- 点击、长按和滚动支持 `--x/--y` 成对指定 Compose 视图内的像素坐标；目标窗口必须包含 Compose 视图，坐标与语义选择器不能混用。
 - 事件只进入应用内部输入链，不移动系统光标、不产生全局按键。
 - 语义树只包含当前进程的 Compose 界面；Android 10 及以上优先定位获得焦点的窗口，支持独立 Dialog 和菜单窗口，旧系统使用主 Activity 窗口。系统窗口（状态栏、输入法）不在此列。
 
@@ -15,6 +16,7 @@
 ```text
 python .codex/skills/app-debug/scripts/run.py control.list --limit 300
 python .codex/skills/app-debug/scripts/run.py control.click --text 关于 --contains --wait settled
+python .codex/skills/app-debug/scripts/run.py control.click --x 180 --y 520 --wait settled
 python .codex/skills/app-debug/scripts/run.py control.long-click --desc 头像 --wait settled
 python .codex/skills/app-debug/scripts/run.py control.scroll --dy -600 --wait settled
 python .codex/skills/app-debug/scripts/run.py control.text --desc 搜索框 --value miuix

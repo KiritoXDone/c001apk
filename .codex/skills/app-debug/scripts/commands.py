@@ -67,15 +67,22 @@ def configure_control_list(parser: argparse.ArgumentParser) -> None:
     add_selector_arguments(parser)
 
 
+def add_coordinate_arguments(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument("--x", type=int, help="应用窗口内的横向像素坐标，与 --y 同时使用。")
+    parser.add_argument("--y", type=int, help="应用窗口内的纵向像素坐标，与 --x 同时使用。")
+
+
 def configure_control_pointer(parser: argparse.ArgumentParser) -> None:
     add_device_argument(parser)
     add_selector_arguments(parser)
+    add_coordinate_arguments(parser)
     add_wait_argument(parser)
 
 
 def configure_control_scroll(parser: argparse.ArgumentParser) -> None:
     add_device_argument(parser)
     add_selector_arguments(parser)
+    add_coordinate_arguments(parser)
     parser.add_argument("--dx", type=int, default=0, help="Horizontal gesture distance.")
     parser.add_argument("--dy", type=int, default=0, help="Vertical gesture distance.")
     add_wait_argument(parser)
@@ -221,7 +228,10 @@ COMMANDS: tuple[Command, ...] = (
     Command(
         "control.click", "Click a control",
         "app_debug.controls:click", configure_control_pointer,
-        examples=("run.py control.click --text 热闻 --wait settled",),
+        examples=(
+            "run.py control.click --text 热闻 --wait settled",
+            "run.py control.click --x 180 --y 520 --wait settled",
+        ),
         target_fields=("device",),
     ),
     Command(

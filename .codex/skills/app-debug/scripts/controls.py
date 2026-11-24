@@ -40,11 +40,21 @@ def list_controls(args) -> dict:
     return {"count": len(filtered), "items": filtered}
 
 
+def _pointer_location(args) -> dict:
+    if args.x is None and args.y is None:
+        return {"target": selector(args)}
+    if args.x is None or args.y is None:
+        raise CommandFailure("Provide both --x and --y for coordinate input")
+    if args.tag or args.desc or args.text:
+        raise CommandFailure("Use coordinates or a control selector, not both")
+    return {"x": args.x, "y": args.y}
+
+
 def click(args) -> dict:
     device = resolve_device(args.device)
     return call(device, {
         "command": "pointer", "action": "click",
-        "target": selector(args), "wait": args.wait,
+        **_pointer_location(args), "wait": args.wait,
     })
 
 
@@ -52,7 +62,7 @@ def long_click(args) -> dict:
     device = resolve_device(args.device)
     return call(device, {
         "command": "pointer", "action": "longClick",
-        "target": selector(args), "wait": args.wait,
+        **_pointer_location(args), "wait": args.wait,
     })
 
 
@@ -64,8 +74,8 @@ def scroll(args) -> dict:
         "command": "pointer", "action": "scroll",
         "dx": args.dx, "dy": args.dy, "wait": args.wait,
     }
-    if args.tag or args.desc or args.text:
-        payload["target"] = selector(args)
+    if args.tag or args.desc or args.text or args.x is not None or args.y is not None:
+        payload.update(_pointer_location(args))
     return call(device, payload)
 
 
