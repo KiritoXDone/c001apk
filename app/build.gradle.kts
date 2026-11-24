@@ -197,7 +197,6 @@ dependencies {
     implementation(libs.androidx.datastore.core)
     implementation(libs.androidx.exifinterface)
     implementation(libs.androidx.hilt.navigation.compose)
-    implementation(libs.androidx.lifecycle.livedata.ktx)
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.viewModel.compose)

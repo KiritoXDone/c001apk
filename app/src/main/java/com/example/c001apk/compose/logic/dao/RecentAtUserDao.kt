@@ -1,6 +1,5 @@
 package com.example.c001apk.compose.logic.dao
 
-import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
@@ -22,9 +21,6 @@ interface RecentAtUserDao {
 
     @Query("SELECT * FROM RecentAtUser ORDER BY id DESC")
     suspend fun loadAllList(): List<RecentAtUser>
-
-    @Query("SELECT * FROM RecentAtUser ORDER BY id DESC")
-    fun loadAllListLive(): LiveData<List<RecentAtUser>>
 
     @Query("SELECT * FROM RecentAtUser ORDER BY id DESC")
     fun loadAllListFlow(): Flow<List<RecentAtUser>>

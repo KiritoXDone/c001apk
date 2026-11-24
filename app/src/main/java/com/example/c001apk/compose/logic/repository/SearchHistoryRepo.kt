@@ -1,6 +1,5 @@
 package com.example.c001apk.compose.logic.repository
 
-import androidx.lifecycle.LiveData
 import com.example.c001apk.compose.di.SearchHistory
 import com.example.c001apk.compose.logic.dao.StringEntityDao
 import com.example.c001apk.compose.logic.model.StringEntity
@@ -16,10 +15,6 @@ class SearchHistoryRepo @Inject constructor(
 
     fun loadAllListFlow(): Flow<List<StringEntity>> {
         return searchHistoryDao.loadAllListFlow()
-    }
-
-    fun loadAllListLive(): LiveData<List<StringEntity>> {
-        return searchHistoryDao.loadAllListLive()
     }
 
     suspend fun insertHistory(history: StringEntity) {

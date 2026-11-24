@@ -1,6 +1,5 @@
 package com.example.c001apk.compose.logic.dao
 
-import androidx.lifecycle.LiveData
 import com.example.c001apk.compose.logic.model.RecentAtUser
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.runBlocking
@@ -33,7 +32,6 @@ private class FakeRecentAtUserDao : RecentAtUserDao {
     override suspend fun insert(data: RecentAtUser) { users[data.username] = data }
     override suspend fun insertList(list: List<RecentAtUser>) { list.forEach { insert(it) } }
     override suspend fun loadAllList(): List<RecentAtUser> = users.values.sortedByDescending { it.id }
-    override fun loadAllListLive(): LiveData<List<RecentAtUser>> = error("Not used")
     override fun loadAllListFlow(): Flow<List<RecentAtUser>> = error("Not used")
     override suspend fun findUser(username: String): RecentAtUser? = users[username]
     override suspend fun latestId(): Long? = users.values.maxOfOrNull { it.id }

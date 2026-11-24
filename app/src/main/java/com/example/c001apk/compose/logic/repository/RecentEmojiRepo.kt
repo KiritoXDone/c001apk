@@ -1,6 +1,5 @@
 package com.example.c001apk.compose.logic.repository
 
-import androidx.lifecycle.LiveData
 import com.example.c001apk.compose.di.RecentEmoji
 import com.example.c001apk.compose.logic.dao.StringEntityDao
 import com.example.c001apk.compose.logic.model.StringEntity
@@ -13,10 +12,6 @@ class RecentEmojiRepo @Inject constructor(
     @param:RecentEmoji
     private val recentEmojiDao: StringEntityDao,
 ) {
-
-    fun loadAllListLive(): LiveData<List<StringEntity>> {
-        return recentEmojiDao.loadAllListLive()
-    }
 
     fun loadAllListFlow(): Flow<List<StringEntity>> {
         return recentEmojiDao.loadAllListFlow()

@@ -1,6 +1,5 @@
 package com.example.c001apk.compose.logic.repository
 
-import androidx.lifecycle.LiveData
 import com.example.c001apk.compose.di.BrowseHistory
 import com.example.c001apk.compose.di.FeedFavorite
 import com.example.c001apk.compose.logic.dao.HistoryFavoriteDao
@@ -16,10 +15,6 @@ class HistoryFavoriteRepo @Inject constructor(
     @param:FeedFavorite
     private val feedFavoriteDao: HistoryFavoriteDao,
 ) {
-
-    fun loadAllHistoryListLive(): LiveData<List<FeedEntity>> {
-        return browseHistoryDao.loadAllListLive()
-    }
 
     fun loadAllHistoryListFlow(): Flow<List<FeedEntity>> {
         return browseHistoryDao.loadAllListFlow()
@@ -62,10 +57,6 @@ class HistoryFavoriteRepo @Inject constructor(
 
     suspend fun deleteAllHistory() {
         browseHistoryDao.deleteAll()
-    }
-
-    fun loadAllFavoriteListLive(): LiveData<List<FeedEntity>> {
-        return feedFavoriteDao.loadAllListLive()
     }
 
     fun loadAllFavoriteListFlow(): Flow<List<FeedEntity>> {

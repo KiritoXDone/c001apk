@@ -1,6 +1,5 @@
 package com.example.c001apk.compose.logic.repository
 
-import androidx.lifecycle.LiveData
 import com.example.c001apk.compose.logic.dao.RecentAtUserDao
 import com.example.c001apk.compose.logic.model.RecentAtUser
 import javax.inject.Inject
@@ -16,10 +15,6 @@ class RecentAtUserRepo @Inject constructor(
 
     suspend fun rememberUser(username: String, avatar: String) {
         recentAtUserDao.rememberUser(username, avatar, System.currentTimeMillis())
-    }
-
-    fun loadAllListLive(): LiveData<List<RecentAtUser>> {
-        return recentAtUserDao.loadAllListLive()
     }
 
     suspend fun insertUser(user: RecentAtUser) {

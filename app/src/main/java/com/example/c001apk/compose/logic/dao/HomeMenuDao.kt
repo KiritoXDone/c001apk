@@ -1,6 +1,5 @@
 package com.example.c001apk.compose.logic.dao
 
-import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
@@ -24,9 +23,6 @@ interface HomeMenuDao {
 
     @Query("SELECT * FROM HomeMenu ORDER BY position ASC")
     suspend fun loadAllList(): List<HomeMenu>
-
-    @Query("SELECT * FROM HomeMenu ORDER BY position ASC")
-    fun loadAllListLive(): LiveData<List<HomeMenu>>
 
     @Query("SELECT * FROM HomeMenu ORDER BY position ASC")
     fun loadAllListFlow(): Flow<List<HomeMenu>>
