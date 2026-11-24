@@ -7,6 +7,7 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import com.example.c001apk.compose.R
 import androidx.compose.ui.text.style.TextAlign
@@ -40,6 +41,7 @@ fun BlackListScreen(
     val entries by viewModel.blackList.collectAsStateWithLifecycle(initialValue = null)
     val blackList = entries.orEmpty()
     val context = LocalContext.current
+    val resources = LocalResources.current
     var query by rememberSaveable(type) { mutableStateOf("") }
     var menu by remember(type) { mutableStateOf(false) }
     var showClearDialog by remember(type) { mutableStateOf(false) }
@@ -53,15 +55,15 @@ fun BlackListScreen(
                 val output = context.contentResolver.openOutputStream(uri)
                     ?: throw IOException("Cannot create export file")
                 output.use { it.write(Gson().toJson(blackList.map { entry -> entry.data }).toByteArray()) }
-                context.makeToast(context.getString(R.string.blocklist_exported))
+                context.makeToast(resources.getString(R.string.blocklist_exported))
             } catch (e: Exception) {
-                context.makeToast(context.getString(R.string.export_failed))
+                context.makeToast(resources.getString(R.string.export_failed))
             }
         }
 
     fun onBackup() {
         if (blackList.isEmpty()) {
-            context.makeToast(context.getString(R.string.blocklist_empty))
+            context.makeToast(resources.getString(R.string.blocklist_empty))
         } else {
             try {
                 val date =
@@ -72,7 +74,7 @@ fun BlackListScreen(
                         .format(Date())
                 backupSAFLauncher.launch("${type.lowercase()}_blacklist_$date.json")
             } catch (e: Exception) {
-                context.makeToast(context.getString(R.string.export_failed))
+                context.makeToast(resources.getString(R.string.export_failed))
                 e.printStackTrace()
             }
         }
@@ -91,9 +93,9 @@ fun BlackListScreen(
                 val newList: List<String> =
                     if (currentList.isEmpty()) dataList else dataList.filter { it !in currentList }
                 if (newList.isNotEmpty()) viewModel.insertList(newList.map { StringEntity(it) })
-                context.makeToast(context.getString(R.string.blocklist_imported))
+                context.makeToast(resources.getString(R.string.blocklist_imported))
             } catch (e: Exception) {
-                context.makeToast(context.getString(R.string.blocklist_import_failed))
+                context.makeToast(resources.getString(R.string.blocklist_import_failed))
                 e.printStackTrace()
             }
         }
@@ -102,7 +104,7 @@ fun BlackListScreen(
         try {
             restoreSAFLauncher.launch("application/json")
         } catch (e: Exception) {
-            context.makeToast(context.getString(R.string.blocklist_import_failed))
+            context.makeToast(resources.getString(R.string.blocklist_import_failed))
             e.printStackTrace()
         }
     }

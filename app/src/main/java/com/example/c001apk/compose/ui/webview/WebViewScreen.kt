@@ -25,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -70,6 +71,7 @@ fun WebViewScreen(
     val prefs = LocalUserPreferences.current
     val initialAccountRevision = remember { prefs.accountRevision }
     val context = LocalContext.current
+    val resources = LocalResources.current
     val layoutDirection = LocalLayoutDirection.current
     var title by remember { mutableStateOf(EMPTY_STRING) }
     var dropdownMenuExpanded by remember { mutableStateOf(false) }
@@ -201,8 +203,8 @@ fun WebViewScreen(
                     scope.launch {
                         val result =
                             snackbarHostState.showSnackbar(
-                                message = context.getString(R.string.link_external_confirm),
-                                actionLabel = context.getString(R.string.link_open),
+                                message = resources.getString(R.string.link_external_confirm),
+                                actionLabel = resources.getString(R.string.link_open),
                                 withDismissAction = true,
                             )
                         when (result) {

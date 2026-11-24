@@ -41,6 +41,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityOptionsCompat
@@ -111,6 +112,7 @@ fun FeedScreen(
 
     var rawMarkdown by rememberSaveable(id) { mutableStateOf(false) }
     val context = LocalContext.current
+    val resources = LocalResources.current
     val layoutDirection = LocalLayoutDirection.current
     val lazyListState = rememberLazyListState()
     var dropdownMenuExpanded by remember(id) { mutableStateOf(false) }
@@ -175,14 +177,14 @@ fun FeedScreen(
             if (result.resultCode == RESULT_OK) {
                 result.data?.let { VoteCommentTarget.fromIntent(it) }?.let { target ->
                     viewModel.onVoteCommentPublished(target)
-                    context.makeToast(context.getString(R.string.feed_comment_published))
+                    context.makeToast(resources.getString(R.string.feed_comment_published))
                     return@rememberLauncherForActivityResult
                 }
                 val data =
                     result.data?.getParcelableExtraCompat<HomeFeedResponse.Data>("response_data")
                 data?.let {
                     viewModel.updateReply(it)
-                    context.makeToast(context.getString(R.string.feed_reply_published))
+                    context.makeToast(resources.getString(R.string.feed_reply_published))
                     if (viewModel.replyType == "feed" && shouldShowSortCard) {
                         scope.launch {
                             lazyListState.scrollToItem(viewModel.itemSize)

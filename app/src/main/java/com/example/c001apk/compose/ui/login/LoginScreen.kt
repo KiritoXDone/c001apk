@@ -25,6 +25,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import com.example.c001apk.compose.R
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -65,6 +66,7 @@ fun LoginScreen(
     val viewModel = hiltViewModel<LoginViewModel>()
 
     val context = LocalContext.current
+    val resources = LocalResources.current
     val layoutDirection = LocalLayoutDirection.current
     val prefs = LocalUserPreferences.current
     val initialAccountRevision = remember { prefs.accountRevision }
@@ -75,7 +77,7 @@ fun LoginScreen(
 
     fun onLogin() {
         if (account.isNotEmpty() && password.isNotEmpty()) {
-            context.makeToast(context.getString(R.string.login_progress))
+            context.makeToast(resources.getString(R.string.login_progress))
             viewModel.loginData["submit"] = "1"
             viewModel.loginData["randomNumber"] = createRandomNumber()
             viewModel.loginData["requestHash"] = viewModel.requestHash
@@ -85,7 +87,7 @@ fun LoginScreen(
             viewModel.loginData["code"] = EMPTY_STRING
             viewModel.onLogin()
         } else {
-            context.makeToast(context.getString(R.string.login_empty))
+            context.makeToast(resources.getString(R.string.login_empty))
         }
     }
 
