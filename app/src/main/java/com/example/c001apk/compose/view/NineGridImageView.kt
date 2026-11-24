@@ -235,7 +235,6 @@ constructor(
                     imgWidth = imageLp.first
                     imgHeight = imageLp.second
                     val mediaHint = replace.coolApkRichMediaHint()
-                    val isLongImage = imgHeight > imgWidth * 22f / 9f
                     when (mediaHint) {
                         RichMediaHint.LIVE_PHOTO -> {
                             AppCompatResources.getDrawable(
@@ -244,16 +243,8 @@ constructor(
                                 )
                                 ?.let { setBadge(it, 24.dp, 24.dp) }
                         }
-                        RichMediaHint.ULTRA_HDR -> {
-                            setBadge("HDR")
-                            if (isLongImage) setTopStartBadge(context.getString(R.string.image_long))
-                        }
-                        RichMediaHint.NONE ->
-                            when {
-                                isGif -> setBadge("GIF")
-                                isLongImage -> setBadge(context.getString(R.string.image_long))
-                                else -> Unit
-                            }
+                        RichMediaHint.ULTRA_HDR -> setBadge("HDR")
+                        RichMediaHint.NONE -> if (isGif) setBadge("GIF")
                     }
                 }
                 addView(imageView, generateDefaultLayoutParams())

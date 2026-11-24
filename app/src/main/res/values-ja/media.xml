@@ -5,7 +5,6 @@
     <string name="image_save_all">画像をすべて保存</string>
     <string name="image_share">画像を共有</string>
     <string name="image_copy_url">画像の URL をコピー</string>
-    <string name="image_long">縦長画像</string>
     <string name="image_tap_retry">タップして再試行</string>
     <string name="image_saved">画像を保存しました</string>
     <string name="image_save_failed">画像を保存できません</string>

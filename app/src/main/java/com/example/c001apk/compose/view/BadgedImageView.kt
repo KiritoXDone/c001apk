@@ -31,11 +31,8 @@ class BadgedImageView(
     private var badge: Drawable? = null
     private var badgeWidth = 0
     private var badgeHeight = 0
-    private var badgeGravity: Int = Gravity.END or Gravity.BOTTOM
-    private var topStartBadge: Drawable? = null
-    private var topStartBadgeWidth = 0
-    private var topStartBadgeHeight = 0
-    private var badgePadding: Int = 4.dp
+    private val badgeGravity: Int = Gravity.END or Gravity.BOTTOM
+    private val badgePadding: Int = 4.dp
     var colorPrimaryContainer: Int = Color.BLACK
     var colorOnPrimaryContainer: Int = Color.WHITE
 
@@ -52,38 +49,23 @@ class BadgedImageView(
         invalidate()
     }
 
-    fun setTopStartBadge(text: String) {
-        val drawable = BadgeDrawable(text, colorPrimaryContainer, colorOnPrimaryContainer)
-        topStartBadge = drawable
-        topStartBadgeWidth = drawable.intrinsicWidth
-        topStartBadgeHeight = drawable.intrinsicHeight
-        badgeBoundsSet = false
-        invalidate()
-    }
-
     override fun draw(canvas: Canvas) {
         super.draw(canvas)
-        if (!badgeBoundsSet && (badge != null || topStartBadge != null)) {
-            layoutBadges()
+        if (!badgeBoundsSet && badge != null) {
+            layoutBadge()
         }
         badge?.draw(canvas)
-        topStartBadge?.draw(canvas)
     }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
-        if (badge != null || topStartBadge != null) {
-            layoutBadges()
+        if (badge != null) {
+            layoutBadge()
         }
     }
 
-    private fun layoutBadges() {
+    private fun layoutBadge() {
         badge?.layoutBadge(badgeGravity, badgeWidth, badgeHeight)
-        topStartBadge?.layoutBadge(
-            Gravity.START or Gravity.TOP,
-            topStartBadgeWidth,
-            topStartBadgeHeight,
-        )
         badgeBoundsSet = true
     }
 

@@ -8,7 +8,6 @@ internal fun uncroppedPreviewUrl(originalUrl: String, thumbnailUrl: String): Str
     val dimensions = imageDimensions.find(path) ?: return thumbnailUrl
     val width = dimensions.groupValues[1].toIntOrNull() ?: return thumbnailUrl
     val height = dimensions.groupValues[2].toIntOrNull() ?: return thumbnailUrl
-    // Match the feed's long-image badge, and also protect very wide panoramas.
     val isLongImage =
         height.toLong() * 9 > width.toLong() * 22 || width.toLong() > height.toLong() * 8
     return if (isLongImage) originalUrl else thumbnailUrl

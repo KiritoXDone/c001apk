@@ -5,7 +5,6 @@
     <string name="image_save_all">儲存全部圖片</string>
     <string name="image_share">分享圖片</string>
     <string name="image_copy_url">複製圖片地址</string>
-    <string name="image_long">長圖</string>
     <string name="image_tap_retry">點選重試</string>
     <string name="image_saved">圖片已儲存</string>
     <string name="image_save_failed">無法儲存圖片</string>

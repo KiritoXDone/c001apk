@@ -5,7 +5,6 @@
     <string name="image_save_all">모든 이미지 저장</string>
     <string name="image_share">이미지 공유</string>
     <string name="image_copy_url">이미지 URL 복사</string>
-    <string name="image_long">긴 이미지</string>
     <string name="image_tap_retry">눌러서 다시 시도</string>
     <string name="image_saved">이미지가 저장되었습니다</string>
     <string name="image_save_failed">이미지를 저장할 수 없습니다</string>

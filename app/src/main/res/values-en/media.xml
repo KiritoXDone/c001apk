@@ -4,7 +4,6 @@
     <string name="image_save_all">Save all images</string>
     <string name="image_share">Share image</string>
     <string name="image_copy_url">Copy image URL</string>
-    <string name="image_long">Long image</string>
     <string name="image_tap_retry">Tap to retry</string>
     <string name="image_saved">Image saved</string>
     <string name="image_save_failed">Could not save image</string>
