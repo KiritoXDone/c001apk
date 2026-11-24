@@ -105,7 +105,7 @@ ZIP 的 16 千字节对齐不等于原生库的内存页兼容性。仍需在目
 
 ## GitHub Actions
 
-[Android 工作流](../.github/workflows/android.yml) 支持手动构建。Release 构建需要配置以下仓库 Secrets：
+[Build Release 工作流](../.github/workflows/build-release.yml) 支持 `main` 手动发布，以及 push 中应用版本变化后的自动发布。Release 构建需要配置以下仓库 Secrets：
 
 | Secret | 内容 |
 | --- | --- |
@@ -119,18 +119,15 @@ ZIP 的 16 千字节对齐不等于原生库的内存页兼容性。仍需在目
 
 ## 发布版本
 
-1. 更新 `app/build.gradle.kts` 中的默认版本、`.github/workflows/android.yml` 中的版本默认值，以及 `CHANGELOG.md` 对应版本的更新记录。
-2. 提交代码；因提交会增加 `versionCode`，最终发布包必须从该提交重新构建。说明待推送内容并取得确认后，推送代码及对应的 `vMAJOR.MINOR.PATCH` 标签。
-3. 等待 [Publish Release 工作流](../.github/workflows/release.yml) 完成。
+1. 更新 `app/build.gradle.kts` 中 `appVersion` 的默认版本，并在 [.github/CHANGELOG.md](../.github/CHANGELOG.md) 顶部追加 `## <版本> — <日期>` 和对应更新记录。
+2. 提交修改，并按当前授权推送到 `main`。工作流检查 push 前后及全部新增提交中的实际应用版本；版本变化会自动构建，无需提前创建或推送标签。同文件中仅修改依赖或构建配置会跳过。
+3. 等待 `Build Release` 完成预检查、签名构建与发布；也可在 Actions 页面选择该工作流，在 `main` 上点击 `Run workflow` 手动发布当前提交。
 
-工作流从标签读取版本号，检出该标签的源码，执行单元测试、Lint、Release 构建和 APK 签名校验。通过后使用对应更新记录创建 GitHub Release，一并发布 APK、JSON 校验报告和 `SHA256SUMS`。
+预检查只读取元数据和日志，固定本次提交 SHA，保存 `release-plan-<run_id>`。构建沿用当前 Android ARM64、JDK 21、SDK 与正式签名，执行现有单元测试、Lint、Release 构建和 APK 校验；`versionCode` 来自该提交的完整 Git 历史。发布前核对文件清单、大小和 SHA-256，以同一 SHA 创建 `vMAJOR.MINOR.PATCH` 标签，先完整上传草稿，再公开并标记为最新版本。
 
-`v1.6.1` 和 `v1.6.2` 仅运行栏样式、首页标签顺序和启动状态的定向单元测试；Release 构建和 APK 签名校验不变。
-`v1.6.5` 仅运行栏样式、主导航和消息入口的定向单元测试，保留 Release 构建和 APK 签名校验。
+公开附件为 `c001apk-v<版本>-android-arm64.apk`、对应 `.apk.json` 校验报告、`.sha256` 校验和与 `.manifest.json` 文件清单，保存在本次运行的 `packages-android-arm64` artifact 中。
 
-公开 APK 文件名为 `c001apk_<版本名>.<版本号>.apk`，与本地构建的命名格式不同。
-
-若因 CI 环境问题失败，可手动运行 `Publish Release` 并填写原标签。源码仍从该标签检出，无需移动标签；如果 Release 已存在，重试会更新其说明和附件。
+若运行失败，在原运行页面重跑会恢复已保存的发布计划与草稿。计划丢失或过期时发起新运行。已公开的同名标签与同一 SHA 会跳过构建并保留原附件；同名标签指向其他 SHA 时失败，需更新源码版本后重新发布。首次分支 push 或缺少比较历史时自动跳过，按提示在 `main` 手动运行。
 
 ## Fork 的更新来源
 

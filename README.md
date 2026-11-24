@@ -7,11 +7,11 @@
 基于 Kotlin 与 Jetpack Compose 的第三方酷安客户端，采用 miuix 界面。
 
 [![Release](https://img.shields.io/github/v/release/KiritoXDone/c001apk?style=flat-square)](https://github.com/KiritoXDone/c001apk/releases/latest)
-[![Build](https://github.com/KiritoXDone/c001apk/actions/workflows/release.yml/badge.svg)](https://github.com/KiritoXDone/c001apk/actions/workflows/release.yml)
+[![Build](https://github.com/KiritoXDone/c001apk/actions/workflows/build-release.yml/badge.svg)](https://github.com/KiritoXDone/c001apk/actions/workflows/build-release.yml)
 [![Android](https://img.shields.io/badge/Android-7.0%2B-3DDC84?style=flat-square&logo=android&logoColor=white)](#下载)
 [![License](https://img.shields.io/badge/License-AGPL--3.0-607D8B?style=flat-square)](LICENSE)
 
-[下载](https://github.com/KiritoXDone/c001apk/releases/latest) · [更新记录](CHANGELOG.md) · [问题反馈](https://github.com/KiritoXDone/c001apk/issues) · [构建指南](docs/BUILDING.md)
+[下载](https://github.com/KiritoXDone/c001apk/releases/latest) · [更新记录](.github/CHANGELOG.md) · [问题反馈](https://github.com/KiritoXDone/c001apk/issues) · [构建指南](docs/BUILDING.md)
 
 </div>
 

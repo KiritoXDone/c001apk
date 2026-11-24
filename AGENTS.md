@@ -41,6 +41,7 @@
 ## 配置来源
 
 - `app/build.gradle.kts` 管理应用身份、唯一默认版本、Git 派生版本号和签名；`gradle/libs.versions.toml` 管理插件与依赖；`gradle/wrapper/gradle-wrapper.properties` 管理 Gradle 版本。
+- `.github/CHANGELOG.md` 按版本章节保存发布日志；`.github/workflows/build-release.yml` 统一提供 `main` 手动发布与 push 版本变化后的自动发布；`.github/scripts/` 负责云端元数据、发布计划、APK 收纳和 Release 上传。
 - 多语言资源位于 `app/src/main/res/`；主题位于 `app/src/main/java/com/example/c001apk/compose/ui/theme/`。
 - `scripts/build_support/` 维护构建并发额度与技能同步；技能同步独立于 SDK、JDK 和应用状态。
 - `CLAUDE.md` 只保留一行 `@AGENTS.md`。`.codex/skills/` 为主源，修改后立即通过同步入口更新 `.claude/skills/` 并检查文件集合与字节一致；独立镜像改动先归入主源。
@@ -125,7 +126,7 @@ python -B -m unittest discover -s tools -p test_*.py
 - 便携工具链位于 `build/jdk/`；模块输出位于 `build/gradle/<模块>/`；收集的安装包位于 `build/apk/<构建类型>/`；项目缓存位于 `build/cache/`。
 - Gradle 的 `clean` 只清理模块输出，不清理工具链、安装包和本地记录。禁止为重新构建先删除整个 `build/`。
 - 保留应用包名 `com.example.c001apk.compose`、最低 API 24、目标 API 35、ARM64 ABI 与当前签名策略。
-- 编译 SDK 分别为应用的 37.0、媒体模块的 35、两个图片模块的 34；构建工具为 36.0.0。不要因为本机缺组件就改项目 SDK 版本。
+- 编译 SDK 分别为应用的 37.1、媒体模块的 35、两个图片模块的 34；构建工具为 36.0.0。不要因为本机缺组件就改项目 SDK 版本。
 - 应用和 Miuix 源码模块 Java/Kotlin 目标为 21，三个业务库模块为 17；当前显式关闭 AGP 内置 Kotlin 和新 DSL，继续使用已有插件，不照搬参考项目的插件配置。
 - 本项目没有 `ktlintFormat`、`ktlintCheck`、`versionCatalogUpdate` 任务，不写不存在的检查命令。
 - 纯文档或技能调整无需编译，除非用户要求。构建、源码、资源或清单改动运行相关已有检查与编译；没有实际执行或没有测试用例，不能报告通过。

@@ -4,7 +4,6 @@
 !/AGENTS.md
 !/CLAUDE.md
 !/README.md
-!/CHANGELOG.md
 !/LICENSE
 !/renovate.json
 !/build.gradle.kts
@@ -90,8 +89,13 @@
 !/tools/
 !/tools/*.py
 !/.github/
+!/.github/CHANGELOG.md
 !/.github/workflows/
-!/.github/workflows/*.yml
+!/.github/workflows/build-release.yml
+!/.github/scripts/
+!/.github/scripts/release_source.py
+!/.github/scripts/release_ci.py
+!/.github/scripts/release_package.py
 
 # 长期维护文档与界面预览，不开放本地记录目录。
 !/docs/
