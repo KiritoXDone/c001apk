@@ -117,6 +117,12 @@ constructor(
         it.withCurrentDevice().copy(deviceIdentityRevision = it.deviceIdentityRevision + 1)
     }
 
+    internal suspend fun initializeMissingDeviceParameters() = userPreferences.updateData { current ->
+        if (current.xAppDevice.isNotBlank()) current
+        else current.withDigitalUnionId(current.szlmId)
+            .copy(deviceIdentityRevision = current.deviceIdentityRevision + 1)
+    }
+
     suspend fun setImageQuality(value: Int) =
         withContext(Dispatchers.IO) {
             userPreferences.updateData { it.copy(imageQuality = value) }

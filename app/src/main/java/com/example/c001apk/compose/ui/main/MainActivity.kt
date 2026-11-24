@@ -170,10 +170,6 @@ class MainActivity : ComponentActivity() {
             CompositionLocalProvider(
                 LocalUserPreferences provides preferences,
             ) {
-                LaunchedEffect(preferences.xAppDevice) {
-                    if (preferences.xAppDevice.isEmpty()) viewModel.regenerateParams()
-                }
-
                 com.example.c001apk.compose.util.CookieUtil.publishAccount(preferences)
                 szlmId = preferences.szlmId
                 xAppDevice = preferences.xAppDevice
