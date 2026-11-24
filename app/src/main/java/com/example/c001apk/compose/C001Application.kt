@@ -1,8 +1,10 @@
 package com.example.c001apk.compose
 
 import android.app.Application
+import android.content.Context
 import coil.Coil
 import coil.ImageLoader
+import com.example.c001apk.compose.logic.settings.AppLanguage
 import com.example.c001apk.compose.util.BoundedImageInterceptor
 import com.example.c001apk.compose.util.AddCookiesInterceptor
 import com.example.c001apk.compose.util.MojitoOkHttpImageLoader
@@ -11,6 +13,7 @@ import dagger.hilt.android.HiltAndroidApp
 import me.zhanghai.android.appiconloader.coil.AppIconFetcher
 import me.zhanghai.android.appiconloader.coil.AppIconKeyer
 import net.mikaelzero.mojito.Mojito
+import net.mikaelzero.mojito.impl.DefaultMojitoConfig
 import net.mikaelzero.mojito.view.sketch.SketchImageLoadFactory
 import okhttp3.OkHttpClient
 
@@ -51,6 +54,9 @@ class C001Application : Application() {
         Mojito.initialize(
             MojitoOkHttpImageLoader(this),
             SketchImageLoadFactory(),
+            object : DefaultMojitoConfig() {
+                override fun wrapPreviewContext(context: Context) = AppLanguage.wrap(context)
+            },
         )
     }
 }

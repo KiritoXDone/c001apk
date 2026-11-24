@@ -71,9 +71,7 @@ class Mojito {
             ImageMojitoActivity.hasShowedAnimMap[configBean.position] = false
             DataWrapUtil.put(configBean)
             val activity = scanForActivity(context)
-            val intent = Intent(activity, ImageMojitoActivity::class.java).apply {
-                putExtra(ImageMojitoActivity.EXTRA_LANGUAGE_TAGS, context?.resources?.configuration?.locales?.toLanguageTags())
-            }
+            val intent = Intent(activity, ImageMojitoActivity::class.java)
             activity?.startActivity(intent)
             activity?.overridePendingTransition(0, 0)
         }
