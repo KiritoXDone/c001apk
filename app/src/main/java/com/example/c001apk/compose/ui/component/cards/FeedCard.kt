@@ -72,6 +72,8 @@ import top.yukonga.miuix.kmp.icon.glass.Reply
 import top.yukonga.miuix.kmp.squircle.squircleClip
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
+internal val FEED_CONTENT_HORIZONTAL_PADDING = 12.dp
+
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun FeedCard(
@@ -93,7 +95,7 @@ fun FeedCard(
     onDismissTradeLinkHint: () -> Unit = {},
     afterMessage: (@Composable () -> Unit)? = null,
 ) {
-    val horizontal = 12.dp
+    val horizontal = FEED_CONTENT_HORIZONTAL_PADDING
     Card(
         modifier =
             modifier

@@ -66,10 +66,12 @@ import com.example.c001apk.compose.ui.component.MiuixToolbarIconButton
 import com.example.c001apk.compose.ui.component.MiuixMenu as DropdownMenu
 import com.example.c001apk.compose.ui.component.MiuixMenuItem as DropdownMenuItem
 import com.example.c001apk.compose.ui.component.MiuixScaffold as Scaffold
+import com.example.c001apk.compose.ui.component.cards.FEED_CONTENT_HORIZONTAL_PADDING
 import com.example.c001apk.compose.ui.component.cards.FeedCard
 import com.example.c001apk.compose.ui.component.cards.FeedReplyCard
 import com.example.c001apk.compose.ui.component.cards.FeedReplySortCard
 import com.example.c001apk.compose.ui.component.cards.LoadingCard
+import com.example.c001apk.compose.ui.component.cards.LocalDetailReplyHorizontalPadding
 import com.example.c001apk.compose.ui.component.cards.SkeletonCard
 import com.example.c001apk.compose.ui.component.cards.SkeletonType
 import com.example.c001apk.compose.ui.component.rememberHapticClick
@@ -255,6 +257,10 @@ fun FeedScreen(
     CompositionLocalProvider(
         LocalMarkdownRaw provides rawMarkdown,
         com.example.c001apk.compose.ui.component.cards.LocalDetailComments provides true,
+        LocalDetailReplyHorizontalPadding provides
+            if (articleList.isNullOrEmpty() && filterData?.isVoteFeed == false) {
+                FEED_CONTENT_HORIZONTAL_PADDING
+            } else null,
     ) {
         BoxWithConstraints(Modifier.fillMaxSize()) {
             val detailInset = ((maxWidth - 800.dp) / 2).coerceAtLeast(12.dp)

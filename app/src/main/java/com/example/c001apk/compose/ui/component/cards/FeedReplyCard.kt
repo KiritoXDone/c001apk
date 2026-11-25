@@ -27,6 +27,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
@@ -60,6 +61,8 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 val LocalDetailComments = staticCompositionLocalOf { false }
 
+internal val LocalDetailReplyHorizontalPadding = staticCompositionLocalOf<Dp?> { null }
+
 data class ReplyThreadCorners(val first: Boolean, val last: Boolean)
 
 val LocalReplyThreadCorners = staticCompositionLocalOf<ReplyThreadCorners?> { null }
@@ -92,7 +95,8 @@ fun FeedReplyCard(
     val isLikeReply by lazy { data.likeUserInfo != null }
     val detailComments = LocalDetailComments.current
     val threadCorners = LocalReplyThreadCorners.current
-    val horizontal by lazy { if (isFeedReply) 16.dp else 10.dp }
+    val detailHorizontal = if (isTotalReply) null else LocalDetailReplyHorizontalPadding.current
+    val horizontal = detailHorizontal ?: if (isFeedReply) 16.dp else 10.dp
     val vertical = if (isFeedReply) 12.dp else 10.dp
     val defaultCorner = if (detailComments) 20.dp else if (isFeedReply) 0.dp else 16.dp
     val topCorner = threadCorners?.let { if (it.first) 20.dp else 0.dp } ?: defaultCorner
@@ -504,7 +508,7 @@ fun FeedReplyCard(
             ) {
                 ReplyRows(
                     modifier =
-                        Modifier.padding(start = 10.dp, top = 10.dp, end = 16.dp)
+                        Modifier.padding(start = 10.dp, top = 10.dp, end = detailHorizontal ?: 16.dp)
                             .squircleSurface(MiuixTheme.colorScheme.surface, 16.dp)
                             .padding(vertical = 6.dp)
                             .constrainAs(replyRows) {
