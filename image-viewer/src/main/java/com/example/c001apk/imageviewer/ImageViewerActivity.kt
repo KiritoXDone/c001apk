@@ -275,6 +275,7 @@ class ImageViewerActivity : AppCompatActivity() {
     private fun closeViewer() {
         if (closing) return
         closing = true
+        root.removeCallbacks(updateSystemBarsRunnable)
         pager.isUserInputEnabled = false
         removeThumbnailOverlay()
         val page = pages[selectedPage]
@@ -296,10 +297,20 @@ class ImageViewerActivity : AppCompatActivity() {
         } else {
             from.copy(scale = from.scale * 0.94f, contentAlpha = 0f, backdropAlpha = 0f, indicatorAlpha = 0f)
         }
+        if (statusBarHidden) {
+            // 退出转场还在遮挡底页时恢复状态栏，让底页先收到稳定的 inset。
+            WindowCompat.getInsetsController(window, root).show(statusBars)
+            statusBarHidden = false
+        }
         animate(CLOSE_DURATION_MS, { applyTransform(from, to, it) }) {
-            finish()
-            @Suppress("DEPRECATION")
-            overridePendingTransition(0, 0)
+            root.doOnPreDraw {
+                root.postOnAnimation {
+                    finish()
+                    @Suppress("DEPRECATION")
+                    overridePendingTransition(0, 0)
+                }
+            }
+            root.invalidate()
         }
     }
 
