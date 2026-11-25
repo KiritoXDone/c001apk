@@ -73,6 +73,7 @@ import top.yukonga.miuix.kmp.squircle.squircleClip
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 internal val FEED_CONTENT_HORIZONTAL_PADDING = 12.dp
+internal val FEED_DETAIL_AUTHOR_HORIZONTAL_PADDING = 16.dp
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable

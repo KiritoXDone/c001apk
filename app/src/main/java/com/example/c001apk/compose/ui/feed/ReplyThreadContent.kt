@@ -11,6 +11,7 @@ import androidx.compose.ui.res.stringResource
 import com.example.c001apk.compose.R
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.example.c001apk.compose.logic.model.HomeFeedResponse
 import com.example.c001apk.compose.logic.state.FooterState
@@ -32,6 +33,7 @@ fun ReplyThreadContent(
     isEnd: Boolean,
     onLoadMore: () -> Unit,
     onDismiss: () -> Unit,
+    detailHorizontalPadding: Dp? = null,
     replyContent: @Composable (HomeFeedResponse.Data, Int) -> Unit,
 ) {
     val listState = rememberLazyListState()
@@ -53,8 +55,12 @@ fun ReplyThreadContent(
             }
         }
         BoxWithConstraints(Modifier.weight(1f).fillMaxWidth()) {
-            val inset = ((maxWidth - 800.dp) / 2).coerceAtLeast(16.dp)
-            CompositionLocalProvider(LocalDetailComments provides true) {
+            val horizontalPadding = detailHorizontalPadding ?: FEED_REPLY_HORIZONTAL_PADDING
+            val inset = ((maxWidth - 800.dp) / 2).coerceAtLeast(horizontalPadding)
+            CompositionLocalProvider(
+                LocalDetailComments provides true,
+                LocalDetailReplyHorizontalPadding provides detailHorizontalPadding,
+            ) {
                 LazyColumn(
                     Modifier.fillMaxSize(),
                     state = listState,
@@ -105,7 +111,10 @@ fun ReplyThreadContent(
                                                 ),
                                         ) {
                                             HorizontalDivider(
-                                                Modifier.padding(start = 56.dp, end = 16.dp),
+                                                Modifier.padding(
+                                                    start = horizontalPadding + FEED_REPLY_AVATAR_SIZE + FEED_REPLY_AVATAR_GAP,
+                                                    end = horizontalPadding,
+                                                ),
                                             )
                                         }
                                     }

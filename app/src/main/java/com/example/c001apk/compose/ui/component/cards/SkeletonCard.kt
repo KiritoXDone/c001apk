@@ -78,6 +78,17 @@ fun SkeletonCard(
         SkeletonType.DETAIL -> 380.dp
         SkeletonType.REPLY -> 132.dp
     }
+    val horizontalPadding = when (type) {
+        SkeletonType.FEED -> 16.dp
+        SkeletonType.DETAIL -> FEED_CONTENT_HORIZONTAL_PADDING
+        SkeletonType.REPLY -> LocalDetailReplyHorizontalPadding.current ?: FEED_REPLY_HORIZONTAL_PADDING
+    }
+    val authorInset = if (type == SkeletonType.DETAIL) {
+        FEED_DETAIL_AUTHOR_HORIZONTAL_PADDING - horizontalPadding
+    } else {
+        0.dp
+    }
+    val verticalPadding = if (type == SkeletonType.REPLY) FEED_REPLY_VERTICAL_PADDING else 16.dp
 
     Card(
         modifier = modifier
@@ -92,9 +103,9 @@ fun SkeletonCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(height)
-                .padding(16.dp)
+                .padding(horizontal = horizontalPadding, vertical = verticalPadding)
                 .drawWithCache {
-                    val path = skeletonPath(type, isRtl)
+                    val path = skeletonPath(type, isRtl, authorInset.toPx())
                     val brush = Brush.linearGradient(
                         colors = listOf(
                             highlightColor.copy(alpha = 0f),
@@ -119,22 +130,26 @@ fun SkeletonCard(
     }
 }
 
-private fun CacheDrawScope.skeletonPath(type: SkeletonType, isRtl: Boolean): Path {
+private fun CacheDrawScope.skeletonPath(type: SkeletonType, isRtl: Boolean, authorInsetPx: Float): Path {
     val path = Path()
     fun block(x: Float, y: Float, width: Float, height: Float, radius: Float = 5.dp.toPx()) {
-        val left = if (isRtl) size.width - x - width else x
+        val start = x.coerceAtLeast(0f)
+        val blockWidth = (x + width).coerceAtMost(size.width) - start
+        if (blockWidth <= 0f) return
+        val left = if (isRtl) size.width - start - blockWidth else start
         path.addRoundRect(
-            RoundRect(Rect(left, y, left + width, y + height), CornerRadius(radius)),
+            RoundRect(Rect(left, y, left + blockWidth, y + height), CornerRadius(radius)),
         )
     }
 
     val avatarSize = when (type) {
         SkeletonType.FEED -> 36.dp
         SkeletonType.DETAIL -> 48.dp
-        SkeletonType.REPLY -> 30.dp
+        SkeletonType.REPLY -> FEED_REPLY_AVATAR_SIZE
     }.toPx()
-    val headerStart = avatarSize + 12.dp.toPx()
-    block(0f, 0f, avatarSize, avatarSize, if (type == SkeletonType.DETAIL) 16.dp.toPx() else avatarSize / 2)
+    val avatarGap = if (type == SkeletonType.REPLY) FEED_REPLY_AVATAR_GAP else 12.dp
+    val headerStart = authorInsetPx + avatarSize + avatarGap.toPx()
+    block(authorInsetPx, 0f, avatarSize, avatarSize, if (type == SkeletonType.DETAIL) 16.dp.toPx() else avatarSize / 2)
     block(
         headerStart,
         4.dp.toPx(),

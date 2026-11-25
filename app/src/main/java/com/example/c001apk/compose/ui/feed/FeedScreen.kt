@@ -258,12 +258,12 @@ fun FeedScreen(
         LocalMarkdownRaw provides rawMarkdown,
         com.example.c001apk.compose.ui.component.cards.LocalDetailComments provides true,
         LocalDetailReplyHorizontalPadding provides
-            if (articleList.isNullOrEmpty() && filterData?.isVoteFeed == false) {
+            if (articleList.isNullOrEmpty() && filterData?.isVoteFeed != true) {
                 FEED_CONTENT_HORIZONTAL_PADDING
             } else null,
     ) {
         BoxWithConstraints(Modifier.fillMaxSize()) {
-            val detailInset = ((maxWidth - 800.dp) / 2).coerceAtLeast(12.dp)
+            val detailInset = ((maxWidth - 800.dp) / 2).coerceAtLeast(FEED_CONTENT_HORIZONTAL_PADDING)
             val replySkeletonCount = ceil(maxHeight.value / 142f).toInt()
             Scaffold(
                 modifier = modifier.fillMaxSize(),

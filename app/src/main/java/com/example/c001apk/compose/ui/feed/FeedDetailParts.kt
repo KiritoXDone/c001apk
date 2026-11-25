@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.sp
 import com.example.c001apk.compose.logic.model.HomeFeedResponse
 import com.example.c001apk.compose.ui.component.CoilLoader
+import com.example.c001apk.compose.ui.component.cards.FEED_DETAIL_AUTHOR_HORIZONTAL_PADDING
 import com.example.c001apk.compose.ui.component.cards.FeedVisibilityNotice
 import com.example.c001apk.compose.util.DateUtils.fromToday
 import com.example.c001apk.compose.util.Utils.richToString
@@ -42,7 +43,7 @@ fun FeedDetailAuthor(data: HomeFeedResponse.Data, onViewUser: (String) -> Unit) 
                 .clickable(interactionSource = null, indication = SinkFeedback()) {
                     onViewUser(data.uid.orEmpty())
                 }
-                .padding(horizontal = 16.dp, vertical = 12.dp),
+                .padding(horizontal = FEED_DETAIL_AUTHOR_HORIZONTAL_PADDING, vertical = 12.dp),
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,

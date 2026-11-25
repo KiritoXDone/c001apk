@@ -63,6 +63,11 @@ val LocalDetailComments = staticCompositionLocalOf { false }
 
 internal val LocalDetailReplyHorizontalPadding = staticCompositionLocalOf<Dp?> { null }
 
+internal val FEED_REPLY_HORIZONTAL_PADDING = 16.dp
+internal val FEED_REPLY_AVATAR_SIZE = 30.dp
+internal val FEED_REPLY_AVATAR_GAP = 10.dp
+internal val FEED_REPLY_VERTICAL_PADDING = 12.dp
+
 data class ReplyThreadCorners(val first: Boolean, val last: Boolean)
 
 val LocalReplyThreadCorners = staticCompositionLocalOf<ReplyThreadCorners?> { null }
@@ -95,9 +100,9 @@ fun FeedReplyCard(
     val isLikeReply by lazy { data.likeUserInfo != null }
     val detailComments = LocalDetailComments.current
     val threadCorners = LocalReplyThreadCorners.current
-    val detailHorizontal = if (isTotalReply) null else LocalDetailReplyHorizontalPadding.current
-    val horizontal = detailHorizontal ?: if (isFeedReply) 16.dp else 10.dp
-    val vertical = if (isFeedReply) 12.dp else 10.dp
+    val detailHorizontal = LocalDetailReplyHorizontalPadding.current
+    val horizontal = detailHorizontal ?: if (isFeedReply) FEED_REPLY_HORIZONTAL_PADDING else 10.dp
+    val vertical = if (isFeedReply) FEED_REPLY_VERTICAL_PADDING else 10.dp
     val defaultCorner = if (detailComments) 20.dp else if (isFeedReply) 0.dp else 16.dp
     val topCorner = threadCorners?.let { if (it.first) 20.dp else 0.dp } ?: defaultCorner
     val bottomCorner = threadCorners?.let { if (it.last) 20.dp else 0.dp } ?: defaultCorner
@@ -158,7 +163,7 @@ fun FeedReplyCard(
             url = data.likeUserInfo?.userAvatar ?: data.userAvatar,
             modifier =
                 Modifier.padding(top = vertical)
-                    .size(30.dp)
+                    .size(FEED_REPLY_AVATAR_SIZE)
                     .then(
                         if (threadCorners != null) Modifier.squircleClip(10.dp)
                         else Modifier.clip(CircleShape),
@@ -175,7 +180,7 @@ fun FeedReplyCard(
         LinkText(
             text = data.likeUserInfo?.username ?: data.username.orEmpty(),
             modifier =
-                Modifier.padding(start = 10.dp, top = vertical).constrainAs(username) {
+                Modifier.padding(start = FEED_REPLY_AVATAR_GAP, top = vertical).constrainAs(username) {
                     start.linkTo(avatar.end)
                     top.linkTo(avatar.top)
                     end.linkTo(if (!isLikeReply) expand.start else dateLine.start)
@@ -201,7 +206,7 @@ fun FeedReplyCard(
                 } else data.message.orEmpty(),
             modifier =
                 Modifier.padding(
-                        start = if (!isLikeReply && data.feed == null) 10.dp else 0.dp,
+                        start = if (!isLikeReply && data.feed == null) FEED_REPLY_AVATAR_GAP else 0.dp,
                         top = if (!isLikeReply && data.feed == null) 5.dp else 10.dp,
                         end = horizontal,
                     )
@@ -224,7 +229,7 @@ fun FeedReplyCard(
             text = fromToday(if (isLikeReply) (data.likeTime ?: 0) else (data.dateline ?: 0)),
             modifier =
                 Modifier.padding(
-                        start = if (isLikeReply || data.feed != null) 0.dp else 10.dp,
+                        start = if (isLikeReply || data.feed != null) 0.dp else FEED_REPLY_AVATAR_GAP,
                         top = 10.dp,
                         end = if (isLikeReply) 10.dp else 0.dp,
                     )
@@ -323,7 +328,7 @@ fun FeedReplyCard(
                     feedType = data.feedType,
                     modifier =
                         Modifier.padding(
-                                start = if (data.feed != null) 0.dp else 10.dp,
+                                start = if (data.feed != null) 0.dp else FEED_REPLY_AVATAR_GAP,
                                 top = 10.dp,
                                 end = horizontal,
                             )
@@ -508,7 +513,11 @@ fun FeedReplyCard(
             ) {
                 ReplyRows(
                     modifier =
-                        Modifier.padding(start = 10.dp, top = 10.dp, end = detailHorizontal ?: 16.dp)
+                        Modifier.padding(
+                            start = FEED_REPLY_AVATAR_GAP,
+                            top = 10.dp,
+                            end = detailHorizontal ?: FEED_REPLY_HORIZONTAL_PADDING,
+                        )
                             .squircleSurface(MiuixTheme.colorScheme.surface, 16.dp)
                             .padding(vertical = 6.dp)
                             .constrainAs(replyRows) {

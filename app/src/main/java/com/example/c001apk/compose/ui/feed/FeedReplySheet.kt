@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 import com.example.c001apk.compose.ui.component.FeedListEntry
 import com.example.c001apk.compose.ui.component.MiuixNavigationSheet
+import com.example.c001apk.compose.ui.component.cards.LocalDetailReplyHorizontalPadding
 import com.example.c001apk.compose.util.ReportType
 import com.example.c001apk.compose.util.Utils.richToString
 import com.example.c001apk.compose.util.copyText
@@ -20,6 +21,7 @@ internal fun FeedReplySheet(
     onLaunchReply: () -> Unit,
 ) {
     val context = LocalContext.current
+    val horizontalPadding = LocalDetailReplyHorizontalPadding.current
     MiuixNavigationSheet(onDismissRequest = onDismiss) { dismiss ->
         ReplyThreadContent(
             state = viewModel.replyLoadingState,
@@ -29,6 +31,7 @@ internal fun FeedReplySheet(
             isEnd = viewModel.stopReplyAutomaticLoading,
             onLoadMore = viewModel::loadMoreReply,
             onDismiss = dismiss,
+            detailHorizontalPadding = horizontalPadding,
         ) { reply, index ->
             FeedListEntry(
                 item = reply,
