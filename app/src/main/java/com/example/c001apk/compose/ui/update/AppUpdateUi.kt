@@ -58,6 +58,7 @@ fun AppUpdateHost(navigator: AppNavigator, model: AppUpdateViewModel = hiltViewM
     val release = state.release
     if (release != null) {
         var isMenuExpanded by remember { mutableStateOf(false) }
+        var isMenuHeldDown by remember { mutableStateOf(false) }
         val skippedMessage = stringResource(R.string.update_skipped, release.version)
         MiuixAlertDialog(
             onDismissRequest = { model.updates.dismiss() },
@@ -65,13 +66,21 @@ fun AppUpdateHost(navigator: AppNavigator, model: AppUpdateViewModel = hiltViewM
             titleActions = {
                 val close = checkNotNull(LocalDialogClose.current)
                 Box {
-                    IconButton(onClick = { isMenuExpanded = true }, modifier = Modifier.size(40.dp)) {
+                    IconButton(
+                        onClick = {
+                            isMenuHeldDown = true
+                            isMenuExpanded = true
+                        },
+                        holdDownState = isMenuHeldDown,
+                        modifier = Modifier.size(40.dp),
+                    ) {
                         Icon(MiuixIcons.More, stringResource(R.string.update_more), Modifier.size(24.dp))
                     }
                     MiuixMenu(
                         expanded = isMenuExpanded,
                         onDismissRequest = { isMenuExpanded = false },
                         alignment = PopupPositionProvider.Align.End,
+                        onDismissFinished = { isMenuHeldDown = false },
                     ) {
                         MiuixMenuItem(
                             text = { Text(stringResource(R.string.update_view_page)) },

@@ -55,8 +55,11 @@ fun rememberHapticClick(
 }
 
 @Composable
-fun MoreMenuButton(onClick: () -> Unit) {
-    MiuixToolbarIconButton(onClick = rememberHapticClick(onClick = onClick)) {
+fun MoreMenuButton(holdDownState: Boolean, onClick: () -> Unit) {
+    MiuixToolbarIconButton(
+        onClick = rememberHapticClick(onClick = onClick),
+        holdDownState = holdDownState,
+    ) {
         Icon(
             imageVector = if (LocalUserPreferences.current.topBarStyle == TopBarStyle.OS4)
                 MiuixIcons.Glass.GlassMore else MiuixIcons.More,

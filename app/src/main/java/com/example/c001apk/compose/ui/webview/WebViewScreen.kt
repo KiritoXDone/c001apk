@@ -75,6 +75,7 @@ fun WebViewScreen(
     val layoutDirection = LocalLayoutDirection.current
     var title by remember { mutableStateOf(EMPTY_STRING) }
     var dropdownMenuExpanded by remember { mutableStateOf(false) }
+    var isMenuHeldDown by remember { mutableStateOf(false) }
 
     var progress by remember { mutableFloatStateOf(0.0f) }
     val animatedProgress by
@@ -109,10 +110,14 @@ fun WebViewScreen(
                 },
                 actions = {
                     Box {
-                        MoreMenuButton { dropdownMenuExpanded = true }
+                        MoreMenuButton(holdDownState = isMenuHeldDown) {
+                            isMenuHeldDown = true
+                            dropdownMenuExpanded = true
+                        }
                         DropdownMenu(
                             expanded = dropdownMenuExpanded,
                             onDismissRequest = { dropdownMenuExpanded = false },
+                            onDismissFinished = { isMenuHeldDown = false },
                         ) {
                             listOf(
                                     stringResource(id = R.string.menu_refresh),

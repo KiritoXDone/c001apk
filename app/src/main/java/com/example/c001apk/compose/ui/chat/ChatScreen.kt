@@ -74,6 +74,7 @@ fun ChatScreen(
 
     val context = LocalContext.current
     var dropdownMenuExpanded by remember { mutableStateOf(false) }
+    var isMenuHeldDown by remember { mutableStateOf(false) }
     var showDialog by remember { mutableStateOf(false) }
     var retryDelivery by remember { mutableStateOf<ChatViewModel.Delivery?>(null) }
     val lazyListState = rememberLazyListState()
@@ -127,10 +128,14 @@ fun ChatScreen(
                 title = username,
                 actions = {
                     Box {
-                        MoreMenuButton { dropdownMenuExpanded = true }
+                        MoreMenuButton(holdDownState = isMenuHeldDown) {
+                            isMenuHeldDown = true
+                            dropdownMenuExpanded = true
+                        }
                         DropdownMenu(
                             expanded = dropdownMenuExpanded,
                             onDismissRequest = { dropdownMenuExpanded = false },
+                            onDismissFinished = { isMenuHeldDown = false },
                         ) {
                             listOf(
                                     stringResource(id = R.string.menu_check),

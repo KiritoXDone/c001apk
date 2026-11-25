@@ -71,7 +71,13 @@ fun FollowScreen(
                                 if (prefs.isLogin) Icon(MiuixIcons.Glass.ChevronForward, null,
                                     Modifier.size(12.dp).rotate(90f))
                             }
-                            MiuixMenu(expanded = menu, onDismissRequest = { menu = false }, contentScale = 1f) {
+                            MiuixMenu(
+                                expanded = menu,
+                                onDismissRequest = { menu = false },
+                                alignment = PopupPositionProvider.Align.Start,
+                                contentScale = 1f,
+                                enableWindowDim = false,
+                            ) {
                                 labels.forEach { (value, title) ->
                                     MiuixMenuItem(
                                         text = {

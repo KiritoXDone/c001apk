@@ -98,12 +98,16 @@ class MiuixViewDialogBuilder(private val context: Context) {
                             titleActions = neutral?.let { (label, listener) ->
                                 {
                                     var expanded by remember { mutableStateOf(false) }
+                                    var isMenuHeldDown by remember { mutableStateOf(false) }
                                     var selected by remember { mutableStateOf(false) }
                                     val close = checkNotNull(LocalDialogClose.current)
                                     Box {
                                         IconButton(
-                                            onClick = { expanded = true },
-                                            holdDownState = expanded,
+                                            onClick = {
+                                                isMenuHeldDown = true
+                                                expanded = true
+                                            },
+                                            holdDownState = isMenuHeldDown,
                                             modifier = Modifier.size(40.dp),
                                         ) {
                                             Icon(MiuixIcons.More, context.getString(R.string.update_more), Modifier.size(24.dp))
@@ -113,6 +117,7 @@ class MiuixViewDialogBuilder(private val context: Context) {
                                             onDismissRequest = { expanded = false },
                                             alignment = PopupPositionProvider.Align.End,
                                             onDismissFinished = {
+                                                isMenuHeldDown = false
                                                 if (selected) close {
                                                     dialog.dismiss()
                                                     listener?.onClick(dialog, DialogInterface.BUTTON_NEUTRAL)

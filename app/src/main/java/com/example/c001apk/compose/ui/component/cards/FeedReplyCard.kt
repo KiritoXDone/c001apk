@@ -48,6 +48,7 @@ import com.example.c001apk.compose.util.CookieUtil
 import com.example.c001apk.compose.util.CookieUtil.isLogin
 import com.example.c001apk.compose.util.DateUtils.fromToday
 import com.example.c001apk.compose.util.ReportType
+import top.yukonga.miuix.kmp.basic.PopupPositionProvider
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.glass.FavoriteFill
@@ -602,6 +603,8 @@ fun ReplyRows(
                 DropdownMenu(
                     expanded = dropdownMenuExpanded == index,
                     onDismissRequest = { dropdownMenuExpanded = -1 },
+                    alignment = PopupPositionProvider.Align.Start,
+                    enableWindowDim = false,
                 ) {
                     listOf(
                             stringResource(R.string.action_copy),

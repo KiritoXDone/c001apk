@@ -49,6 +49,7 @@ fun DigitalUnionDialog(
     var value by rememberSaveable { mutableStateOf(id) }
     var edited by rememberSaveable { mutableStateOf(false) }
     var menu by remember { mutableStateOf(false) }
+    var isMenuHeldDown by remember { mutableStateOf(false) }
     var menuAction by remember { mutableStateOf<(() -> Unit)?>(null) }
     var saving by remember { mutableStateOf(false) }
     val canSave = value.isNotBlank() && !generating && !saving
@@ -71,7 +72,15 @@ fun DigitalUnionDialog(
         titleActions = {
             val close = checkNotNull(LocalDialogClose.current)
             Box {
-                IconButton(onClick = { menu = true }, holdDownState = menu, enabled = !generating && !saving, modifier = Modifier.size(40.dp)) {
+                IconButton(
+                    onClick = {
+                        isMenuHeldDown = true
+                        menu = true
+                    },
+                    holdDownState = isMenuHeldDown,
+                    enabled = !generating && !saving,
+                    modifier = Modifier.size(40.dp),
+                ) {
                     Icon(MiuixIcons.More, stringResource(R.string.update_more), Modifier.size(24.dp))
                 }
                 MiuixMenu(
@@ -79,6 +88,7 @@ fun DigitalUnionDialog(
                     onDismissRequest = { menu = false },
                     alignment = PopupPositionProvider.Align.End,
                     onDismissFinished = {
+                        isMenuHeldDown = false
                         val action = menuAction
                         menuAction = null
                         action?.invoke()
