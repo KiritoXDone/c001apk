@@ -44,6 +44,9 @@ class ImageViewerActivity : AppCompatActivity() {
     private var closing = false
     private var transition: ValueAnimator? = null
     private var thumbnailOverlay: View? = null
+    private val statusBars = WindowInsetsCompat.Type.statusBars()
+    private val updateSystemBarsRunnable = Runnable { updateSystemBars() }
+    private var statusBarHeightPx = 0
     private var statusBarHidden = false
 
     override fun attachBaseContext(newBase: Context) {
@@ -82,6 +85,20 @@ class ImageViewerActivity : AppCompatActivity() {
         }
 
         root = FrameLayout(this).apply { clipChildren = false }
+        ViewCompat.setOnApplyWindowInsetsListener(root) { _, insets ->
+            val measuredHeightPx = maxOf(
+                insets.getInsets(statusBars).top,
+                insets.getInsetsIgnoringVisibility(statusBars).top,
+            )
+            // 部分系统隐藏状态栏时连稳定 inset 也会归零，继续使用已知的高度。
+            if (measuredHeightPx > 0 && measuredHeightPx != statusBarHeightPx &&
+                (statusBarHeightPx == 0 || insets.isVisible(statusBars))
+            ) {
+                statusBarHeightPx = measuredHeightPx
+                scheduleSystemBarsUpdate()
+            }
+            insets
+        }
         backdrop = View(this).apply {
             setBackgroundColor(Color.BLACK)
             alpha = 0f
@@ -151,6 +168,7 @@ class ImageViewerActivity : AppCompatActivity() {
     }
 
     override fun onDestroy() {
+        if (::root.isInitialized) root.removeCallbacks(updateSystemBarsRunnable)
         transition?.removeAllListeners()
         transition?.removeAllUpdateListeners()
         transition?.cancel()
@@ -175,17 +193,20 @@ class ImageViewerActivity : AppCompatActivity() {
         pages.forEach { (position, page) -> page.setPageVisible(resumed && position == selectedPage) }
     }
 
+    private fun scheduleSystemBarsUpdate() {
+        if (closing) return
+        root.removeCallbacks(updateSystemBarsRunnable)
+        root.postOnAnimation(updateSystemBarsRunnable)
+    }
+
     private fun updateSystemBars() {
-        if (!::root.isInitialized || closing) return
-        val insets = WindowCompat.getInsetsController(window, root)
-        val statusBars = WindowInsetsCompat.Type.statusBars()
-        val statusBarHeight = ViewCompat.getRootWindowInsets(root)
-            ?.getInsetsIgnoringVisibility(statusBars)?.top ?: return
+        if (closing || statusBarHeightPx == 0) return
         val rect = pages[selectedPage]?.displayRect
-        val shouldHide = rect != null && !rect.isEmpty && rect.top < statusBarHeight
+        val shouldHide = rect != null && !rect.isEmpty && rect.top < statusBarHeightPx
         if (shouldHide == statusBarHidden) return
         statusBarHidden = shouldHide
-        if (shouldHide) insets.hide(statusBars) else insets.show(statusBars)
+        val controller = WindowCompat.getInsetsController(window, root)
+        if (shouldHide) controller.hide(statusBars) else controller.show(statusBars)
     }
 
     private fun openViewer() {
@@ -372,7 +393,7 @@ class ImageViewerActivity : AppCompatActivity() {
                 autoLoadOriginal = request.autoLoadOriginal,
                 retryLabel = request.retryLabel,
                 onImageChanged = {
-                    if (position == selectedPage) pager.postOnAnimation { updateSystemBars() }
+                    if (position == selectedPage) scheduleSystemBarsUpdate()
                 },
                 onTap = { if (position == selectedPage && opened) closeViewer() },
                 onLongTap = { loadOriginal ->
