@@ -45,6 +45,7 @@ class NativeImageView(context: Context) : View(context) {
     private var isTilingEnabled = false
     private var hasAggregateVisibility = false
     private var disposed = false
+    private var closing = false
     private var hadMultiplePointers = false
     private var movedSinceDown = false
     private var downX = 0f
@@ -198,7 +199,7 @@ class NativeImageView(context: Context) : View(context) {
     }
 
     internal fun load(file: File, isPreview: Boolean) {
-        if (disposed) return
+        if (disposed || closing) return
         val request = ++requestedImage
         if (isPreview) previewTask?.cancel(true) else originalTask?.cancel(true)
         val task = imageExecutor.submit {
@@ -210,7 +211,7 @@ class NativeImageView(context: Context) : View(context) {
             }
             mainHandler.post {
                 if (result == null) return@post
-                if (disposed || (request != requestedImage && !(isPreview && request > displayedImage && drawable == null))) {
+                if (disposed || closing || (request != requestedImage && !(isPreview && request > displayedImage && drawable == null))) {
                     result.tiles?.close()
                     return@post
                 }
@@ -242,6 +243,13 @@ class NativeImageView(context: Context) : View(context) {
         isTilingEnabled = enabled
         updateTiles()
         invalidate()
+    }
+
+    internal fun freezeForClose() {
+        closing = true
+        stopMotion()
+        previewTask?.cancel(true)
+        originalTask?.cancel(true)
     }
 
     internal fun dispose() {

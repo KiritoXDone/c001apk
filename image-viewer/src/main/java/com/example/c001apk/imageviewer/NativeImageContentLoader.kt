@@ -25,7 +25,7 @@ class NativeImageContentLoader : ContentLoader {
     override fun dragging(scale: Float) = Unit
 
     override fun beginBackToMin(isResetSize: Boolean) {
-        view.setTilingEnabled(false)
+        view.freezeForClose()
         if (isResetSize && !view.isReadMode) view.zoomTo(view.fitScale)
     }
 

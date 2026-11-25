@@ -5,17 +5,21 @@ import android.animation.AnimatorListenerAdapter
 import android.animation.ValueAnimator
 import android.content.Context
 import android.content.pm.ActivityInfo
-import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.RectF
 import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.os.Bundle
 import android.view.Gravity
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
+import android.view.animation.AccelerateDecelerateInterpolator
 import android.view.animation.DecelerateInterpolator
+import android.view.animation.Interpolator
+import android.view.animation.LinearInterpolator
+import android.view.animation.PathInterpolator
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
@@ -43,7 +47,8 @@ class ImageViewerActivity : AppCompatActivity() {
     private var opened = false
     private var closing = false
     private var transition: ValueAnimator? = null
-    private var thumbnailOverlay: View? = null
+    private var waitingForOpeningImage = false
+    private val openViewerRunnable = Runnable { openViewer() }
     private val statusBars = WindowInsetsCompat.Type.statusBars()
     private val updateSystemBarsRunnable = Runnable { updateSystemBars() }
     private var statusBarHeightPx = 0
@@ -143,7 +148,15 @@ class ImageViewerActivity : AppCompatActivity() {
             override fun handleOnBackPressed() = closeViewer()
         })
         ImageViewer.currentActivity = WeakReference(this)
-        root.doOnPreDraw { if (!closing) openViewer() }
+        root.doOnPreDraw {
+            if (closing) return@doOnPreDraw
+            if (thumbnailBounds(request.thumbnailAt(selectedPage)) != null && visibleImageBounds() == null) {
+                waitingForOpeningImage = true
+                root.postDelayed(openViewerRunnable, TRANSITION_DURATION_MS)
+            } else {
+                openViewer()
+            }
+        }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -168,7 +181,10 @@ class ImageViewerActivity : AppCompatActivity() {
     }
 
     override fun onDestroy() {
-        if (::root.isInitialized) root.removeCallbacks(updateSystemBarsRunnable)
+        if (::root.isInitialized) {
+            root.removeCallbacks(openViewerRunnable)
+            root.removeCallbacks(updateSystemBarsRunnable)
+        }
         transition?.removeAllListeners()
         transition?.removeAllUpdateListeners()
         transition?.cancel()
@@ -178,6 +194,9 @@ class ImageViewerActivity : AppCompatActivity() {
         if (::request.isInitialized && isFinishing) request.onClosed()
         super.onDestroy()
     }
+
+    override fun dispatchTouchEvent(event: MotionEvent): Boolean =
+        if (!opened || closing) true else super.dispatchTouchEvent(event)
 
     private fun selectPage(position: Int) {
         selectedPage = position
@@ -200,7 +219,7 @@ class ImageViewerActivity : AppCompatActivity() {
     }
 
     private fun updateSystemBars() {
-        if (closing || statusBarHeightPx == 0) return
+        if (!opened || closing || statusBarHeightPx == 0) return
         val rect = pages[selectedPage]?.displayRect
         val shouldHide = rect != null && !rect.isEmpty && rect.top < statusBarHeightPx
         if (shouldHide == statusBarHidden) return
@@ -210,36 +229,19 @@ class ImageViewerActivity : AppCompatActivity() {
     }
 
     private fun openViewer() {
-        val thumbnail = request.thumbnailAt(selectedPage)
-        val bounds = thumbnailBounds(thumbnail)
-        val overlay = if (thumbnail != null && bounds != null && thumbnail.drawable != null) {
-            object : View(this) {
-                override fun onDraw(canvas: Canvas) {
-                    thumbnail.draw(canvas)
-                }
-            }.apply {
-                pivotX = 0f
-                pivotY = 0f
-                translationX = bounds.left
-                translationY = bounds.top
-                root.addView(this, FrameLayout.LayoutParams(thumbnail.width, thumbnail.height))
-            }.also { thumbnailOverlay = it }
-        } else {
-            null
-        }
-        val target = thumbnail?.takeIf { overlay != null }?.let(::fitThumbnail)
-        animate(OPEN_DURATION_MS, onFrame = { progress ->
-            backdrop.alpha = progress
-            pager.alpha = progress
-            if (overlay != null && bounds != null && target != null) {
-                overlay.translationX = lerp(bounds.left, target.left, progress)
-                overlay.translationY = lerp(bounds.top, target.top, progress)
-                overlay.scaleX = lerp(1f, target.width() / bounds.width(), progress)
-                overlay.scaleY = lerp(1f, target.height() / bounds.height(), progress)
-                overlay.alpha = 1f - progress
-            }
+        waitingForOpeningImage = false
+        root.removeCallbacks(openViewerRunnable)
+        val thumbnail = thumbnailTransform()
+        val from = (thumbnail ?: Transform(contentAlpha = 0f)).copy(backdropAlpha = 0f, indicatorAlpha = 0f)
+        val to = Transform(indicatorAlpha = 0f)
+        applyTransform(from, to, 0f)
+        animate(TRANSITION_DURATION_MS, LinearInterpolator(), onFrame = { fraction ->
+            val motionProgress = IMAGE_MOTION.getInterpolation(fraction)
+            val fadeProgress = OPEN_BACKDROP.getInterpolation(fraction)
+            val imageProgress = if (thumbnail != null) motionProgress else fadeProgress
+            val backdropProgress = if (thumbnail != null) fadeProgress else motionProgress
+            applyTransform(from, to, imageProgress, backdropProgress)
         }, onEnd = {
-            removeThumbnailOverlay()
             opened = true
             pager.isUserInputEnabled = true
             indicator.alpha = 1f
@@ -267,7 +269,10 @@ class ImageViewerActivity : AppCompatActivity() {
         }
         val from = snapshot()
         val to = Transform()
-        animate(RESET_DURATION_MS, { applyTransform(from, to, it) }) {
+        animate(RESET_DURATION_MS, onFrame = {
+            applyTransform(from, to, it)
+            pages[selectedPage]?.updateDrag(pager.scaleX)
+        }) {
             pages[selectedPage]?.cancelDrag()
         }
     }
@@ -275,34 +280,29 @@ class ImageViewerActivity : AppCompatActivity() {
     private fun closeViewer() {
         if (closing) return
         closing = true
+        root.removeCallbacks(openViewerRunnable)
         root.removeCallbacks(updateSystemBarsRunnable)
         pager.isUserInputEnabled = false
-        removeThumbnailOverlay()
         val page = pages[selectedPage]
-        page?.beginClose()
         val from = snapshot()
-        val thumbnail = thumbnailBounds(request.thumbnailAt(selectedPage))
-        val imageBounds = page?.displayRect?.takeUnless(RectF::isEmpty)
-        val to = if (thumbnail != null && imageBounds != null) {
-            val scale = min(thumbnail.width() / imageBounds.width(), thumbnail.height() / imageBounds.height())
-                .coerceIn(0.02f, 1f)
-            Transform(
-                x = thumbnail.centerX() - root.width / 2f - (imageBounds.centerX() - root.width / 2f) * scale,
-                y = thumbnail.centerY() - root.height / 2f - (imageBounds.centerY() - root.height / 2f) * scale,
-                scale = scale,
-                contentAlpha = 0f,
-                backdropAlpha = 0f,
-                indicatorAlpha = 0f,
-            )
-        } else {
-            from.copy(scale = from.scale * 0.94f, contentAlpha = 0f, backdropAlpha = 0f, indicatorAlpha = 0f)
-        }
+        val thumbnail = thumbnailTransform()
+        val to = (thumbnail ?: from).copy(
+            contentAlpha = if (thumbnail != null) from.contentAlpha else 0f,
+            backdropAlpha = 0f,
+            indicatorAlpha = 0f,
+        )
+        page?.beginClose()
         if (statusBarHidden) {
             // 退出转场还在遮挡底页时恢复状态栏，让底页先收到稳定的 inset。
             WindowCompat.getInsetsController(window, root).show(statusBars)
             statusBarHidden = false
         }
-        animate(CLOSE_DURATION_MS, { applyTransform(from, to, it) }) {
+        animate(TRANSITION_DURATION_MS, LinearInterpolator(), onFrame = { fraction ->
+            val motionProgress = IMAGE_MOTION.getInterpolation(fraction)
+            val backdropProgress = if (thumbnail != null) CLOSE_BACKDROP.getInterpolation(fraction) else motionProgress
+            applyTransform(from, to, motionProgress, backdropProgress)
+        }) {
+            pager.alpha = 0f
             root.doOnPreDraw {
                 root.postOnAnimation {
                     finish()
@@ -314,9 +314,20 @@ class ImageViewerActivity : AppCompatActivity() {
         }
     }
 
-    private fun removeThumbnailOverlay() {
-        thumbnailOverlay?.let(root::removeView)
-        thumbnailOverlay = null
+    private fun visibleImageBounds(): RectF? {
+        val bounds = pages[selectedPage]?.displayRect ?: return null
+        return bounds.takeIf { it.intersect(0f, 0f, pager.width.toFloat(), pager.height.toFloat()) }
+    }
+
+    private fun thumbnailTransform(): Transform? {
+        val thumbnail = thumbnailBounds(request.thumbnailAt(selectedPage)) ?: return null
+        val image = visibleImageBounds() ?: return null
+        val scale = min(thumbnail.width() / image.width(), thumbnail.height() / image.height())
+        return Transform(
+            x = thumbnail.centerX() - pager.pivotX - (image.centerX() - pager.pivotX) * scale,
+            y = thumbnail.centerY() - pager.pivotY - (image.centerY() - pager.pivotY) * scale,
+            scale = scale,
+        )
     }
 
     private fun thumbnailBounds(thumbnail: ImageView?): RectF? {
@@ -333,15 +344,6 @@ class ImageViewerActivity : AppCompatActivity() {
         return rect.takeIf { RectF.intersects(it, RectF(0f, 0f, root.width.toFloat(), root.height.toFloat())) }
     }
 
-    private fun fitThumbnail(thumbnail: ImageView): RectF {
-        val width = thumbnail.drawable.intrinsicWidth.takeIf { it > 0 } ?: thumbnail.width
-        val height = thumbnail.drawable.intrinsicHeight.takeIf { it > 0 } ?: thumbnail.height
-        val scale = min(root.width.toFloat() / width, root.height.toFloat() / height)
-        val left = (root.width - width * scale) / 2f
-        val top = (root.height - height * scale) / 2f
-        return RectF(left, top, root.width - left, root.height - top)
-    }
-
     private fun snapshot() = Transform(
         x = pager.translationX,
         y = pager.translationY,
@@ -351,23 +353,27 @@ class ImageViewerActivity : AppCompatActivity() {
         indicatorAlpha = indicator.alpha,
     )
 
-    private fun applyTransform(from: Transform, to: Transform, progress: Float) {
+    private fun applyTransform(from: Transform, to: Transform, progress: Float, backdropProgress: Float = progress) {
         pager.translationX = lerp(from.x, to.x, progress)
         pager.translationY = lerp(from.y, to.y, progress)
         pager.scaleX = lerp(from.scale, to.scale, progress)
         pager.scaleY = pager.scaleX
         pager.alpha = lerp(from.contentAlpha, to.contentAlpha, progress)
-        backdrop.alpha = lerp(from.backdropAlpha, to.backdropAlpha, progress)
+        backdrop.alpha = lerp(from.backdropAlpha, to.backdropAlpha, backdropProgress)
         indicator.alpha = lerp(from.indicatorAlpha, to.indicatorAlpha, progress)
-        pages[selectedPage]?.updateDrag(pager.scaleX)
     }
 
-    private fun animate(durationMs: Long, onFrame: (Float) -> Unit, onEnd: () -> Unit) {
+    private fun animate(
+        durationMs: Long,
+        easing: Interpolator = DecelerateInterpolator(),
+        onFrame: (Float) -> Unit,
+        onEnd: () -> Unit,
+    ) {
         transition?.removeAllListeners()
         transition?.cancel()
         transition = ValueAnimator.ofFloat(0f, 1f).apply {
             duration = durationMs
-            interpolator = DecelerateInterpolator()
+            interpolator = easing
             addUpdateListener { onFrame(it.animatedValue as Float) }
             addListener(object : AnimatorListenerAdapter() {
                 override fun onAnimationEnd(animation: Animator) {
@@ -404,7 +410,10 @@ class ImageViewerActivity : AppCompatActivity() {
                 autoLoadOriginal = request.autoLoadOriginal,
                 retryLabel = request.retryLabel,
                 onImageChanged = {
-                    if (position == selectedPage) scheduleSystemBarsUpdate()
+                    if (position == selectedPage && !closing) {
+                        if (waitingForOpeningImage && visibleImageBounds() != null) openViewer()
+                        scheduleSystemBarsUpdate()
+                    }
                 },
                 onTap = { if (position == selectedPage && opened) closeViewer() },
                 onLongTap = { loadOriginal ->
@@ -452,9 +461,11 @@ class ImageViewerActivity : AppCompatActivity() {
 
     private companion object {
         const val STATE_PAGE = "selected_page"
-        const val OPEN_DURATION_MS = 250L
-        const val CLOSE_DURATION_MS = 220L
+        const val TRANSITION_DURATION_MS = 250L
         const val RESET_DURATION_MS = 180L
+        val IMAGE_MOTION = AccelerateDecelerateInterpolator()
+        val OPEN_BACKDROP = PathInterpolator(0.05f, 0.7f, 0.1f, 1f)
+        val CLOSE_BACKDROP = PathInterpolator(0.3f, 0f, 0.8f, 0.15f)
 
         fun lerp(start: Float, end: Float, fraction: Float) = start + (end - start) * fraction
     }

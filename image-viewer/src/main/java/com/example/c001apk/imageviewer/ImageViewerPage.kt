@@ -37,6 +37,7 @@ internal class ImageViewerPage(
     private val progress = ImageLoadingIndicator(context)
     private val retry = Button(context)
     private var disposed = false
+    private var closing = false
     private var readyForPlayback = false
     private var isPageVisible = false
     private var retryOriginal = false
@@ -70,9 +71,10 @@ internal class ImageViewerPage(
     }
 
     fun setPlaybackReady() {
-        if (readyForPlayback) return
+        if (readyForPlayback || closing) return
         readyForPlayback = true
         content.loadAnimFinish()
+        if (state.showTargetAction) loadOriginal(cacheOnly = !autoLoadOriginal)
     }
 
     fun setPageVisible(visible: Boolean) {
@@ -85,7 +87,10 @@ internal class ImageViewerPage(
 
     fun cancelDrag() = content.backToNormal()
 
-    fun beginClose() = content.beginBackToMin(isResetSize = false)
+    fun beginClose() {
+        closing = true
+        content.beginBackToMin(isResetSize = false)
+    }
 
     fun dispose() {
         if (disposed) return
@@ -109,7 +114,7 @@ internal class ImageViewerPage(
         request(image.previewUrl, cacheOnly, onSuccess = { file, width, height ->
             if (state.acceptPreview()) {
                 show(file, width, height, isPreview = originalUrl != null)
-                loadOriginal(cacheOnly = !autoLoadOriginal)
+                if (readyForPlayback) loadOriginal(cacheOnly = !autoLoadOriginal)
             }
         }, onFailure = {
             when {
@@ -172,7 +177,7 @@ internal class ImageViewerPage(
                         arrayOf(-1, -1)
                     }
                     handler.post {
-                        if (disposed) return@post
+                        if (disposed || closing) return@post
                         progress.isVisible = false
                         onSuccess(image, width, height)
                     }
@@ -181,7 +186,7 @@ internal class ImageViewerPage(
 
             override fun onFail(error: Exception) {
                 handler.post {
-                    if (disposed) return@post
+                    if (disposed || closing) return@post
                     progress.isVisible = false
                     onFailure()
                 }
@@ -189,7 +194,7 @@ internal class ImageViewerPage(
 
             private fun updateProgress(percent: Int) {
                 handler.post {
-                    if (disposed) return@post
+                    if (disposed || closing) return@post
                     progress.setProgress(percent)
                     progress.isVisible = true
                 }
