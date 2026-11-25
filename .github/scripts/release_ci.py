@@ -263,12 +263,6 @@ def package_files(directory, target, plan):
     return files
 
 
-def check_artifacts(args):
-    plan = load_plan()
-    files = package_files(CI / "packages" / args.target, args.target, plan)
-    print(f"Validated {len(files)} release packages for {args.target}.")
-
-
 def collect_packages(plan):
     targets = [item["target"] for item in plan["matrix"]["include"]]
     directory = CI / "artifacts"
@@ -344,9 +338,6 @@ def main():
     prepare_parser.add_argument("--changelog-mode", choices=("current", "versioned"), required=True)
     prepare_parser.add_argument("--build-only", action="store_true", help="Build the current version without checking tags or publishing.")
     prepare_parser.set_defaults(action=prepare)
-    check_parser = commands.add_parser("check-artifacts", help="Verify one target's release packages.")
-    check_parser.add_argument("--target", required=True)
-    check_parser.set_defaults(action=check_artifacts)
     publish_parser = commands.add_parser("publish", help="Publish the complete release through a draft.")
     publish_parser.set_defaults(action=publish)
     args = parser.parse_args()

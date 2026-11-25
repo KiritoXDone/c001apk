@@ -16,7 +16,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 sys.path.insert(0, str(ROOT / "tools"))
 
 from prebuild import check_checkout, detect_sdk, find_portable_jdk, is_project_jdk
-from release_ci import load_plan
+from release_ci import load_plan, package_files
 from verify_apk import verify
 
 
@@ -91,6 +91,7 @@ def package(_args):
         files[path.name] = {"bytes": path.stat().st_size, "sha256": digest}
     manifest = {"sha": plan["sha"], "version": plan["version"], "target": target, "files": files}
     (directory / f"{prefix}.manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+    package_files(directory, target, plan)
     print(f"Verified and packaged signed Android ARM64 APK: {public_apk.name}")
 
 
