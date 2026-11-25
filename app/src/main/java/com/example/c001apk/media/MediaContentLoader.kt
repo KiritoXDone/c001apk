@@ -26,6 +26,8 @@ import androidx.annotation.DrawableRes
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.media3.common.PlaybackException
+import com.example.c001apk.compose.BuildConfig
+import com.example.c001apk.compose.R
 import com.example.c001apk.imageviewer.ContentLoader
 import com.example.c001apk.imageviewer.OnLongTapCallback
 import com.example.c001apk.imageviewer.OnTapCallback

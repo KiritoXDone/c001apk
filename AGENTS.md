@@ -6,13 +6,11 @@
 
 | 位置 | 职责 |
 | --- | --- |
-| `app/` | 应用入口、导航、页面、业务逻辑、账号与网络协议 |
-| `image-viewer/` | 全屏图片浏览、翻页、转场与 Kotlin 图片渲染 |
-| `media-support/` | Media3 播放与媒体浏览适配 |
+| `app/` | 应用入口、导航、页面、业务逻辑、账号与网络协议，以及图片浏览和媒体播放 |
 | `tools/` | APK 身份、资源、签名与对齐校验 |
 | `scripts/` | 预构建、工具链检查、编译与产物收集 |
 
-依赖方向为 `app` → `image-viewer`、`media-support` 和上游 Miuix 发布依赖，`media-support` → `image-viewer`。Miuix 的版本和来源见 `docs/THIRD_PARTY_PORTS.md`。禁止循环依赖，库模块不得引用应用业务。三个业务模块不套用其他项目的 `core/*`、`feature/*` 分层。仓库维护的 Android 应用源码使用 Kotlin。
+`app` 是唯一的 Android Gradle 模块。图片浏览和媒体播放分别位于 Kotlin 包 `com.example.c001apk.imageviewer` 与 `com.example.c001apk.media`。媒体包可以依赖看图包，这两个包都不反向依赖应用业务。Miuix 的版本和来源见 `docs/THIRD_PARTY_PORTS.md`。应用沿用自身分层，仓库维护的 Android 应用源码使用 Kotlin。
 
 ### 应用内分层
 
@@ -116,16 +114,16 @@ python scripts/prebuild.py --portable
 python scripts/build.py doctor
 python scripts/build.py build-apk --build-type debug
 python scripts/build.py build-apk --build-type release
-python scripts/build.py gradle :app:testDebugUnitTest :media-support:testDebugUnitTest :image-viewer:testDebugUnitTest :app:lintDebug
+python scripts/build.py gradle :app:testDebugUnitTest :app:lintDebug
 python -B -m unittest discover -s tools -p test_*.py
 ```
 
 - 构建 APK 与执行 Gradle 任务统一使用 `scripts/build.py`。参数、签名配置和 SDK 组件见 `docs/BUILDING.md`。
-- 便携工具链位于 `build/jdk/`；模块输出位于 `build/gradle/<模块>/`；收集的安装包位于 `build/apk/<构建类型>/`；项目缓存位于 `build/cache/`。
+- 便携工具链位于 `build/jdk/`；应用构建输出位于 `build/gradle/app/`；收集的安装包位于 `build/apk/<构建类型>/`；项目缓存位于 `build/cache/`。
 - Gradle 的 `clean` 只清理模块输出，不清理工具链、安装包和本地记录。禁止为重新构建先删除整个 `build/`。
 - 保留应用包名 `com.example.c001apk.compose`、最低 API 24、目标 API 35、ARM64 ABI 与当前签名策略。
-- 编译 SDK 分别为应用的 37.2、媒体模块的 35、图片模块的 34；构建工具为 36.0.0。不要因为本机缺组件就改项目 SDK 版本。
-- 应用 Java/Kotlin 目标为 21，两个业务库模块为 17；当前显式关闭 AGP 内置 Kotlin 和新 DSL，继续使用已有插件，不照搬参考项目的插件配置。
+- 应用编译 SDK 为 37.2，构建工具为 36.0.0。不要因为本机缺组件就改项目 SDK 版本。
+- 应用 Java/Kotlin 目标为 21；当前显式关闭 AGP 内置 Kotlin 和新 DSL，继续使用已有插件，不照搬参考项目的插件配置。
 - 本项目没有 `ktlintFormat`、`ktlintCheck`、`versionCatalogUpdate` 任务，不写不存在的检查命令。
 - 纯文档或技能调整无需编译，除非用户要求。构建、源码、资源或清单改动运行相关已有检查与编译；没有实际执行或没有测试用例，不能报告通过。
 - 不默认新增测试文件；优先使用现有测试。模拟器验收区分编译成功、安装成功、启动成功与功能验证。
@@ -134,7 +132,7 @@ python -B -m unittest discover -s tools -p test_*.py
 
 - `scripts/build.py build-apk` 和 `scripts/build.py gradle` 的 `--jobs N` 默认 12，接受 1～64 的整数，错误参数在环境检查前返回 2。
 - 用户指定并发数后，本次会话后续构建显式沿用该值，直到用户更改；跨上下文压缩保持，新会话恢复默认 12。
-- 共用 `scripts/build_support/concurrency.py`，将额度透传为 Gradle `--max-workers=N`；原有跨模块并行由 `gradle.properties` 管理。
+- 共用 `scripts/build_support/concurrency.py`，将额度透传为 Gradle `--max-workers=N`。
 - 一次构建使用一个总额度，独立构建并行时先分配额度，合计不超过当前会话额度；共享 Gradle 输出按顺序执行。
 
 ## 本地方案与过程记录

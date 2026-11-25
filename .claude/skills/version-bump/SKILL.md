@@ -40,7 +40,7 @@ description: 更新 c001apk 应用版本、整理发布日志并创建版本提�
 python scripts/build.py build-apk --build-type release
 python scripts/build.py build-apk --build-type release --jobs <N>
 python scripts/build.py build-apk --build-type release --require-release-signing --jobs <N>
-python scripts/build.py gradle --jobs <N> :app:testDebugUnitTest :media-support:testDebugUnitTest :image-viewer:testDebugUnitTest :app:lintDebug
+python scripts/build.py gradle --jobs <N> :app:testDebugUnitTest :app:lintDebug
 python -B -m unittest discover -s tools -p test_*.py
 ```
 

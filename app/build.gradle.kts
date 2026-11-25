@@ -200,6 +200,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.viewModel.compose)
+    implementation(libs.androidx.media3.exoplayer)
     implementation("androidx.savedstate:savedstate:1.2.1")
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)
@@ -237,7 +238,4 @@ dependencies {
         exclude(group = "androidx.compose", module = "compose-bom")
     }
     implementation(libs.oss.android.sdk)
-
-    implementation(project(":image-viewer"))
-    implementation(project(":media-support"))
 }

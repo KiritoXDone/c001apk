@@ -45,7 +45,6 @@ import com.example.c001apk.compose.util.bindRecoverableImage
 import com.example.c001apk.compose.util.dp
 import com.example.c001apk.compose.util.http2https
 import com.example.c001apk.compose.util.isGifUrl
-import com.example.c001apk.media.R as MediaR
 import com.example.c001apk.media.RichMediaHint
 import com.example.c001apk.media.coolApkRichMediaHint
 import jp.wasabeef.transformers.coil.ColorFilterTransformation
@@ -239,7 +238,7 @@ constructor(
                         RichMediaHint.LIVE_PHOTO -> {
                             AppCompatResources.getDrawable(
                                     context,
-                                    MediaR.drawable.ic_live_photo_badge,
+                                    R.drawable.ic_live_photo_badge,
                                 )
                                 ?.let { setBadge(it, 24.dp, 24.dp) }
                         }

@@ -45,7 +45,7 @@
 ```sh
 python scripts/prebuild.py
 python scripts/build.py build-apk --build-type release
-python scripts/build.py gradle :app:assembleDebug :app:testDebugUnitTest :media-support:testDebugUnitTest :app:lintDebug
+python scripts/build.py gradle :app:assembleDebug :app:testDebugUnitTest :app:lintDebug
 python scripts/build.py gradle :app:assembleDebugAndroidTest
 # 已连接 Android 13+ 设备时：
 python scripts/build.py gradle :app:connectedDebugAndroidTest

@@ -3,7 +3,7 @@
 ## 环境
 
 - Python 3.12 及以上；便携 JDK 21 由预构建脚本准备，也可通过 `JAVA_HOME` 指定 JDK 21。
-- Android SDK：`platforms;android-34`、`platforms;android-35`、`platforms;android-37.2` 和 `build-tools;36.0.0`。
+- Android SDK：`platforms;android-37.2` 和 `build-tools;36.0.0`。
 - 仓库自带的 Gradle Wrapper，依赖版本见 [版本目录](../gradle/libs.versions.toml)。
 
 通过 `ANDROID_HOME` 或根目录 `local.properties` 中的 `sdk.dir` 指定 SDK 路径。例如将以下占位符替换为本机实际路径，配置文件不入库：
@@ -15,8 +15,7 @@ sdk.dir=<本机 Android SDK 路径>
 安装 SDK 组件：
 
 ```sh
-sdkmanager 'platforms;android-34' 'platforms;android-35' \
-  'platforms;android-37.2' 'build-tools;36.0.0'
+sdkmanager 'platforms;android-37.2' 'build-tools;36.0.0'
 ```
 
 请使用包含完整历史的 Git 克隆。`versionCode` 由 `git rev-list HEAD --count` 生成；源码 ZIP 缺少 `.git`，无法直接按当前配置构建，浅克隆则会产生不正确的版本号。
@@ -40,7 +39,7 @@ python scripts/build.py build-apk --build-type release
 | --- | --- |
 | 调试安装包 | `build/apk/debug/c001apk-debug-arm64-v8a-<版本名>.<版本号>.apk` |
 | 发布安装包 | `build/apk/release/c001apk-release-arm64-v8a-<版本名>.<版本号>.apk` |
-| 模块中间产物与报告 | `build/gradle/<模块>/` |
+| 应用中间产物与报告 | `build/gradle/app/` |
 | 项目 Gradle 缓存 | `build/cache/` |
 
 脚本从 Gradle 的 `output-metadata.json` 获取实际版本和产物名，支持版本参数覆盖。每个构建类型独立保存；同版本、同类型重新构建会更新对应安装包，旧版本保留。原始 APK 位于 `build/gradle/app/outputs/apk/<类型>/`。Room 生成的数据库结构位于 `build/gradle/app/schemas/`。
@@ -82,12 +81,11 @@ python scripts/build.py build-apk --build-type release --require-release-signing
 ## 测试与校验
 
 ```sh
-python scripts/build.py gradle :app:testDebugUnitTest :media-support:testDebugUnitTest \
-  :image-viewer:testDebugUnitTest :app:lintDebug
+python scripts/build.py gradle :app:testDebugUnitTest :app:lintDebug
 python -B -m unittest discover -s tools -p 'test_*.py'
 ```
 
-本地单元测试使用同版本的 DataStore JVM 核心，避免安卓桩的版本号触发不支持覆盖文件的旧版重命名分支；应用与设备测试继续使用安卓实现。图片缓存通过 Okio 执行同目录原子替换，兼容最低 API 24，磁盘读写测试不按操作系统跳过。各模块报告位于 `build/gradle/<模块>/reports/`。
+`app` 的单元测试覆盖应用业务、图片浏览和媒体播放。本地单元测试使用同版本的 DataStore JVM 核心，避免安卓桩的版本号触发不支持覆盖文件的旧版重命名分支；应用与设备测试继续使用安卓实现。图片缓存通过 Okio 执行同目录原子替换，兼容最低 API 24，磁盘读写测试不按操作系统跳过。报告位于 `build/gradle/app/reports/`。
 
 校验正式 APK，替换为实际文件路径及预期签名证书的 SHA-256 摘要：
 

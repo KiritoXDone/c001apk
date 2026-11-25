@@ -17,7 +17,6 @@ import com.example.c001apk.compose.ui.component.MiuixViewDialogBuilder
 import com.example.c001apk.compose.view.NineGridImageView
 import com.example.c001apk.imageviewer.ImageViewer
 import com.example.c001apk.imageviewer.NativeImageLoadFactory
-import com.example.c001apk.imageviewer.R as ImageViewerR
 import com.example.c001apk.media.LivePhotoVideoUrlResolver
 import com.example.c001apk.media.MediaImageFactory
 import com.example.c001apk.media.MediaPlaybackSession
@@ -414,7 +413,7 @@ object ImageShowUtil {
         @get:StringRes
         val titleRes: Int
             get() = when (this) {
-                LOAD_ORIGINAL -> ImageViewerR.string.image_viewer_original
+                LOAD_ORIGINAL -> R.string.image_viewer_original
                 SAVE_IMAGE -> R.string.image_save
                 SAVE_LIVE_PHOTO -> R.string.image_save_live
                 SAVE_ALL -> R.string.image_save_all

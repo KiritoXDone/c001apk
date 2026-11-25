@@ -31,4 +31,4 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "c001apk-compose"
-include(":app", ":image-viewer", ":media-support")
+include(":app")

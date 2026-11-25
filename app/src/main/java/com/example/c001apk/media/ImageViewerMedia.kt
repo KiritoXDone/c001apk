@@ -3,6 +3,7 @@ package com.example.c001apk.media
 import android.net.Uri
 import android.util.Log
 import android.view.View
+import com.example.c001apk.compose.BuildConfig
 import com.example.c001apk.imageviewer.ContentLoader
 import com.example.c001apk.imageviewer.ImageViewLoadFactory
 import java.io.File

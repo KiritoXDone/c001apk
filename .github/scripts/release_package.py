@@ -31,15 +31,14 @@ def check_environment(_args):
         configured = os.environ.get("JAVA_HOME")
         if not configured or not is_project_jdk(Path(configured)):
             raise ValueError("JDK 21 is not prepared. Run scripts/prebuild.py first.")
-    for module in ("app", "media-support", "image-viewer"):
-        script = (ROOT / module / "build.gradle.kts").read_text(encoding="utf-8")
-        platform = re.search(r'compileSdkVersion\("android-([^"\n]+)"\)', script)
-        if platform is None:
-            platform = re.search(r"compileSdk\s*=\s*([0-9]+)", script)
-        if platform is None:
-            raise ValueError(f"Cannot read the compile SDK for {module}.")
-        if not (sdk / "platforms" / f"android-{platform[1]}" / "android.jar").is_file():
-            raise ValueError(f"Android SDK platform android-{platform[1]} is missing for {module}.")
+    script = (ROOT / "app" / "build.gradle.kts").read_text(encoding="utf-8")
+    platform = re.search(r'compileSdkVersion\("android-([^"\n]+)"\)', script)
+    if platform is None:
+        platform = re.search(r"compileSdk\s*=\s*([0-9]+)", script)
+    if platform is None:
+        raise ValueError("Cannot read the compile SDK for app.")
+    if not (sdk / "platforms" / f"android-{platform[1]}" / "android.jar").is_file():
+        raise ValueError(f"Android SDK platform android-{platform[1]} is missing for app.")
     tools = sdk / "build-tools" / "36.0.0"
     if not tools.is_dir():
         raise ValueError("Android build tools 36.0.0 are missing.")

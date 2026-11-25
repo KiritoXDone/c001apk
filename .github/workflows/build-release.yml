@@ -130,7 +130,7 @@ jobs:
           log-accepted-android-sdk-licenses: false
 
       - name: Install explicit Android SDK packages
-        run: sdkmanager platform-tools 'platforms;android-34' 'platforms;android-35' 'platforms;android-37.2' 'build-tools;36.0.0'
+        run: sdkmanager platform-tools 'platforms;android-37.2' 'build-tools;36.0.0'
 
       - name: Set up Gradle dependencies
         uses: gradle/actions/setup-gradle@v6.4.0
@@ -153,7 +153,7 @@ jobs:
         run: |
           set -euo pipefail
           python -B -m unittest discover -s tools -p 'test_*.py'
-          python scripts/build.py gradle --jobs 2 :app:testDebugUnitTest :media-support:testDebugUnitTest :image-viewer:testDebugUnitTest :app:lintDebug
+          python scripts/build.py gradle --jobs 2 :app:testDebugUnitTest :app:lintDebug
 
       - name: Build signed Release APK
         run: |
