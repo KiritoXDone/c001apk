@@ -722,14 +722,16 @@ internal fun FeedOverflowMenu(
         }
         onRemoveFromCollection?.let { remove ->
             DropdownMenuItem(
-                text = { Text(stringResource(if (removingFromCollection) R.string.feed_uncollecting else R.string.feed_uncollect), color = MiuixTheme.colorScheme.error) },
+                text = { Text(stringResource(if (removingFromCollection) R.string.feed_uncollecting else R.string.feed_uncollect)) },
+                textColor = MiuixTheme.colorScheme.error,
                 enabled = !removingFromCollection,
                 onClick = { expanded = false; remove() },
             )
         }
         if (data.uid == CookieUtil.uid) {
             DropdownMenuItem(
-                text = { Text(stringResource(id = R.string.menu_delete), color = MiuixTheme.colorScheme.error) },
+                text = { Text(stringResource(id = R.string.menu_delete)) },
+                textColor = MiuixTheme.colorScheme.error,
                 onClick = {
                     expanded = false
                     onDelete?.invoke(data.id.orEmpty(), LikeType.FEED, null)

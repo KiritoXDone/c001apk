@@ -370,12 +370,8 @@ fun FeedScreen(
                                         )
                                         if (ownFeed) {
                                             DropdownMenuItem(
-                                                text = {
-                                                    Text(
-                                                        stringResource(R.string.menu_delete),
-                                                        color = MiuixTheme.colorScheme.error,
-                                                    )
-                                                },
+                                                text = { Text(stringResource(R.string.menu_delete)) },
+                                                textColor = MiuixTheme.colorScheme.error,
                                                 enabled = !viewModel.deletingFeed,
                                                 onClick = {
                                                     dropdownMenuExpanded = false

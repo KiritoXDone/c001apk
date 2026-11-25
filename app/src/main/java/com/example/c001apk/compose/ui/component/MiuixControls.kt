@@ -1,6 +1,8 @@
 package com.example.c001apk.compose.ui.component
 
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -8,15 +10,15 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
@@ -26,27 +28,29 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import com.example.c001apk.compose.R
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import top.yukonga.miuix.kmp.basic.DropdownDefaults
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.ListPopupColumn
 import top.yukonga.miuix.kmp.basic.PopupPositionProvider
 import top.yukonga.miuix.kmp.glass.GlassBottomSheet
-import top.yukonga.miuix.kmp.glass.GlassPopupDefaults
 import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.basic.Check
 import top.yukonga.miuix.kmp.icon.extended.More
 import top.yukonga.miuix.kmp.theme.LocalContentColor
 import top.yukonga.miuix.kmp.theme.MiuixTheme
-import top.yukonga.miuix.kmp.utils.MiuixIndication
 import top.yukonga.miuix.kmp.window.WindowListPopup
 
 @Composable
@@ -64,7 +68,7 @@ fun MiuixMenu(
     modifier: Modifier = Modifier,
     alignment: PopupPositionProvider.Align = PopupPositionProvider.Align.End,
     onDismissFinished: (() -> Unit)? = null,
-    contentScale: Float = 0.9f,
+    contentScale: Float = 1f,
     enableWindowDim: Boolean = true,
     content: @Composable () -> Unit,
 ) {
@@ -78,7 +82,10 @@ fun MiuixMenu(
             onDismissRequest = onDismissRequest,
             onDismissFinished = onDismissFinished,
         ) {
-            ListPopupColumn { content() }
+            val edgePadding = DropdownDefaults.FirstLastVerticalPadding - DropdownDefaults.MiddleVerticalPadding
+            Box(Modifier.padding(vertical = edgePadding)) {
+                ListPopupColumn { content() }
+            }
         }
     }
 }
@@ -120,8 +127,8 @@ fun MiuixMoreMenu(
     }
 }
 
-// 菜单行参考 Miuix GlassPopupItem（Copyright 2026 compose-miuix-ui contributors，Apache-2.0）。
-// 单一交互层保留自定义内容和长按。
+// 菜单行参考 Miuix DropdownImpl（Copyright 2026 compose-miuix-ui contributors，Apache-2.0）。
+// 保留内容插槽和长按。
 @Composable
 fun MiuixMenuItem(
     text: @Composable () -> Unit,
@@ -130,50 +137,72 @@ fun MiuixMenuItem(
     onLongClickLabel: String? = null,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
+    textColor: Color = Color.Unspecified,
+    isSelected: Boolean? = null,
     leadingIcon: (@Composable () -> Unit)? = null,
     trailingIcon: (@Composable () -> Unit)? = null,
 ) {
-    val pressColor = GlassPopupDefaults.itemPressedColor()
-    val indication = MiuixIndication(
-        color = pressColor.copy(alpha = 1f),
-        pressAlpha = pressColor.alpha,
-    )
-    val color = MiuixTheme.colorScheme.onSurfaceContainer
-    CompositionLocalProvider(LocalContentColor provides if (enabled) color else color.copy(alpha = 0.4f)) {
+    val colors = DropdownDefaults.dropdownColors()
+    val color = when {
+        !enabled -> MiuixTheme.colorScheme.disabledOnSecondaryVariant
+        isSelected == true -> colors.selectedContentColor
+        else -> textColor.takeOrElse { colors.contentColor }
+    }
+    val selectionSemantics = if (isSelected == null) {
+        Modifier
+    } else {
+        Modifier.semantics { selected = isSelected }
+    }
+    val textStyles = MiuixTheme.textStyles
+    CompositionLocalProvider(LocalContentColor provides color) {
         MiuixTheme(
-            textStyles = MiuixTheme.textStyles.copy(
-                main = MiuixTheme.textStyles.body1.copy(fontWeight = FontWeight.Medium),
+            textStyles = textStyles.copy(
+                main = textStyles.main.copy(fontSize = textStyles.body1.fontSize, fontWeight = FontWeight.Medium),
             ),
         ) {
             Row(
                 modifier = modifier
                     .fillMaxWidth()
-                    .heightIn(min = GlassPopupDefaults.ItemMinHeight)
-                    .padding(horizontal = GlassPopupDefaults.ItemPressInset)
-                    .clip(RoundedCornerShape(GlassPopupDefaults.ItemPressRadius))
+                    .then(selectionSemantics)
                     .combinedClickable(
                         interactionSource = null,
-                        indication = indication,
+                        indication = LocalIndication.current,
                         enabled = enabled,
-                        role = Role.Button,
+                        role = if (isSelected == null) Role.Button else Role.RadioButton,
                         onClick = onClick,
                         onLongClick = onLongClick,
                         onLongClickLabel = onLongClickLabel,
                     )
                     .padding(
-                        horizontal = GlassPopupDefaults.ItemPaddingHorizontal - GlassPopupDefaults.ItemPressInset,
-                        vertical = GlassPopupDefaults.ItemPaddingVertical,
+                        horizontal = DropdownDefaults.InsideHorizontalPadding,
+                        vertical = DropdownDefaults.MiddleVerticalPadding,
                     ),
+                horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                leadingIcon?.let { icon ->
-                    icon()
-                    Spacer(Modifier.width(GlassPopupDefaults.ItemIconGap))
+                Row(
+                    modifier = Modifier.weight(1f, fill = false).widthIn(max = DropdownDefaults.MaxItemTextWidth),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    leadingIcon?.let { icon ->
+                        Box(
+                            Modifier.sizeIn(minWidth = DropdownDefaults.IconMinSize, minHeight = DropdownDefaults.IconMinSize),
+                            contentAlignment = Alignment.CenterStart,
+                        ) { icon() }
+                        Spacer(Modifier.width(DropdownDefaults.IconEndPadding))
+                    }
+                    Box { text() }
                 }
-                Box(Modifier.weight(1f)) { text() }
-                trailingIcon?.let { icon ->
-                    Spacer(Modifier.width(GlassPopupDefaults.ItemIconGap))
-                    icon()
+                Spacer(Modifier.width(DropdownDefaults.CheckIconStartPadding))
+                when {
+                    trailingIcon != null -> trailingIcon()
+                    isSelected == true -> Icon(
+                        imageVector = MiuixIcons.Basic.Check,
+                        contentDescription = null,
+                        modifier = Modifier.size(DropdownDefaults.CheckIconSize),
+                        tint = if (enabled) colors.selectedIndicatorColor else color,
+                    )
+                    else -> Spacer(Modifier.size(DropdownDefaults.CheckIconSize))
                 }
             }
         }

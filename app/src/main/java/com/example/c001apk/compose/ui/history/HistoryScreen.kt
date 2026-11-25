@@ -44,7 +44,6 @@ import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Delete
-import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 /** Created by bggRGjQaUbCoE on 2024/6/17 */
 enum class HistoryType {
@@ -100,10 +99,8 @@ fun HistoryScreen(
                             listOf(false to stringResource(R.string.history_local), true to stringResource(R.string.history_cloud)).forEach { (cloud, label) ->
                                 val selected = cloudSelected == cloud
                                 MiuixMenuItem(
-                                    text = {
-                                        Text(if (selected) stringResource(R.string.history_current, label) else label,
-                                            color = if (selected) MiuixTheme.colorScheme.primary else MiuixTheme.colorScheme.onSurface)
-                                    },
+                                    text = { Text(label) },
+                                    isSelected = selected,
                                     onClick = {
                                         cloudSelected = cloud
                                         sourceMenu = false

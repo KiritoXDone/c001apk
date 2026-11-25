@@ -105,8 +105,13 @@ private fun LocalHistoryMenu(
         if (loggedIn) MiuixMenuItem(text = { Text(stringResource(R.string.menu_report)) }, onClick = {
             expanded = false; onReport(record.id, ReportType.FEED)
         })
-        MiuixMenuItem(text = { Text(stringResource(R.string.history_delete), color = MiuixTheme.colorScheme.error) }, onClick = {
-            expanded = false; onDelete(record.id)
-        })
+        MiuixMenuItem(
+            text = { Text(stringResource(R.string.history_delete)) },
+            textColor = MiuixTheme.colorScheme.error,
+            onClick = {
+                expanded = false
+                onDelete(record.id)
+            },
+        )
     }
 }

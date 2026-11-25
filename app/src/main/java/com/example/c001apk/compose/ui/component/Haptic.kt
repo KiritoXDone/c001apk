@@ -55,7 +55,7 @@ fun rememberHapticClick(
 }
 
 @Composable
-fun MoreMenuButton(holdDownState: Boolean, onClick: () -> Unit) {
+fun MoreMenuButton(holdDownState: Boolean = false, onClick: () -> Unit) {
     MiuixToolbarIconButton(
         onClick = rememberHapticClick(onClick = onClick),
         holdDownState = holdDownState,

@@ -200,7 +200,6 @@ fun UserScreen(
                                     onDismissRequest = { dropdownMenuExpanded = false },
                                     onDismissFinished = { menuHeldDown = false },
                                     alignment = PopupPositionProvider.Align.End,
-                                    contentScale = 1f,
                                 ) {
                                     listOf(R.string.action_copy, R.string.action_share, R.string.user_info).forEachIndexed { index, menu ->
                                         DropdownMenuItem(

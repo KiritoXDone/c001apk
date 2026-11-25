@@ -75,11 +75,11 @@ fun FollowScreen(
                                 expanded = menu,
                                 onDismissRequest = { menu = false },
                                 alignment = PopupPositionProvider.Align.Start,
-                                contentScale = 1f,
                                 enableWindowDim = false,
                             ) {
                                 labels.forEach { (value, title) ->
                                     MiuixMenuItem(
+                                        isSelected = prefs.followSelection == value,
                                         text = {
                                             Column {
                                                 Text(stringResource(title))
