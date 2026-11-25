@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -19,6 +20,7 @@ import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
@@ -28,6 +30,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.platform.LocalDensity
@@ -40,17 +43,21 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import com.example.c001apk.compose.logic.model.TopBarStyle
+import com.example.c001apk.compose.logic.providable.LocalUserPreferences
 import top.yukonga.miuix.kmp.basic.DropdownDefaults
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.ListPopupColumn
 import top.yukonga.miuix.kmp.basic.PopupPositionProvider
 import top.yukonga.miuix.kmp.glass.GlassBottomSheet
+import top.yukonga.miuix.kmp.glass.GlassPopupDefaults
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.basic.Check
 import top.yukonga.miuix.kmp.icon.extended.More
 import top.yukonga.miuix.kmp.theme.LocalContentColor
 import top.yukonga.miuix.kmp.theme.MiuixTheme
+import top.yukonga.miuix.kmp.utils.MiuixIndication
 import top.yukonga.miuix.kmp.window.WindowListPopup
 
 @Composable
@@ -74,6 +81,18 @@ fun MiuixMenu(
 ) {
     val density = LocalDensity.current
     CompositionLocalProvider(LocalDensity provides Density(density.density * contentScale, density.fontScale)) {
+        if (LocalUserPreferences.current.topBarStyle == TopBarStyle.OS4) {
+            MiuixGlassMenu(
+                expanded = expanded,
+                onDismissRequest = onDismissRequest,
+                onDismissFinished = onDismissFinished,
+                modifier = modifier,
+                alignment = alignment,
+                enableWindowDim = enableWindowDim,
+                content = content,
+            )
+            return@CompositionLocalProvider
+        }
         WindowListPopup(
             show = expanded,
             popupModifier = modifier,
@@ -127,7 +146,7 @@ fun MiuixMoreMenu(
     }
 }
 
-// 菜单行参考 Miuix DropdownImpl（Copyright 2026 compose-miuix-ui contributors，Apache-2.0）。
+// 菜单行参考 Miuix DropdownImpl 和 GlassPopupItem（Apache-2.0，compose-miuix-ui contributors）。
 // 保留内容插槽和长按。
 @Composable
 fun MiuixMenuItem(
@@ -142,17 +161,33 @@ fun MiuixMenuItem(
     leadingIcon: (@Composable () -> Unit)? = null,
     trailingIcon: (@Composable () -> Unit)? = null,
 ) {
+    val glassExpanded = LocalGlassMenuExpanded.current
+    val isGlass = glassExpanded != null
     val colors = DropdownDefaults.dropdownColors()
+    val enabledColor = textColor.takeOrElse { colors.contentColor }
     val color = when {
+        !enabled && isGlass -> enabledColor.copy(alpha = 0.4f)
         !enabled -> MiuixTheme.colorScheme.disabledOnSecondaryVariant
         isSelected == true -> colors.selectedContentColor
-        else -> textColor.takeOrElse { colors.contentColor }
+        else -> enabledColor
     }
     val selectionSemantics = if (isSelected == null) {
         Modifier
     } else {
         Modifier.semantics { selected = isSelected }
     }
+    val glassInset = if (isGlass) GlassPopupDefaults.ItemPressInset else 0.dp
+    val rowShape = if (isGlass) {
+        Modifier.heightIn(min = GlassPopupDefaults.ItemMinHeight)
+            .padding(horizontal = glassInset)
+            .clip(RoundedCornerShape(GlassPopupDefaults.ItemPressRadius))
+    } else {
+        Modifier
+    }
+    val iconSize = if (isGlass) GlassPopupDefaults.ItemIconSize else DropdownDefaults.IconMinSize
+    val iconGap = if (isGlass) GlassPopupDefaults.ItemIconGap else DropdownDefaults.IconEndPadding
+    val checkSize = if (isGlass) GlassPopupDefaults.ItemTickSize else DropdownDefaults.CheckIconSize
+    val checkGap = if (isGlass) GlassPopupDefaults.ItemIconGap else DropdownDefaults.CheckIconStartPadding
     val textStyles = MiuixTheme.textStyles
     CompositionLocalProvider(LocalContentColor provides color) {
         MiuixTheme(
@@ -160,22 +195,31 @@ fun MiuixMenuItem(
                 main = textStyles.main.copy(fontSize = textStyles.body1.fontSize, fontWeight = FontWeight.Medium),
             ),
         ) {
+            val indication = if (isGlass) {
+                val pressColor = GlassPopupDefaults.itemPressedColor()
+                remember(pressColor) {
+                    MiuixIndication(color = pressColor.copy(alpha = 1f), pressAlpha = pressColor.alpha)
+                }
+            } else {
+                LocalIndication.current
+            }
             Row(
                 modifier = modifier
                     .fillMaxWidth()
+                    .then(rowShape)
                     .then(selectionSemantics)
                     .combinedClickable(
                         interactionSource = null,
-                        indication = LocalIndication.current,
-                        enabled = enabled,
+                        indication = indication,
+                        enabled = enabled && glassExpanded != false,
                         role = if (isSelected == null) Role.Button else Role.RadioButton,
                         onClick = onClick,
                         onLongClick = onLongClick,
                         onLongClickLabel = onLongClickLabel,
                     )
                     .padding(
-                        horizontal = DropdownDefaults.InsideHorizontalPadding,
-                        vertical = DropdownDefaults.MiddleVerticalPadding,
+                        horizontal = if (isGlass) GlassPopupDefaults.ItemPaddingHorizontal - glassInset else DropdownDefaults.InsideHorizontalPadding,
+                        vertical = if (isGlass) GlassPopupDefaults.ItemPaddingVertical else DropdownDefaults.MiddleVerticalPadding,
                     ),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
@@ -186,23 +230,23 @@ fun MiuixMenuItem(
                 ) {
                     leadingIcon?.let { icon ->
                         Box(
-                            Modifier.sizeIn(minWidth = DropdownDefaults.IconMinSize, minHeight = DropdownDefaults.IconMinSize),
+                            Modifier.sizeIn(minWidth = iconSize, minHeight = iconSize),
                             contentAlignment = Alignment.CenterStart,
                         ) { icon() }
-                        Spacer(Modifier.width(DropdownDefaults.IconEndPadding))
+                        Spacer(Modifier.width(iconGap))
                     }
                     Box { text() }
                 }
-                Spacer(Modifier.width(DropdownDefaults.CheckIconStartPadding))
+                Spacer(Modifier.width(checkGap))
                 when {
                     trailingIcon != null -> trailingIcon()
                     isSelected == true -> Icon(
                         imageVector = MiuixIcons.Basic.Check,
                         contentDescription = null,
-                        modifier = Modifier.size(DropdownDefaults.CheckIconSize),
+                        modifier = Modifier.size(checkSize),
                         tint = if (enabled) colors.selectedIndicatorColor else color,
                     )
-                    else -> Spacer(Modifier.size(DropdownDefaults.CheckIconSize))
+                    else -> Spacer(Modifier.size(checkSize))
                 }
             }
         }
