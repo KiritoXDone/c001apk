@@ -274,6 +274,9 @@ def collect_packages(plan):
     directory = CI / "artifacts"
     expected = {f"packages-{target}" for target in targets}
     actual = {path.name for path in directory.iterdir()}
+    # download-artifact 只匹配到一个产物时直接解包到目标目录。
+    if len(targets) == 1 and expected.isdisjoint(actual):
+        return package_files(directory, targets[0], plan)
     if actual != expected:
         raise ValueError(f"Expected matrix artifacts {sorted(expected)}; found {sorted(actual)}.")
     files = [path for target in targets for path in package_files(directory / f"packages-{target}", target, plan)]
