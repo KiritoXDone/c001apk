@@ -49,6 +49,7 @@ import androidx.core.app.ActivityOptionsCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.c001apk.compose.R
 import com.example.c001apk.compose.constant.Constants.EMPTY_STRING
+import com.example.c001apk.compose.logic.model.FeedAiSummaryState
 import com.example.c001apk.compose.logic.model.HomeFeedResponse
 import com.example.c001apk.compose.logic.providable.LocalUserPreferences
 import com.example.c001apk.compose.logic.state.LoadingState
@@ -263,6 +264,21 @@ fun FeedScreen(
             } else null,
     ) {
         BoxWithConstraints(Modifier.fillMaxSize()) {
+            val currentPreferences = LocalUserPreferences.current
+            LaunchedEffect(
+                viewModel.feedState,
+                currentPreferences.isLogin,
+                currentPreferences.enableAiSummary,
+                currentPreferences.useOfficialAiAssistant,
+                currentPreferences.showRawAiSummaryModal,
+            ) {
+                viewModel.syncAiSummaryPlan(
+                    enableAiSummary = currentPreferences.enableAiSummary,
+                    useOfficialAiAssistant = currentPreferences.useOfficialAiAssistant,
+                    showRawAiSummaryModal = currentPreferences.showRawAiSummaryModal,
+                    isLogin = currentPreferences.isLogin,
+                )
+            }
             val detailInset = ((maxWidth - 800.dp) / 2).coerceAtLeast(FEED_CONTENT_HORIZONTAL_PADDING)
             val replySkeletonCount = ceil(maxHeight.value / 142f).toInt()
             Scaffold(
@@ -510,6 +526,19 @@ fun FeedScreen(
                             is LoadingState.Success -> {
                                 val state = viewModel.feedState as LoadingState.Success
                                 val response = state.response
+                                val aiSummaryState = viewModel.aiSummaryState
+                                val aiSummaryContent: (@Composable () -> Unit)? =
+                                    if (aiSummaryState !is FeedAiSummaryState.Hidden) {
+                                        {
+                                            FeedAiSummaryCard(
+                                                feedId = response.id.orEmpty().ifBlank { id },
+                                                state = aiSummaryState,
+                                                onCardClick = viewModel::onAiSummaryCardClick,
+                                                onRetry = viewModel::retryAiSummary,
+                                                onCopyText = onCopyText,
+                                            )
+                                        }
+                                    } else null
                                 val voteContent: (@Composable () -> Unit)? = if (response.isVoteFeed) {
                                     {
                                         val preferences = LocalUserPreferences.current
@@ -551,6 +580,7 @@ fun FeedScreen(
                                                 )
                                             }
                                         },
+                                        afterTitle = aiSummaryContent,
                                         afterMessage = voteContent,
                                     )
                                 } else {
@@ -582,6 +612,7 @@ fun FeedScreen(
                                                 viewModel.onDelete(id, deleteType)
                                             },
                                             onBlockUser = {},
+                                            afterTitle = aiSummaryContent,
                                             afterMessage = voteContent,
                                         )
                                     }
@@ -740,6 +771,16 @@ fun FeedScreen(
                     onOpenLink = onOpenLink,
                     onReport = onReport,
                     onLaunchReply = ::launchReply,
+                )
+            }
+
+            if (viewModel.showAiSummarySheet) {
+                FeedAiSummarySheet(
+                    state = viewModel.aiSummaryState,
+                    onRetry = viewModel::retryAiSummary,
+                    onCopyText = onCopyText,
+                    onOpenLink = onOpenLink,
+                    onDismiss = viewModel::dismissAiSummarySheet,
                 )
             }
         }

@@ -8,6 +8,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import java.util.concurrent.TimeUnit
 import javax.inject.Qualifier
 import javax.inject.Singleton
 import okhttp3.OkHttpClient
@@ -17,6 +18,10 @@ import retrofit2.converter.gson.GsonConverterFactory
 @Qualifier @Retention(AnnotationRetention.BINARY) annotation class Api1Service
 
 @Qualifier @Retention(AnnotationRetention.BINARY) annotation class Api1ServiceNoRedirect
+
+@Qualifier @Retention(AnnotationRetention.BINARY) annotation class Api1StreamService
+
+@Qualifier @Retention(AnnotationRetention.BINARY) annotation class PublicStreamClient
 
 @Qualifier @Retention(AnnotationRetention.BINARY) annotation class Api2Service
 
@@ -41,6 +46,13 @@ object NetworkModule {
     @Singleton
     @Provides
     fun provideApi1ServiceNo(@Api1ServiceNoRedirect retrofit: Retrofit): ApiService {
+        return retrofit.create(ApiService::class.java)
+    }
+
+    @Api1StreamService
+    @Singleton
+    @Provides
+    fun provideApi1StreamService(@Api1StreamService retrofit: Retrofit): ApiService {
         return retrofit.create(ApiService::class.java)
     }
 
@@ -73,6 +85,17 @@ object NetworkModule {
     @Singleton
     @Provides
     fun provideApi1ServiceNoRetrofit(@Api1ServiceNoRedirect okHttpClient: OkHttpClient): Retrofit {
+        return Retrofit.Builder()
+            .baseUrl(API_BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .client(okHttpClient)
+            .build()
+    }
+
+    @Api1StreamService
+    @Singleton
+    @Provides
+    fun provideApi1StreamServiceRetrofit(@Api1StreamService okHttpClient: OkHttpClient): Retrofit {
         return Retrofit.Builder()
             .baseUrl(API_BASE_URL)
             .addConverterFactory(GsonConverterFactory.create())
@@ -130,6 +153,22 @@ object NetworkModule {
             .addNetworkInterceptor(AddCookiesInterceptor)
             .followRedirects(false)
             .build()
+    }
+
+    @Api1StreamService
+    @Singleton
+    @Provides
+    fun provideApi1StreamOkHttpClient(@Api1ServiceNoRedirect okHttpClient: OkHttpClient): OkHttpClient {
+        // AI 流式推理耗时长于普通接口，复用无重定向客户端并放宽读取超时。
+        return okHttpClient.newBuilder().readTimeout(60, TimeUnit.SECONDS).build()
+    }
+
+    @PublicStreamClient
+    @Singleton
+    @Provides
+    fun providePublicStreamOkHttpClient(): OkHttpClient {
+        // 第三方镜像摘要走纯净客户端，绝不附带酷安登录态、设备标识或签名头。
+        return OkHttpClient.Builder().readTimeout(60, TimeUnit.SECONDS).build()
     }
 
     @AccountService

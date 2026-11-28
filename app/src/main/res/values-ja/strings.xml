@@ -88,6 +88,13 @@
     <string name="settings_group_publish">投稿</string>
     <string name="settings_hide_publish_button">ホームの投稿ボタンを隠す</string>
     <string name="settings_hide_publish_button_summary">オフにするとホームから投稿できます</string>
+    <string name="settings_group_ai_summary">AI 要約</string>
+    <string name="settings_ai_summary_enable">AI 要約を有効にする</string>
+    <string name="settings_ai_summary_enable_summary">投稿の詳細ページに AI 要約を表示します</string>
+    <string name="settings_ai_summary_official">Coolapk AI アシスタントを使用</string>
+    <string name="settings_ai_summary_official_summary">ログイン時は公式 AI アシスタントを優先し、オフまたは未ログイン時は coolapk1s を使用します</string>
+    <string name="settings_ai_summary_raw_modal">シートで完全な AI 要約を表示</string>
+    <string name="settings_ai_summary_raw_modal_summary">短縮要約を省略し、タップ時に元の Markdown 要約をモーダルシートで表示します</string>
     <string name="settings_group_follow">フォロー</string>
     <string name="settings_local_follow">ローカル・非公開フォロー</string>
     <string name="settings_local_follow_summary">ローカルリストと長押しフォローを管理</string>

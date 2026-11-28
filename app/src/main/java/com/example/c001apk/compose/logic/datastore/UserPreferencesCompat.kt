@@ -86,6 +86,9 @@ data class UserPreferencesCompat(
     val predictiveBack: Boolean = true,
     val mainNavigationOrder: List<Int> = MainNavigationOrder.default,
     val autoClearImageCache: Boolean = false,
+    val enableAiSummary: Boolean = true,
+    val useOfficialAiAssistant: Boolean = true,
+    val showRawAiSummaryModal: Boolean = false,
 ) {
     constructor(
         original: UserPreferences,
@@ -161,6 +164,9 @@ data class UserPreferencesCompat(
         predictiveBack = !original.disablePredictiveBack,
         mainNavigationOrder = MainNavigationOrder.normalize(original.mainNavigationOrderList),
         autoClearImageCache = original.autoClearImageCache,
+        enableAiSummary = !original.disableAiSummary,
+        useOfficialAiAssistant = !original.disableOfficialAiAssistant,
+        showRawAiSummaryModal = original.showRawAiSummaryModal,
         followSelection =
             if (original.followSelectionConfigured) original.followSelection.coerceIn(0, 5)
             else original.followTypeValue.takeIf { it in 1..4 } ?: 1,
@@ -259,6 +265,9 @@ data class UserPreferencesCompat(
             .setDisablePredictiveBack(!predictiveBack)
             .addAllMainNavigationOrder(MainNavigationOrder.normalize(mainNavigationOrder))
             .setAutoClearImageCache(autoClearImageCache)
+            .setDisableAiSummary(!enableAiSummary)
+            .setDisableOfficialAiAssistant(!useOfficialAiAssistant)
+            .setShowRawAiSummaryModal(showRawAiSummaryModal)
             .build()
 
     companion object {

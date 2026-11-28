@@ -77,6 +77,10 @@ message UserPreferences {
   string topBarStyle = 69;
   string bottomBarStyle = 70;
   bool autoClearImageCache = 71;
+  // Negative flags keep AI summary and official assistant enabled by default on upgrade.
+  bool disableAiSummary = 72;
+  bool disableOfficialAiAssistant = 73;
+  bool showRawAiSummaryModal = 74;
 }
 
 enum ThemeType{

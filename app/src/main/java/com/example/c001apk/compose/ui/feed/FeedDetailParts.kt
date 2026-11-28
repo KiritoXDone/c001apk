@@ -34,7 +34,11 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.SinkFeedback
 
 @Composable
-fun FeedDetailAuthor(data: HomeFeedResponse.Data, onViewUser: (String) -> Unit) {
+fun FeedDetailAuthor(
+    data: HomeFeedResponse.Data,
+    onViewUser: (String) -> Unit,
+    footer: (@Composable () -> Unit)? = null,
+) {
     val deviceLabel = stringResource(R.string.label_device)
     ReadingSurface(first = true, topPadding = if (data.publishStatus == 1) 0.dp else 6.dp) {
         FeedVisibilityNotice(data.publishStatus)
@@ -121,6 +125,7 @@ fun FeedDetailAuthor(data: HomeFeedResponse.Data, onViewUser: (String) -> Unit) 
                 )
             }
         }
+        footer?.invoke()
     }
 }
 

@@ -94,6 +94,7 @@ fun FeedCard(
     onBlockUser: (String) -> Unit,
     showTradeLinkHint: Boolean = false,
     onDismissTradeLinkHint: () -> Unit = {},
+    afterTitle: (@Composable () -> Unit)? = null,
     afterMessage: (@Composable () -> Unit)? = null,
 ) {
     val horizontal = FEED_CONTENT_HORIZONTAL_PADDING
@@ -134,6 +135,7 @@ fun FeedCard(
             onCopyText = onCopyText,
             showTradeLinkHint = showTradeLinkHint,
             onDismissTradeLinkHint = onDismissTradeLinkHint,
+            afterTitle = afterTitle,
         )
         if (afterMessage != null) {
             Column(Modifier.fillMaxWidth().padding(horizontal = horizontal)) { afterMessage() }
@@ -269,6 +271,7 @@ fun FeedMessage(
     onCopyText: (String?) -> Unit,
     showTradeLinkHint: Boolean = false,
     onDismissTradeLinkHint: () -> Unit = {},
+    afterTitle: (@Composable () -> Unit)? = null,
 ) {
     val price = remember(data.subTabId, data.purchasePrice, data.secondHandInfo, data.feedType) {
         data.feedPriceDisplay()
@@ -290,6 +293,9 @@ fun FeedMessage(
             modifier = modifier.padding(top = 10.dp),
             onOpenLink = onOpenLink,
         )
+    }
+    if (isFeedContent && afterTitle != null) {
+        Column(modifier.padding(top = 10.dp)) { afterTitle() }
     }
     if (!data.message.isNullOrEmpty()) {
         RichPostText(

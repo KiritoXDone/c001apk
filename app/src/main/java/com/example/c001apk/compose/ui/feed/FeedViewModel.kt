@@ -14,11 +14,17 @@ import com.example.c001apk.compose.R
 import com.example.c001apk.compose.logic.settings.AppLanguage
 import androidx.lifecycle.viewModelScope
 import com.example.c001apk.compose.constant.Constants.EMPTY_STRING
+import com.example.c001apk.compose.logic.model.FeedAiSummaryPlan
+import com.example.c001apk.compose.logic.model.FeedAiSummaryState
+import com.example.c001apk.compose.logic.model.FeedAiSummaryTrigger
+import com.example.c001apk.compose.logic.model.FeedAiSummaryUpdate
 import com.example.c001apk.compose.logic.model.FeedArticleContentBean
 import com.example.c001apk.compose.logic.model.FeedEntity
 import com.example.c001apk.compose.logic.model.HomeFeedResponse
 import com.example.c001apk.compose.logic.network.ApiFailures
+import com.example.c001apk.compose.logic.network.FeedAiSummaryProtocol
 import com.example.c001apk.compose.logic.repository.BlackListRepo
+import com.example.c001apk.compose.logic.repository.FeedAiSummaryRepository
 import com.example.c001apk.compose.logic.repository.HistoryFavoriteRepo
 import com.example.c001apk.compose.logic.repository.NetworkRepo
 import com.example.c001apk.compose.logic.smid.hasRequestDeviceIdentity
@@ -36,6 +42,7 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -51,6 +58,7 @@ constructor(
     contentFilters: ContentFilterStore,
     private val historyFavoriteRepo: HistoryFavoriteRepo,
     private val preferences: com.example.c001apk.compose.logic.repository.UserPreferencesRepository,
+    private val aiSummaryRepository: FeedAiSummaryRepository,
 ) : BaseViewModel(networkRepo, blackListRepo, contentFilters) {
 
     @AssistedFactory
@@ -95,8 +103,16 @@ constructor(
     var voteError by mutableStateOf<String?>(null)
         private set
 
+    var aiSummaryState by mutableStateOf<FeedAiSummaryState>(FeedAiSummaryState.Hidden)
+        private set
+
+    var showAiSummarySheet by mutableStateOf(false)
+        private set
+
     private var deleteJob: kotlinx.coroutines.Job? = null
     private var voteJob: kotlinx.coroutines.Job? = null
+    private var aiSummaryJob: kotlinx.coroutines.Job? = null
+    private var aiSummaryPlanKey: String? = null
     private var isVoteFeed = false
     private var localFavoriteBusy = false
     private val guestReplyGate = GuestReplyGate(
@@ -156,6 +172,171 @@ constructor(
 
     fun consumeFeedDeletion() {
         deletedFeedId = null
+    }
+
+    fun syncAiSummaryPlan(
+        enableAiSummary: Boolean,
+        useOfficialAiAssistant: Boolean,
+        showRawAiSummaryModal: Boolean,
+        isLogin: Boolean,
+    ) {
+        val state = feedState as? LoadingState.Success ?: return
+        val feed = state.response
+        val feedId = feed.id?.takeIf(String::isNotBlank) ?: id
+        val key =
+            "$feedId|${state.isPublic}|${feed.isShowAiAssistant}|${feed.aiAccessKey}|" +
+                "$isLogin|$enableAiSummary|$useOfficialAiAssistant|$showRawAiSummaryModal"
+        if (key == aiSummaryPlanKey) return
+        aiSummaryPlanKey = key
+
+        aiSummaryJob?.cancel()
+        val plan =
+            FeedAiSummaryProtocol.resolvePlan(
+                feed = feed,
+                articleList = articleList,
+                isLogin = isLogin,
+                isPublic = state.isPublic,
+                enableAiSummary = enableAiSummary,
+                useOfficialAiAssistant = useOfficialAiAssistant,
+                showRawAiSummaryModal = showRawAiSummaryModal,
+            )
+        if (plan == null) {
+            showAiSummarySheet = false
+            aiSummaryState = FeedAiSummaryState.Hidden
+            return
+        }
+        if (plan.trigger != FeedAiSummaryTrigger.ClickModal) {
+            showAiSummarySheet = false
+        }
+        aiSummaryState = FeedAiSummaryState.Idle(plan)
+        if (plan.trigger == FeedAiSummaryTrigger.Auto) {
+            startAiSummary(plan, forceRefresh = false)
+        }
+    }
+
+    fun onAiSummaryCardClick() {
+        when (val current = aiSummaryState) {
+            FeedAiSummaryState.Hidden -> Unit
+            is FeedAiSummaryState.Idle -> {
+                if (current.plan.trigger == FeedAiSummaryTrigger.ClickModal) {
+                    showAiSummarySheet = true
+                    startAiSummary(current.plan, forceRefresh = false)
+                } else if (current.plan.trigger == FeedAiSummaryTrigger.ClickInline) {
+                    startAiSummary(current.plan, forceRefresh = false)
+                }
+            }
+            is FeedAiSummaryState.Loading -> {
+                if (current.plan.trigger == FeedAiSummaryTrigger.ClickModal) {
+                    showAiSummarySheet = true
+                }
+            }
+            is FeedAiSummaryState.Success -> {
+                if (current.plan.trigger == FeedAiSummaryTrigger.ClickModal) {
+                    showAiSummarySheet = true
+                }
+            }
+            is FeedAiSummaryState.Error -> {
+                if (current.plan.trigger == FeedAiSummaryTrigger.ClickModal) {
+                    showAiSummarySheet = true
+                }
+                startAiSummary(current.plan, forceRefresh = true)
+            }
+        }
+    }
+
+    fun retryAiSummary() {
+        val plan =
+            when (val current = aiSummaryState) {
+                FeedAiSummaryState.Hidden -> return
+                is FeedAiSummaryState.Idle -> current.plan
+                is FeedAiSummaryState.Loading -> current.plan
+                is FeedAiSummaryState.Success -> current.plan
+                is FeedAiSummaryState.Error -> current.plan
+            }
+        startAiSummary(plan, forceRefresh = true)
+    }
+
+    fun dismissAiSummarySheet() {
+        showAiSummarySheet = false
+    }
+
+    private fun startAiSummary(plan: FeedAiSummaryPlan, forceRefresh: Boolean) {
+        val state = feedState as? LoadingState.Success ?: return
+        val feed = state.response
+        val feedId = feed.id?.takeIf(String::isNotBlank) ?: id
+        if (!forceRefresh && aiSummaryState is FeedAiSummaryState.Loading) return
+        val hasTitle =
+            if (!articleList.isNullOrEmpty()) !feed.title.isNullOrBlank()
+            else !feed.messageTitle.isNullOrBlank()
+        val requestedId = id
+        val revision = CookieUtil.accountSession.revision
+        aiSummaryJob?.cancel()
+        aiSummaryState = FeedAiSummaryState.Loading(plan)
+        aiSummaryJob =
+            viewModelScope.launch {
+                try {
+                    aiSummaryRepository
+                        .streamSummary(
+                            feedId = feedId,
+                            aiAccessKey = feed.aiAccessKey,
+                            hasTitle = hasTitle,
+                            mode = plan.mode,
+                            expectedRevision = revision,
+                        )
+                        .collect { update ->
+                            if (requestedId != id || revision != CookieUtil.accountSession.revision) {
+                                return@collect
+                            }
+                            aiSummaryState =
+                                when (update) {
+                                    is FeedAiSummaryUpdate.PreparingContext ->
+                                        FeedAiSummaryState.Loading(
+                                            plan = plan,
+                                            modelName = update.modelName ?: plan.defaultModelLabel,
+                                            isPreparingContext = true,
+                                        )
+                                    is FeedAiSummaryUpdate.Generating ->
+                                        FeedAiSummaryState.Loading(
+                                            plan = plan,
+                                            modelName = update.modelName ?: plan.defaultModelLabel,
+                                        )
+                                    is FeedAiSummaryUpdate.Streaming ->
+                                        FeedAiSummaryState.Loading(
+                                            plan = plan,
+                                            text = update.text,
+                                            modelName = update.modelName ?: plan.defaultModelLabel,
+                                        )
+                                    is FeedAiSummaryUpdate.Completed ->
+                                        FeedAiSummaryState.Success(
+                                            plan = plan,
+                                            text = update.text,
+                                            modelName = update.modelName ?: plan.defaultModelLabel,
+                                        )
+                                    FeedAiSummaryUpdate.Unavailable ->
+                                        if (plan.silentOnFailure) {
+                                            showAiSummarySheet = false
+                                            FeedAiSummaryState.Hidden
+                                        } else {
+                                            FeedAiSummaryState.Error(
+                                                plan = plan,
+                                                message = AppLanguage.getString(R.string.feed_ai_summary_empty),
+                                            )
+                                        }
+                                }
+                        }
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    if (requestedId == id && revision == CookieUtil.accountSession.revision) {
+                        if (plan.silentOnFailure) {
+                            showAiSummarySheet = false
+                            aiSummaryState = FeedAiSummaryState.Hidden
+                        } else {
+                            aiSummaryState = FeedAiSummaryState.Error(plan, ApiFailures.safeMessage(e))
+                        }
+                    }
+                }
+            }
     }
 
     fun submitVote(optionIds: Set<String>, anonymous: Boolean) {
@@ -990,6 +1171,10 @@ constructor(
         collections.reset()
         deleteJob?.cancel()
         voteJob?.cancel()
+        aiSummaryJob?.cancel()
+        aiSummaryPlanKey = null
+        showAiSummarySheet = false
+        aiSummaryState = FeedAiSummaryState.Hidden
         submittingVote = false
         voteError = null
         isVoteFeed = false

@@ -212,9 +212,16 @@ data class HomeFeedResponse(
         val userInfo: UserInfo?,
         val fUserInfo: UserInfo?,
         var isFollow: Int?,
+        @SerializedName("aiAccessKey")
+        val aiAccessKey: String? = null,
+        @SerializedName(value = "isShowAiAssistant", alternate = ["is_show_ai_assistant"])
+        val isShowAiAssistant: Int? = null,
     ) : Parcelable {
         val isVoteFeed: Boolean
             get() = vote != null || feedType == "vote"
+
+        val hasAiAssistant: Boolean
+            get() = isShowAiAssistant == 1 && !aiAccessKey.isNullOrBlank()
     }
 
     @Parcelize

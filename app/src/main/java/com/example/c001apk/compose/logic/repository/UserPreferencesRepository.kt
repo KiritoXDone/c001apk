@@ -103,6 +103,14 @@ constructor(
 
     suspend fun setAutoClearImageCache(value: Boolean) = userPreferencesDataSource.setAutoClearImageCache(value)
 
+    suspend fun setEnableAiSummary(value: Boolean) = userPreferencesDataSource.setEnableAiSummary(value)
+
+    suspend fun setUseOfficialAiAssistant(value: Boolean) =
+        userPreferencesDataSource.setUseOfficialAiAssistant(value)
+
+    suspend fun setShowRawAiSummaryModal(value: Boolean) =
+        userPreferencesDataSource.setShowRawAiSummaryModal(value)
+
     suspend fun setImageFilter(value: Boolean) = userPreferencesDataSource.setImageFilter(value)
 
     suspend fun setOpenInBrowser(value: Boolean) = userPreferencesDataSource.setOpenInBrowser(value)

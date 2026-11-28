@@ -224,6 +224,17 @@
     <string name="feed_original_comment">원래 댓글</string>
     <string name="feed_liked_your">내 %1$s에 좋아요를 눌렀습니다</string>
     <string name="feed_reply_to">%1$s에게 답글</string>
+    <string name="feed_ai_summary_title">AI 요약</string>
+    <string name="feed_ai_summary_tap_to_fetch">탭하여 AI 요약 생성</string>
+    <string name="feed_ai_summary_tap_to_view">탭하여 AI 요약 보기</string>
+    <string name="feed_ai_summary_preparing">컨텍스트 준비 중…</string>
+    <string name="feed_ai_summary_generating">생성 중…</string>
+    <string name="feed_ai_summary_copy">요약 복사</string>
+    <string name="feed_ai_summary_expand">요약 펼치기</string>
+    <string name="feed_ai_summary_collapse">요약 접기</string>
+    <string name="feed_ai_summary_empty">요약 내용이 반환되지 않았습니다</string>
+    <string name="feed_ai_summary_disclaimer">AI가 생성한 요약으로 참고용입니다</string>
+    <string name="feed_ai_summary_close_sheet">AI 요약 닫기</string>
     <string name="collection_save_to">저장 위치</string>
     <string name="collection_create">컬렉션 만들기</string>
     <string name="collection_default">기본 컬렉션</string>

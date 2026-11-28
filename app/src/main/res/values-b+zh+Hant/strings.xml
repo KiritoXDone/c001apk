@@ -88,6 +88,13 @@
     <string name="settings_group_publish">釋出</string>
     <string name="settings_hide_publish_button">隱藏首頁釋出按鈕</string>
     <string name="settings_hide_publish_button_summary">關閉後可在首頁動態頁釋出</string>
+    <string name="settings_group_ai_summary">AI 總結</string>
+    <string name="settings_ai_summary_enable">啟用 AI 總結</string>
+    <string name="settings_ai_summary_enable_summary">在貼文詳情頁顯示 AI 摘要</string>
+    <string name="settings_ai_summary_official">使用酷安 AI 助手產生總結</string>
+    <string name="settings_ai_summary_official_summary">登入時優先呼叫酷安官方 AI 助手，關閉或未登入時使用 coolapk1s 摘要</string>
+    <string name="settings_ai_summary_raw_modal">彈層檢視酷安 AI 完整總結</string>
+    <string name="settings_ai_summary_raw_modal_summary">跳過二次精簡與字數限制，點擊後以彈層串流檢視原始 Markdown 總結</string>
     <string name="settings_group_follow">關注</string>
     <string name="settings_local_follow">本地 / 悄悄關注</string>
     <string name="settings_local_follow_summary">管理本機名單與長按關注行為</string>

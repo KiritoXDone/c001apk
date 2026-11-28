@@ -88,6 +88,13 @@
     <string name="settings_group_publish">게시</string>
     <string name="settings_hide_publish_button">홈 게시 버튼 숨기기</string>
     <string name="settings_hide_publish_button_summary">끄면 홈 피드에서 게시할 수 있습니다</string>
+    <string name="settings_group_ai_summary">AI 요약</string>
+    <string name="settings_ai_summary_enable">AI 요약 사용</string>
+    <string name="settings_ai_summary_enable_summary">게시물 상세 페이지에 AI 요약을 표시합니다</string>
+    <string name="settings_ai_summary_official">Coolapk AI 어시스턴트 사용</string>
+    <string name="settings_ai_summary_official_summary">로그인 시 공식 AI 어시스턴트를 우선 사용하고, 끄거나 미로그인 시 coolapk1s 요약을 사용합니다</string>
+    <string name="settings_ai_summary_raw_modal">시트에서 전체 AI 요약 보기</string>
+    <string name="settings_ai_summary_raw_modal_summary">짧은 요약 단계를 건너뛰고 탭할 때 원본 Markdown 요약을 모달 시트로 표시합니다</string>
     <string name="settings_group_follow">팔로우</string>
     <string name="settings_local_follow">로컬 및 비공개 팔로우</string>
     <string name="settings_local_follow_summary">로컬 목록 및 길게 눌러 팔로우 관리</string>

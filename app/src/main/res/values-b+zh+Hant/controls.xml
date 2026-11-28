@@ -224,6 +224,17 @@
     <string name="feed_original_comment">原評論</string>
     <string name="feed_liked_your">讚了你的%1$s</string>
     <string name="feed_reply_to">回覆 %1$s</string>
+    <string name="feed_ai_summary_title">AI 總結</string>
+    <string name="feed_ai_summary_tap_to_fetch">點擊取得 AI 總結</string>
+    <string name="feed_ai_summary_tap_to_view">點擊檢視 AI 總結</string>
+    <string name="feed_ai_summary_preparing">準備上下文中…</string>
+    <string name="feed_ai_summary_generating">產生中…</string>
+    <string name="feed_ai_summary_copy">複製摘要</string>
+    <string name="feed_ai_summary_expand">展開摘要</string>
+    <string name="feed_ai_summary_collapse">收合摘要</string>
+    <string name="feed_ai_summary_empty">未傳回摘要內容</string>
+    <string name="feed_ai_summary_disclaimer">摘要由 AI 產生，僅供參考</string>
+    <string name="feed_ai_summary_close_sheet">關閉 AI 總結</string>
     <string name="collection_save_to">收藏到</string>
     <string name="collection_create">新建收藏夾</string>
     <string name="collection_default">預設收藏夾</string>

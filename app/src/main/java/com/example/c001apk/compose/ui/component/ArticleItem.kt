@@ -27,12 +27,30 @@ fun LazyListScope.ArticleItem(
     onLike: () -> Unit,
     onViewUser: (String) -> Unit,
     onComments: () -> Unit,
+    afterTitle: (@Composable () -> Unit)? = null,
     afterMessage: (@Composable () -> Unit)? = null,
 ) {
     val hasCover = !response.messageCover.isNullOrEmpty()
     val hasTitle = !response.title.isNullOrEmpty()
     val hasRows = response.targetRow != null || !response.relationRows.isNullOrEmpty()
-    item(key = "header") { FeedDetailAuthor(data = response, onViewUser = onViewUser) }
+    item(key = "header") {
+        FeedDetailAuthor(
+            data = response,
+            onViewUser = onViewUser,
+            footer =
+                if (!hasTitle && afterTitle != null) {
+                    {
+                        Column(
+                            Modifier.fillMaxWidth()
+                                .padding(horizontal = 16.dp)
+                                .padding(bottom = 8.dp),
+                        ) {
+                            afterTitle()
+                        }
+                    }
+                } else null,
+        )
+    }
     if (hasCover)
         item(key = "cover") {
             ReadingSurface {
@@ -56,6 +74,15 @@ fun LazyListScope.ArticleItem(
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 22.sp,
                 )
+                if (afterTitle != null) {
+                    Column(
+                        Modifier.fillMaxWidth()
+                            .padding(horizontal = 16.dp)
+                            .padding(top = 12.dp),
+                    ) {
+                        afterTitle()
+                    }
+                }
             }
         }
     itemsIndexed(articleList, key = { _, item -> item.key }) { _, item ->

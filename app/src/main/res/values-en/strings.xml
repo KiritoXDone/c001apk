@@ -13,6 +13,13 @@
     <string name="settings_group_publish">Publishing</string>
     <string name="settings_hide_publish_button">Hide the publish button on Home</string>
     <string name="settings_hide_publish_button_summary">Publish from the Home feed when disabled</string>
+    <string name="settings_group_ai_summary">AI summary</string>
+    <string name="settings_ai_summary_enable">Enable AI summary</string>
+    <string name="settings_ai_summary_enable_summary">Show AI summaries on post detail pages</string>
+    <string name="settings_ai_summary_official">Use Coolapk AI Assistant</string>
+    <string name="settings_ai_summary_official_summary">Prefer Coolapk AI Assistant when logged in; fall back to coolapk1s when off or logged out</string>
+    <string name="settings_ai_summary_raw_modal">View full AI summary in sheet</string>
+    <string name="settings_ai_summary_raw_modal_summary">Skip concise condensation and stream the full Markdown summary in a modal sheet on tap</string>
     <string name="settings_group_follow">Following</string>
     <string name="settings_local_follow">Local and quiet follows</string>
     <string name="settings_local_follow_summary">Manage local lists and long-press follow</string>

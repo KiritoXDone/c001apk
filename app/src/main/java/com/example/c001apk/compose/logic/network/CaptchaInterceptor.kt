@@ -15,7 +15,8 @@ class CaptchaInterceptor : Interceptor {
         val response = chain.proceed(request)
         if (
             !CoolapkRequestPolicy.isApi(response.request.url) ||
-                request.tag(SkipCaptcha::class.java) != null
+                request.tag(SkipCaptcha::class.java) != null ||
+                response.body?.contentType()?.subtype.equals("event-stream", ignoreCase = true)
         )
             return response
         val challenge = CaptchaChallenge.from(json(response)) ?: return response

@@ -173,6 +173,24 @@ constructor(
         }
     }
 
+    fun setEnableAiSummary(value: Boolean) {
+        viewModelScope.launch {
+            userPreferencesRepository.setEnableAiSummary(value)
+        }
+    }
+
+    fun setUseOfficialAiAssistant(value: Boolean) {
+        viewModelScope.launch {
+            userPreferencesRepository.setUseOfficialAiAssistant(value)
+        }
+    }
+
+    fun setShowRawAiSummaryModal(value: Boolean) {
+        viewModelScope.launch {
+            userPreferencesRepository.setShowRawAiSummaryModal(value)
+        }
+    }
+
     fun setOpenInBrowser(value: Boolean) {
         viewModelScope.launch {
             userPreferencesRepository.setOpenInBrowser(value)

@@ -132,6 +132,18 @@ constructor(
         it.copy(autoClearImageCache = value)
     }
 
+    suspend fun setEnableAiSummary(value: Boolean) = userPreferences.updateData {
+        it.copy(enableAiSummary = value)
+    }
+
+    suspend fun setUseOfficialAiAssistant(value: Boolean) = userPreferences.updateData {
+        it.copy(useOfficialAiAssistant = value)
+    }
+
+    suspend fun setShowRawAiSummaryModal(value: Boolean) = userPreferences.updateData {
+        it.copy(showRawAiSummaryModal = value)
+    }
+
     suspend fun setImageFilter(value: Boolean) =
         withContext(Dispatchers.IO) {
             userPreferences.updateData { it.copy(imageFilter = value) }

@@ -224,6 +224,17 @@
     <string name="feed_original_comment">元のコメント</string>
     <string name="feed_liked_your">あなたの%1$sにいいねしました</string>
     <string name="feed_reply_to">%1$s に返信</string>
+    <string name="feed_ai_summary_title">AI 要約</string>
+    <string name="feed_ai_summary_tap_to_fetch">タップして AI 要約を生成</string>
+    <string name="feed_ai_summary_tap_to_view">タップして AI 要約を表示</string>
+    <string name="feed_ai_summary_preparing">文脈を準備中…</string>
+    <string name="feed_ai_summary_generating">生成中…</string>
+    <string name="feed_ai_summary_copy">要約をコピー</string>
+    <string name="feed_ai_summary_expand">要約を展開</string>
+    <string name="feed_ai_summary_collapse">要約を折りたたむ</string>
+    <string name="feed_ai_summary_empty">要約が返されませんでした</string>
+    <string name="feed_ai_summary_disclaimer">AI により生成された要約です。参考情報としてご覧ください</string>
+    <string name="feed_ai_summary_close_sheet">AI 要約を閉じる</string>
     <string name="collection_save_to">保存先</string>
     <string name="collection_create">コレクションを作成</string>
     <string name="collection_default">既定のコレクション</string>

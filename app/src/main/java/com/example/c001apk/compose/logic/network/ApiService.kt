@@ -8,6 +8,7 @@ import com.example.c001apk.compose.logic.model.CheckResponse
 import com.example.c001apk.compose.logic.model.CollectionSaveResult
 import com.example.c001apk.compose.logic.model.CreateFeedResponse
 import com.example.c001apk.compose.logic.model.EventDetailResponse
+import com.example.c001apk.compose.logic.model.FeedAiHistoryResponse
 import com.example.c001apk.compose.logic.model.FeedContentResponse
 import com.example.c001apk.compose.logic.model.HomeFeedResponse
 import com.example.c001apk.compose.logic.model.LikeResponse
@@ -24,10 +25,12 @@ import retrofit2.http.Field
 import retrofit2.http.FieldMap
 import retrofit2.http.FormUrlEncoded
 import retrofit2.http.GET
+import retrofit2.http.Headers
 import retrofit2.http.Multipart
 import retrofit2.http.POST
 import retrofit2.http.Part
 import retrofit2.http.Query
+import retrofit2.http.Streaming
 import retrofit2.http.Url
 
 /** Created by bggRGjQaUbCoE on 2024/6/3 */
@@ -402,4 +405,24 @@ interface ApiService {
         @Url url: String,
         @FieldMap data: Map<String, String>?,
     ): Call<LikeResponse>
+
+    @GET("/v6/ai/feedAskHistoryList")
+    @Headers("Accept: application/json")
+    suspend fun getFeedAiHistory(
+        @Query("feed_id") feedId: String,
+    ): FeedAiHistoryResponse
+
+    @Streaming
+    @FormUrlEncoded
+    @POST("/v6/ai/feedAsk")
+    @Headers("Accept: text/event-stream")
+    fun postFeedAiAsk(
+        @Query("feed_id") feedId: String,
+        @Query("model") model: String,
+        @Query("aiAccessKey") aiAccessKey: String,
+        @Query("incremental_output") incrementalOutput: Int = 1,
+        @Query("stream_output") streamOutput: Int = 1,
+        @Query("is_retry") isRetry: Int = 0,
+        @Field("prompt") prompt: String,
+    ): Call<ResponseBody>
 }

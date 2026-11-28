@@ -427,6 +427,16 @@ fun SettingsScreen(
                                 item(key = "default_search") {
                                     SearchPreferences(prefs.defaultSearchOrder, viewModel::setDefaultSearchOrder)
                                 }
+                                item(key = "ai_summary") {
+                                    AiSummaryPreferences(
+                                        enableAiSummary = prefs.enableAiSummary,
+                                        useOfficialAiAssistant = prefs.useOfficialAiAssistant,
+                                        showRawAiSummaryModal = prefs.showRawAiSummaryModal,
+                                        onEnableAiSummary = viewModel::setEnableAiSummary,
+                                        onUseOfficialAiAssistant = viewModel::setUseOfficialAiAssistant,
+                                        onShowRawAiSummaryModal = viewModel::setShowRawAiSummaryModal,
+                                    )
+                                }
                                 item(key = "publish") {
                                     PreferenceGroup(title = stringResource(R.string.settings_group_publish)) {
                                         SwitchListItem(
